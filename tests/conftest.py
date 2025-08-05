@@ -1,11 +1,25 @@
-"""Pytest configuration and shared fixtures for the Stock Analysis Platform."""
+"""Pytest configuration and shared fixtures for the Stock Analysis Platform.
+
+This module provides:
+- Database fixtures for integration testing
+- Domain entity fixtures for unit testing
+- Test data factories for flexible test data creation
+- Pytest configuration and markers
+"""
 
 from datetime import datetime, timezone
 from decimal import Decimal
-from typing import Generator
+from typing import AsyncGenerator
 from uuid import UUID, uuid4
 
+import asyncio
 import pytest
+import tempfile
+import os
+
+from stockapp.infrastructure.duckdb.connection import DuckDBConnection
+from stockapp.infrastructure.duckdb.query_executor import DuckDBQueryExecutor
+from stockapp.infrastructure.duckdb.schema.schema_manager import DuckDBSchemaManager
 
 from stockapp.domain.entities import (
     Asset,
@@ -18,6 +32,138 @@ from stockapp.domain.entities import (
     TradeSide,
 )
 
+
+@pytest.fixture(scope="session")
+def event_loop():
+    """Create an instance of the default event loop for the test session."""
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    loop.close()
+
+
+@pytest.fixture
+async def temp_database() -> AsyncGenerator[str, None]:
+    """Create a temporary database for testing.
+    
+    Yields:
+        str: Path to temporary database file
+    """
+    temp_dir = tempfile.mkdtemp()
+    db_path = os.path.join(temp_dir, "test.db")
+    
+    yield db_path
+    
+    # Cleanup
+    import shutil
+    if os.path.exists(temp_dir):
+        shutil.rmtree(temp_dir)
+
+
+@pytest.fixture 
+async def duckdb_connection(temp_database: str) -> AsyncGenerator[DuckDBConnection, None]:
+    """Create a connected DuckDB connection for testing.
+    
+    Args:
+        temp_database: Path to temporary database
+        
+    Yields:
+        DuckDBConnection: Connected database connection
+    """
+    connection = DuckDBConnection(temp_database)
+    await connection.connect()
+    
+    yield connection
+    
+    await connection.disconnect()
+
+
+@pytest.fixture
+def query_executor(duckdb_connection: DuckDBConnection) -> DuckDBQueryExecutor:
+    """Create a query executor for testing.
+    
+    Args:
+        duckdb_connection: Connected database connection
+        
+    Returns:
+        DuckDBQueryExecutor: Query executor instance
+    """
+    return DuckDBQueryExecutor(duckdb_connection)
+
+
+@pytest.fixture
+def schema_manager(query_executor: DuckDBQueryExecutor) -> DuckDBSchemaManager:
+    """Create a schema manager for testing.
+    
+    Args:
+        query_executor: Query executor instance
+        
+    Returns:
+        DuckDBSchemaManager: Schema manager instance
+    """
+    return DuckDBSchemaManager(query_executor)
+
+
+@pytest.fixture
+async def initialized_database(schema_manager: DuckDBSchemaManager) -> DuckDBSchemaManager:
+    """Create a database with initialized schema.
+    
+    Args:
+        schema_manager: Schema manager instance
+        
+    Returns:
+        DuckDBSchemaManager: Schema manager with initialized database
+    """
+    await schema_manager.create_schema()
+    return schema_manager
+
+
+# Test markers for categorizing tests
+pytest_plugins = []
+
+def pytest_configure(config):
+    """Configure pytest with custom markers."""
+    config.addinivalue_line(
+        "markers", "unit: mark test as a unit test"
+    )
+    config.addinivalue_line(
+        "markers", "integration: mark test as an integration test"
+    )
+    config.addinivalue_line(
+        "markers", "performance: mark test as a performance test"
+    )
+    config.addinivalue_line(
+        "markers", "slow: mark test as slow running"
+    )
+    config.addinivalue_line(
+        "markers", "duckdb: mark test as DuckDB-specific"
+    )
+
+
+def pytest_collection_modifyitems(config, items):
+    """Automatically mark tests based on their location and name."""
+    for item in items:
+        # Mark integration tests
+        if "/integration/" in item.nodeid or "test_integration" in item.nodeid:
+            item.add_marker(pytest.mark.integration)
+            item.add_marker(pytest.mark.slow)
+        
+        # Mark unit tests
+        elif "/unit/" in item.nodeid:
+            item.add_marker(pytest.mark.unit)
+        
+        # Mark DuckDB tests
+        if "/duckdb/" in item.nodeid:
+            item.add_marker(pytest.mark.duckdb)
+        
+        # Mark performance tests
+        if "performance" in item.name.lower():
+            item.add_marker(pytest.mark.performance)
+            item.add_marker(pytest.mark.slow)
+        
+        
+        # Mark other tests as unit tests by default if not already marked
+        if not any(marker.name in ["integration", "unit", "performance"] for marker in item.iter_markers()):
+            item.add_marker(pytest.mark.unit)
 
 @pytest.fixture
 def sample_asset() -> Asset:

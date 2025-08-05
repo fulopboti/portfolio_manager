@@ -1,0 +1,1 @@
+"""DuckDB infrastructure integration tests."""

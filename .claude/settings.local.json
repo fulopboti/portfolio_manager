@@ -1,19 +1,14 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
     "allow": [
-      "Bash(node:*)",
-      "Bash(python -m pytest --collect-only)",
-      "Bash(python -m pytest tests/test_domain_entities.py -v)",
-      "Bash(python -m pytest tests/test_repository_interfaces.py -v)",
-      "Bash(python -m pytest tests/test_application_services.py -v)",
-      "Bash(python -m pytest tests/test_application_services.py::TestDataIngestionService::test_ingest_symbol_success -v)",
-      "Bash(python -m pytest tests/ -v --tb=short)",
-      "Bash(python -m pytest --cov=stockapp --cov-report=term-missing)",
-      "Bash(python -m pytest --cov=stockapp --cov-report=html --cov-report=term-missing)",
-      "Bash(python -m pytest tests/ --cov=stockapp --cov-report=term-missing)",
-      "Bash(python -m pytest tests/ --cov=stockapp --cov-report=term-missing --tb=short)",
-      "Bash(python -m pytest tests/test_100_percent_coverage.py --cov=stockapp --cov-report=term-missing -v)",
-      "Bash(python -m pytest tests/ --cov=stockapp --cov-report=term-missing --cov-report=html)"
+      "Bash(python -m pytest :*)",
+      "Bash(mkdir:*)",
+      "Bash(find:*)",
+      "Bash(cp:*)",
+      "Bash(mv:*)",
+      "Bash(cd:*)",
+      "Bash(ls:*)"
     ],
     "deny": []
   }
