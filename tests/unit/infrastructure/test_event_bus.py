@@ -10,7 +10,7 @@ from typing import List, Any, Dict, Set, Type, Callable, Awaitable
 from unittest.mock import Mock, AsyncMock, call
 from collections import defaultdict
 
-from stockapp.domain.entities import TradeSide
+from portfolio_manager.domain.entities import TradeSide
 
 
 # Event Bus Implementation for TDD

@@ -10,12 +10,12 @@ from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
-from stockapp.application.events.price_handlers import (
+from portfolio_manager.application.events.price_handlers import (
     AssetPriceUpdatedEventHandler,
     PortfolioRevaluationEventHandler,
 )
-from stockapp.domain.events import AssetPriceUpdatedEvent, TradeExecutedEvent
-from stockapp.domain.entities import Portfolio, Position
+from portfolio_manager.domain.events import AssetPriceUpdatedEvent, TradeExecutedEvent
+from portfolio_manager.domain.entities import Portfolio, Position
 
 
 @pytest.fixture

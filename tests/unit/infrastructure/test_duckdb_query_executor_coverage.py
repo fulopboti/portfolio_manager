@@ -9,10 +9,10 @@ from decimal import Decimal
 from unittest.mock import Mock, patch, AsyncMock
 from uuid import uuid4
 
-from stockapp.infrastructure.duckdb.connection import DuckDBConnection
-from stockapp.infrastructure.duckdb.query_executor import DuckDBQueryExecutor
-from stockapp.infrastructure.data_access.exceptions import QueryError, ParameterError, TransactionError
-from stockapp.infrastructure.data_access.query_executor import QueryResult
+from portfolio_manager.infrastructure.duckdb.connection import DuckDBConnection
+from portfolio_manager.infrastructure.duckdb.query_executor import DuckDBQueryExecutor
+from portfolio_manager.infrastructure.data_access.exceptions import QueryError, ParameterError, TransactionError
+from portfolio_manager.infrastructure.data_access.query_executor import QueryResult
 
 
 class TestDuckDBQueryExecutorCoverage:

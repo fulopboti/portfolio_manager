@@ -6,11 +6,11 @@ from decimal import Decimal
 from datetime import datetime
 from uuid import uuid4
 
-from stockapp.config.factory import ConfiguredComponentFactory, ConfigurationError
-from stockapp.config.schema import StockAppConfig
-from stockapp.application.services import DataIngestionService, PortfolioSimulatorService, StrategyScoreService
-from stockapp.infrastructure.duckdb.repository_factory import DuckDBRepositoryFactory
-from stockapp.domain.exceptions import DomainError
+from portfolio_manager.config.factory import ConfiguredComponentFactory, ConfigurationError
+from portfolio_manager.config.schema import PortfolioManagerConfig
+from portfolio_manager.application.services import DataIngestionService, PortfolioSimulatorService, StrategyScoreService
+from portfolio_manager.infrastructure.duckdb.repository_factory import DuckDBRepositoryFactory
+from portfolio_manager.domain.exceptions import DomainError
 
 
 class TestConfiguredComponentFactoryInitialization:
@@ -95,7 +95,7 @@ class TestConfiguredComponentFactoryConfigAccess:
     @pytest.fixture
     def factory(self):
         """Create factory with mock configuration."""
-        with patch('stockapp.config.factory.config') as mock_global_config:
+        with patch('portfolio_manager.config.factory.config') as mock_global_config:
             mock_global_config.get_all.return_value = self._get_valid_config()
             return ConfiguredComponentFactory()
     
@@ -173,7 +173,7 @@ class TestConfiguredComponentFactoryConfigAccess:
     def test_validated_config_property(self, factory):
         """Test validated config property access."""
         config = factory.validated_config
-        assert isinstance(config, StockAppConfig)
+        assert isinstance(config, PortfolioManagerConfig)
         assert config.database.type == 'duckdb'
     
     def test_validated_config_property_not_validated(self):
@@ -191,7 +191,7 @@ class TestRepositoryFactoryCreation:
     @pytest.fixture
     def factory(self):
         """Create factory with mock configuration."""
-        with patch('stockapp.config.factory.config') as mock_global_config:
+        with patch('portfolio_manager.config.factory.config') as mock_global_config:
             mock_global_config.get_all.return_value = {
                 'application': {'name': 'test', 'version': '1.0.0'},
                 'database': {
@@ -257,7 +257,7 @@ class TestRepositoryFactoryCreation:
         assert repo_factory.database_path == ':memory:'
         assert repo_factory.config.connection.memory is True
     
-    @patch('stockapp.infrastructure.duckdb.DuckDBRepositoryFactory')
+    @patch('portfolio_manager.infrastructure.duckdb.DuckDBRepositoryFactory')
     def test_create_repository_factory_logging(self, mock_factory_class, factory):
         """Test repository factory creation logs appropriate message."""
         mock_instance = Mock()
@@ -284,7 +284,7 @@ class TestDataIngestionServiceCreation:
     @pytest.fixture
     def factory(self):
         """Create factory with test configuration."""
-        with patch('stockapp.config.factory.config') as mock_global_config:
+        with patch('portfolio_manager.config.factory.config') as mock_global_config:
             mock_global_config.get_all.return_value = {
                 'application': {'name': 'test', 'version': '1.0.0'},
                 'database': {
@@ -342,7 +342,7 @@ class TestDataIngestionServiceCreation:
         assert service.batch_size == 150  # From config
         assert service.retry_attempts == 5  # From config
     
-    @patch('stockapp.application.services.DataIngestionService')
+    @patch('portfolio_manager.application.services.DataIngestionService')
     def test_create_data_ingestion_service_logging(self, mock_service_class, factory):
         """Test data ingestion service creation logs configuration."""
         mock_data_provider = Mock()
@@ -386,7 +386,7 @@ class TestPortfolioSimulatorServiceCreation:
     @pytest.fixture
     def factory(self):
         """Create factory with test configuration."""
-        with patch('stockapp.config.factory.config') as mock_global_config:
+        with patch('portfolio_manager.config.factory.config') as mock_global_config:
             mock_global_config.get_all.return_value = {
                 'application': {'name': 'test', 'version': '1.0.0'},
                 'database': {
@@ -446,7 +446,7 @@ class TestPortfolioSimulatorServiceCreation:
         assert service._config.simulation.default_currency == 'EUR'
         assert service._config.risk_management.max_position_size == 0.15
     
-    @patch('stockapp.application.services.PortfolioSimulatorService')
+    @patch('portfolio_manager.application.services.PortfolioSimulatorService')
     def test_create_portfolio_simulator_service_logging(self, mock_service_class, factory):
         """Test portfolio simulator service creation logs configuration."""
         mock_portfolio_repository = Mock()
@@ -476,7 +476,7 @@ class TestStrategyScoreServiceCreation:
     @pytest.fixture
     def factory(self):
         """Create factory with test configuration."""
-        with patch('stockapp.config.factory.config') as mock_global_config:
+        with patch('portfolio_manager.config.factory.config') as mock_global_config:
             mock_global_config.get_all.return_value = {
                 'application': {'name': 'test', 'version': '1.0.0'},
                 'database': {
@@ -536,7 +536,7 @@ class TestStrategyScoreServiceCreation:
         assert service._config.scoring.min_score_threshold == 80
         assert service._config.backtesting.benchmark == 'QQQ'
     
-    @patch('stockapp.application.services.StrategyScoreService')
+    @patch('portfolio_manager.application.services.StrategyScoreService')
     def test_create_strategy_score_service_logging(self, mock_service_class, factory):
         """Test strategy score service creation logs enabled strategies."""
         mock_strategy_calculators = {}
@@ -567,7 +567,7 @@ class TestEventBusAndUtilityMethods:
     @pytest.fixture
     def factory(self):
         """Create factory with test configuration."""
-        with patch('stockapp.config.factory.config') as mock_global_config:
+        with patch('portfolio_manager.config.factory.config') as mock_global_config:
             # Add environment detection methods
             mock_global_config.get_environment.return_value = 'testing'
             mock_global_config.is_production.return_value = False
@@ -683,9 +683,9 @@ class TestConfiguredServiceBuilderIntegration:
     
     def test_configured_service_builder_initialization(self):
         """Test service builder initialization."""
-        from stockapp.config.factory import ConfiguredServiceBuilder
+        from portfolio_manager.config.factory import ConfiguredServiceBuilder
         
-        with patch('stockapp.config.factory.ConfiguredComponentFactory') as mock_factory_class:
+        with patch('portfolio_manager.config.factory.ConfiguredComponentFactory') as mock_factory_class:
             mock_factory_instance = Mock()
             mock_factory_class.return_value = mock_factory_instance
             
@@ -694,10 +694,10 @@ class TestConfiguredServiceBuilderIntegration:
             assert builder.factory is mock_factory_instance
             mock_factory_class.assert_called_once()
     
-    @patch('stockapp.config.factory.ConfiguredComponentFactory')
+    @patch('portfolio_manager.config.factory.ConfiguredComponentFactory')
     def test_build_complete_service_stack(self, mock_factory_class):
         """Test building complete service stack."""
-        from stockapp.config.factory import ConfiguredServiceBuilder
+        from portfolio_manager.config.factory import ConfiguredServiceBuilder
         
         # Setup mocks
         mock_factory = Mock()
@@ -759,25 +759,25 @@ class TestGlobalFactoryInstance:
     def test_global_factory_initialization_success(self):
         """Test successful global factory initialization."""
         # Import here to use the actual initialized instance
-        import stockapp.config.factory
+        import portfolio_manager.config.factory
         
         # The global factory should be initialized and working
-        assert stockapp.config.factory.component_factory is not None
-        assert hasattr(stockapp.config.factory.component_factory, 'config_manager')
+        assert portfolio_manager.config.factory.component_factory is not None
+        assert hasattr(portfolio_manager.config.factory.component_factory, 'config_manager')
     
     def test_global_factory_initialization_failure(self):
         """Test global factory initialization failure handling."""
         # Since we can't easily simulate a failure in global initialization,
         # we test that the global factory handles missing config gracefully
-        import stockapp.config.factory
+        import portfolio_manager.config.factory
         
         # The factory should either be initialized or handle errors gracefully
-        if stockapp.config.factory.component_factory is None:
+        if portfolio_manager.config.factory.component_factory is None:
             # This would happen if config initialization failed
             assert True
         else:
             # If it's initialized, it should be a valid instance
-            assert hasattr(stockapp.config.factory.component_factory, 'config_manager')
+            assert hasattr(portfolio_manager.config.factory.component_factory, 'config_manager')
 
 
 class TestConfigurationErrorScenarios:

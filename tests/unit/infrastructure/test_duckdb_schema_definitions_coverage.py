@@ -3,18 +3,18 @@
 import pytest
 from typing import Dict, List
 
-from stockapp.infrastructure.duckdb.schema.schema_definitions import (
-    StockAppSchema, IndexDefinition, ViewDefinition
+from portfolio_manager.infrastructure.duckdb.schema.schema_definitions import (
+    PortfolioManagerSchema, IndexDefinition, ViewDefinition
 )
-from stockapp.infrastructure.data_access.schema_manager import TableDefinition
+from portfolio_manager.infrastructure.data_access.schema_manager import TableDefinition
 
 
-class TestStockAppSchemaCoverage:
-    """Tests to achieve comprehensive coverage for StockApp schema definitions."""
+class TestPortfolioManagerSchemaCoverage:
+    """Tests to achieve comprehensive coverage for Portfolio Manager schema definitions."""
 
     def test_get_assets_table_coverage(self):
         """Test get_assets_table method (lines 38-55)."""
-        table_def = StockAppSchema.get_assets_table()
+        table_def = PortfolioManagerSchema.get_assets_table()
         
         assert table_def.name == "assets"
         assert len(table_def.columns) > 0
@@ -28,7 +28,7 @@ class TestStockAppSchemaCoverage:
 
     def test_get_asset_snapshots_table_coverage(self):
         """Test get_asset_snapshots_table method (lines 102-153)."""
-        table_def = StockAppSchema.get_asset_snapshots_table()
+        table_def = PortfolioManagerSchema.get_asset_snapshots_table()
         
         assert table_def.name == "asset_snapshots"
         assert len(table_def.columns) > 0
@@ -45,7 +45,7 @@ class TestStockAppSchemaCoverage:
 
     def test_get_portfolios_table_coverage(self):
         """Test get_portfolios_table method (lines 176-205)."""
-        table_def = StockAppSchema.get_portfolios_table()
+        table_def = PortfolioManagerSchema.get_portfolios_table()
         
         assert table_def.name == "portfolios"
         assert len(table_def.columns) > 0
@@ -59,7 +59,7 @@ class TestStockAppSchemaCoverage:
 
     def test_get_positions_table_coverage(self):
         """Test get_positions_table method (lines 229-251)."""
-        table_def = StockAppSchema.get_positions_table()
+        table_def = PortfolioManagerSchema.get_positions_table()
         
         assert table_def.name == "positions"
         assert len(table_def.columns) > 0
@@ -72,7 +72,7 @@ class TestStockAppSchemaCoverage:
 
     def test_get_trades_table_coverage(self):
         """Test get_trades_table method (lines 284-311)."""
-        table_def = StockAppSchema.get_trades_table()
+        table_def = PortfolioManagerSchema.get_trades_table()
         
         assert table_def.name == "trades"
         assert len(table_def.columns) > 0
@@ -87,7 +87,7 @@ class TestStockAppSchemaCoverage:
 
     def test_get_asset_metrics_table_coverage(self):
         """Test get_asset_metrics_table method."""
-        table_def = StockAppSchema.get_asset_metrics_table()
+        table_def = PortfolioManagerSchema.get_asset_metrics_table()
         
         assert table_def.name == "asset_metrics"
         assert len(table_def.columns) > 0
@@ -100,7 +100,7 @@ class TestStockAppSchemaCoverage:
 
     def test_get_strategy_scores_table_coverage(self):
         """Test get_strategy_scores_table method (lines 380-406)."""
-        table_def = StockAppSchema.get_strategy_scores_table()
+        table_def = PortfolioManagerSchema.get_strategy_scores_table()
         
         assert table_def.name == "strategy_scores"
         assert len(table_def.columns) > 0
@@ -113,7 +113,7 @@ class TestStockAppSchemaCoverage:
 
     def test_get_all_tables_coverage(self):
         """Test get_all_tables method that returns all table definitions."""
-        all_tables = StockAppSchema.get_all_tables()
+        all_tables = PortfolioManagerSchema.get_all_tables()
         
         assert isinstance(all_tables, dict)
         assert len(all_tables) > 0
@@ -130,7 +130,7 @@ class TestStockAppSchemaCoverage:
 
     def test_get_all_indexes_coverage(self):
         """Test get_all_indexes method that returns all index definitions."""
-        all_indexes = StockAppSchema.get_all_indexes()
+        all_indexes = PortfolioManagerSchema.get_all_indexes()
         
         assert isinstance(all_indexes, list)
         assert len(all_indexes) > 0
@@ -144,7 +144,7 @@ class TestStockAppSchemaCoverage:
 
     def test_get_all_views_coverage(self):
         """Test get_all_views method that returns all view definitions."""
-        all_views = StockAppSchema.get_all_views()
+        all_views = PortfolioManagerSchema.get_all_views()
         
         assert isinstance(all_views, list)
         # Views list might be empty, which is valid
@@ -157,8 +157,8 @@ class TestStockAppSchemaCoverage:
 
     def test_schema_consistency_coverage(self):
         """Test that all schema components are consistent."""
-        tables = StockAppSchema.get_all_tables()
-        indexes = StockAppSchema.get_all_indexes()
+        tables = PortfolioManagerSchema.get_all_tables()
+        indexes = PortfolioManagerSchema.get_all_indexes()
         
         # Verify that all indexes reference existing tables
         table_names = set(tables.keys())
@@ -168,7 +168,7 @@ class TestStockAppSchemaCoverage:
 
     def test_table_column_types_coverage(self):
         """Test that table columns have appropriate types."""
-        tables = StockAppSchema.get_all_tables()
+        tables = PortfolioManagerSchema.get_all_tables()
         
         for table_name, table_def in tables.items():
             assert len(table_def.columns) > 0, f"Table {table_name} has no columns"
@@ -208,7 +208,7 @@ class TestStockAppSchemaCoverage:
 
     def test_primary_key_definitions_coverage(self):
         """Test that primary keys are properly defined."""
-        tables = StockAppSchema.get_all_tables()
+        tables = PortfolioManagerSchema.get_all_tables()
         
         # Check that key tables have primary keys defined
         key_tables_with_pks = ["assets", "portfolios", "trades"]
@@ -220,7 +220,7 @@ class TestStockAppSchemaCoverage:
 
     def test_foreign_key_relationships_coverage(self):
         """Test that foreign key relationships are properly defined."""
-        tables = StockAppSchema.get_all_tables()
+        tables = PortfolioManagerSchema.get_all_tables()
         
         # Check tables that should have foreign keys
         tables_with_fks = ["positions", "trades", "asset_snapshots"]
@@ -234,7 +234,7 @@ class TestStockAppSchemaCoverage:
 
     def test_decimal_precision_coverage(self):
         """Test that decimal columns have appropriate precision."""
-        tables = StockAppSchema.get_all_tables()
+        tables = PortfolioManagerSchema.get_all_tables()
         
         # Find decimal columns and verify they have precision
         for table_name, table_def in tables.items():
@@ -245,7 +245,7 @@ class TestStockAppSchemaCoverage:
 
     def test_timestamp_columns_coverage(self):
         """Test that timestamp columns are properly defined."""
-        tables = StockAppSchema.get_all_tables()
+        tables = PortfolioManagerSchema.get_all_tables()
         
         # Tables that should have timestamp columns
         time_sensitive_tables = ["asset_snapshots", "trades", "portfolios"]

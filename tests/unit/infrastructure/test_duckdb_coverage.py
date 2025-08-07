@@ -10,8 +10,8 @@ from decimal import Decimal
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from stockapp.infrastructure.duckdb.connection import DuckDBConnection, DuckDBTransactionManager
-from stockapp.infrastructure.data_access.exceptions import ConnectionError, TransactionError
+from portfolio_manager.infrastructure.duckdb.connection import DuckDBConnection, DuckDBTransactionManager
+from portfolio_manager.infrastructure.data_access.exceptions import ConnectionError, TransactionError
 
 
 class TestDuckDBConnectionCoverage:
@@ -38,7 +38,7 @@ class TestDuckDBConnectionCoverage:
         assert conn._is_connected is False
         
         # Test read-only initialization  
-        from stockapp.infrastructure.duckdb.config import DuckDBConfig
+        from portfolio_manager.infrastructure.duckdb.config import DuckDBConfig
         ro_config = DuckDBConfig(read_only=True)
         conn_ro = DuckDBConnection(temp_db_path, ro_config)
         assert conn_ro.config.read_only is True

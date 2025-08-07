@@ -1,9 +1,9 @@
 # Product Requirements Document (PRD)
-## Stock Analysis & Simulation Platform
+## Portfolio Manager
 
 **Version:** 1.0  
-**Date:** January 2025  
-**Document Owner:** StockApp Team  
+**Date:** July 2025  
+**Document Owner:** Fulop Botond  
 
 ---
 
@@ -338,7 +338,7 @@ class Trade:
 
 ### 8.1 Navigation Structure
 ```
-Stock Analysis Platform
+Portfolio Manager
 ├── Dashboard (Default)
 │   ├── Portfolio Summary
 │   ├── Market Overview
@@ -529,10 +529,10 @@ system_notification: { type: string, message: string, level: string }
 ```bash
 # Python backend
 pip install -e .
-stockapp serve --reload
+portfolio-manager serve --reload
 
 # React frontend  
-cd stockapp/ui/frontend
+cd portfolio_manager/ui/frontend
 npm install && npm run dev
 ```
 
@@ -548,7 +548,7 @@ docker-compose up -d
 npm run build
 
 # Start production server
-stockapp serve --host 0.0.0.0 --port 8000
+portfolio-manager serve --host 0.0.0.0 --port 8000
 ```
 
 ### 12.2 Configuration Management
@@ -711,4 +711,4 @@ stockapp serve --host 0.0.0.0 --port 8000
 
 ---
 
-*This document serves as the single source of truth for the Stock Analysis & Simulation Platform product requirements. All development work should align with the specifications outlined in this document.*
+*This document serves as the single source of truth for the Portfolio Manager product requirements. All development work should align with the specifications outlined in this document.*

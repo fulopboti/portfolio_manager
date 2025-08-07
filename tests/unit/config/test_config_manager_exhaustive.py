@@ -15,7 +15,7 @@ from pathlib import Path
 from unittest.mock import patch, mock_open, MagicMock
 from io import StringIO
 
-from stockapp.config.settings import ConfigManager, ConfigurationError
+from portfolio_manager.config.settings import ConfigManager, ConfigurationError
 
 
 class TestConfigManagerExhaustive:
@@ -29,9 +29,9 @@ class TestConfigManagerExhaustive:
         """Test initialization with default config directory."""
         config = ConfigManager()
         
-        expected_dir = Path(__file__).parent.parent.parent.parent / "stockapp" / "config" / "defaults"
+        expected_dir = Path(__file__).parent.parent.parent.parent / "portfolio_manager" / "config" / "defaults"
         assert config.config_dir == expected_dir
-        assert config.env_prefix == "STOCKAPP"
+        assert config.env_prefix == "PORTFOLIO_MANAGER"
         assert isinstance(config._config, dict)
     
     def test_init_with_custom_config_dir(self):
@@ -89,7 +89,7 @@ database:
             config_dir = Path(temp_dir)
             
             with patch.object(ConfigManager, '_load_base_config', side_effect=Exception("Test error")):
-                with pytest.raises(ConfigurationError, match="Failed to load configuration: Test error"):
+                with pytest.raises(ConfigurationError, match="Configuration loading failed: Test error"):
                     ConfigManager(config_dir=config_dir)
     
     # =============================================================================
@@ -111,7 +111,7 @@ database:
             base_yaml = config_dir / "base.yaml"
             base_yaml.write_text("invalid: yaml: content: [")
             
-            with pytest.raises(ConfigurationError, match="Invalid YAML in base configuration"):
+            with pytest.raises(ConfigurationError, match="Invalid YAML in base config file"):
                 ConfigManager(config_dir=config_dir)
     
     def test_load_base_config_empty_file(self):
@@ -149,7 +149,7 @@ database:
     # ENVIRONMENT-SPECIFIC CONFIGURATION LOADING TESTS  
     # =============================================================================
     
-    @patch.dict(os.environ, {"STOCKAPP_ENVIRONMENT": "production"})
+    @patch.dict(os.environ, {"PORTFOLIO_MANAGER_ENVIRONMENT": "production"})
     def test_load_environment_config_from_env_var(self):
         """Test loading environment config from environment variable."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -218,7 +218,7 @@ application:
             dev_yaml.write_text("invalid: yaml: [")
             
             # Should log warning but not fail
-            with patch('stockapp.config.settings.logger') as mock_logger:
+            with patch('portfolio_manager.config.settings.logger') as mock_logger:
                 config = ConfigManager(config_dir=config_dir)
                 mock_logger.warning.assert_called()
                 
@@ -344,9 +344,9 @@ application:
     # =============================================================================
     
     @patch.dict(os.environ, {
-        "STOCKAPP_APP_NAME": "EnvApp",
-        "STOCKAPP_DATABASE_HOST": "env.host.com",
-        "STOCKAPP_NEW_CONFIG_KEY": "new_value"
+        "PORTFOLIO_MANAGER_APP_NAME": "EnvApp",
+        "PORTFOLIO_MANAGER_DATABASE_HOST": "env.host.com",
+        "PORTFOLIO_MANAGER_NEW_CONFIG_KEY": "new_value"
     })
     def test_apply_env_overrides_success(self):
         """Test successful application of environment variable overrides."""
@@ -378,7 +378,7 @@ database:
             
             assert config.get("other.prefix.key") is None
     
-    @patch.dict(os.environ, {"STOCKAPP_INVALID_KEY": "value"})
+    @patch.dict(os.environ, {"PORTFOLIO_MANAGER_INVALID_KEY": "value"})
     def test_apply_env_overrides_with_error(self):
         """Test env override application with error."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -387,7 +387,7 @@ database:
             base_yaml.write_text("app: {name: BaseApp}")
             
             with patch.object(ConfigManager, '_set_nested_value', side_effect=Exception("Test error")):
-                with patch('stockapp.config.settings.logger') as mock_logger:
+                with patch('portfolio_manager.config.settings.logger') as mock_logger:
                     config = ConfigManager(config_dir=config_dir)
                     mock_logger.warning.assert_called()
     
@@ -399,7 +399,7 @@ database:
             base_yaml = config_dir / "base.yaml"
             base_yaml.write_text("app: {name: BaseApp}")
             
-            with patch('stockapp.config.settings.logger') as mock_logger:
+            with patch('portfolio_manager.config.settings.logger') as mock_logger:
                 config = ConfigManager(config_dir=config_dir)
                 # Should not log info about applied overrides
                 info_calls = [call for call in mock_logger.info.call_args_list 
@@ -990,7 +990,7 @@ database:
     # LOGGING INTEGRATION TESTS
     # =============================================================================
     
-    @patch('stockapp.config.settings.logger')
+    @patch('portfolio_manager.config.settings.logger')
     def test_logging_on_successful_load(self, mock_logger):
         """Test logging when configuration loads successfully."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1002,7 +1002,7 @@ database:
             
             mock_logger.info.assert_called_with("Configuration loaded successfully for environment: test")
     
-    @patch('stockapp.config.settings.logger')
+    @patch('portfolio_manager.config.settings.logger')
     def test_logging_base_config_loaded(self, mock_logger):
         """Test logging when base config is loaded."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1016,7 +1016,7 @@ database:
             debug_calls = [str(call) for call in mock_logger.debug.call_args_list]
             assert any("Loaded base configuration" in call for call in debug_calls)
     
-    @patch('stockapp.config.settings.logger')
+    @patch('portfolio_manager.config.settings.logger')
     def test_logging_environment_config_loaded(self, mock_logger):
         """Test logging when environment config is loaded."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1033,7 +1033,7 @@ database:
             debug_calls = [str(call) for call in mock_logger.debug.call_args_list]
             assert any("Loaded environment configuration" in call for call in debug_calls)
     
-    @patch('stockapp.config.settings.logger')
+    @patch('portfolio_manager.config.settings.logger')
     def test_logging_no_environment_config(self, mock_logger):
         """Test logging when no environment config exists."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1046,8 +1046,8 @@ database:
             debug_calls = [str(call) for call in mock_logger.debug.call_args_list]
             assert any("No environment-specific configuration found" in call for call in debug_calls)
     
-    @patch('stockapp.config.settings.logger')
-    @patch.dict(os.environ, {"STOCKAPP_TEST_KEY": "test_value"})
+    @patch('portfolio_manager.config.settings.logger')
+    @patch.dict(os.environ, {"PORTFOLIO_MANAGER_TEST_KEY": "test_value"})
     def test_logging_env_overrides_applied(self, mock_logger):
         """Test logging when environment overrides are applied."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1124,7 +1124,7 @@ class TestGlobalConfigInitialization:
     def test_global_config_module_loading_coverage(self):
         """Test coverage of global config module loading patterns."""
         # Test that we can access the global config instance
-        from stockapp.config.settings import config
+        from portfolio_manager.config.settings import config
         assert hasattr(config, 'get')
         
         # Test accessing various methods to ensure coverage
@@ -1132,8 +1132,8 @@ class TestGlobalConfigInitialization:
         config.get_section("test")
         config.has("test.key")
         
-    @patch('stockapp.config.settings.ConfigManager')
-    @patch('stockapp.config.settings.logger')
+    @patch('portfolio_manager.config.settings.ConfigManager')
+    @patch('portfolio_manager.config.settings.logger')
     def test_global_config_fallback_initialization(self, mock_logger, mock_config_manager):
         """Test global config fallback when initialization fails."""
         # Make ConfigManager constructor raise an exception
@@ -1141,17 +1141,17 @@ class TestGlobalConfigInitialization:
         
         # Reload the module to trigger the fallback logic
         import importlib
-        import stockapp.config.settings
+        import portfolio_manager.config.settings
         
         # Clear any cached imports to force re-execution
-        if 'stockapp.config.settings' in sys.modules:
-            del sys.modules['stockapp.config.settings']
+        if 'portfolio_manager.config.settings' in sys.modules:
+            del sys.modules['portfolio_manager.config.settings']
             
         # Re-import to trigger the exception path
-        import stockapp.config.settings
+        import portfolio_manager.config.settings
         
         # Verify the fallback config is created and error is logged
-        config = stockapp.config.settings.config
+        config = portfolio_manager.config.settings.config
         
         # Test fallback methods work
         assert config.get("any.path", "default") == "default"
@@ -1173,8 +1173,8 @@ class TestYAMLImportHandling:
             try:
                 # Force re-import without yaml
                 import importlib
-                import stockapp.config.settings
-                importlib.reload(stockapp.config.settings)
+                import portfolio_manager.config.settings
+                importlib.reload(portfolio_manager.config.settings)
             except ImportError as e:
                 assert "PyYAML is required" in str(e)
 
@@ -1227,7 +1227,7 @@ class TestEdgeCasesAndErrorConditions:
         assert base["level1"]["other_level2"]["key"] == "value"
         assert base["top_level"] == "top_value"
     
-    @patch.dict(os.environ, {"STOCKAPP_DEEPLY_NESTED_CONFIG_KEY": "deep_value"})
+    @patch.dict(os.environ, {"PORTFOLIO_MANAGER_DEEPLY_NESTED_CONFIG_KEY": "deep_value"})
     def test_deeply_nested_environment_variable_override(self):
         """Test environment variable override with deeply nested key."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1272,10 +1272,10 @@ class TestEdgeCasesAndErrorConditions:
         assert config._parse_env_value("0123") == 123  # Leading zeros stripped by int()
     
     @patch.dict(os.environ, {
-        "STOCKAPP_SPECIAL_CHARS_KEY": "value with spaces and !@#$%^&*()",
-        "STOCKAPP_UNICODE_KEY": "café_résumé_naïve",
-        "STOCKAPP_EMPTY_VALUE": "",
-        "STOCKAPP_WHITESPACE_ONLY": "   "
+        "PORTFOLIO_MANAGER_SPECIAL_CHARS_KEY": "value with spaces and !@#$%^&*()",
+        "PORTFOLIO_MANAGER_UNICODE_KEY": "café_résumé_naïve",
+        "PORTFOLIO_MANAGER_EMPTY_VALUE": "",
+        "PORTFOLIO_MANAGER_WHITESPACE_ONLY": "   "
     })
     def test_environment_variable_special_cases(self):
         """Test environment variables with special characters and cases."""
@@ -1296,12 +1296,12 @@ class TestIntegrationScenarios:
     """Integration tests covering realistic usage scenarios."""
     
     @patch.dict(os.environ, {
-        "STOCKAPP_ENVIRONMENT": "production",
-        "STOCKAPP_DATABASE_HOST": "prod.db.com",
-        "STOCKAPP_DATABASE_PORT": "5432",
-        "STOCKAPP_APP_DEBUG": "false",
-        "STOCKAPP_FEATURES_ENABLED": "auth,logging,metrics",
-        "STOCKAPP_CACHE_TTL": "300"
+        "PORTFOLIO_MANAGER_ENVIRONMENT": "production",
+        "PORTFOLIO_MANAGER_DATABASE_HOST": "prod.db.com",
+        "PORTFOLIO_MANAGER_DATABASE_PORT": "5432",
+        "PORTFOLIO_MANAGER_APP_DEBUG": "false",
+        "PORTFOLIO_MANAGER_FEATURES_ENABLED": "auth,logging,metrics",
+        "PORTFOLIO_MANAGER_CACHE_TTL": "300"
     })
     def test_full_production_configuration_scenario(self):
         """Test complete production configuration scenario."""
@@ -1337,12 +1337,12 @@ security:
             
             config = ConfigManager(config_dir=config_dir)
             
-            # Test environment detection - STOCKAPP_ENVIRONMENT loads production.yaml but doesn't change base config
+            # Test environment detection - PORTFOLIO_MANAGER_ENVIRONMENT loads production.yaml but doesn't change base config
             # The environment detection is from get("application.environment"), which comes from base config
             assert config.get("application.environment") == "development"  # From base.yaml
             assert config.is_production() is False  # Based on application.environment value
             
-            # But production.yaml was loaded due to STOCKAPP_ENVIRONMENT env var
+            # But production.yaml was loaded due to PORTFOLIO_MANAGER_ENVIRONMENT env var
             
             # Test production overrides
             assert config.get("application.debug") is False  # From env var

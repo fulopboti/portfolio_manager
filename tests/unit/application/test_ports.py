@@ -4,8 +4,8 @@ from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 import pytest
 
-from stockapp.application.ports import PortfolioRepository
-from stockapp.domain.entities import Position
+from portfolio_manager.application.ports import PortfolioRepository
+from portfolio_manager.domain.entities import Position
 from datetime import datetime, timezone
 from decimal import Decimal
 

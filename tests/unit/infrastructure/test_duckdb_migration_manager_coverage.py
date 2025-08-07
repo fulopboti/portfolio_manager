@@ -7,11 +7,11 @@ import pytest_asyncio
 from unittest.mock import Mock, patch, AsyncMock
 from datetime import datetime, timezone
 
-from stockapp.infrastructure.duckdb.connection import DuckDBConnection
-from stockapp.infrastructure.duckdb.query_executor import DuckDBQueryExecutor
-from stockapp.infrastructure.duckdb.schema.migration_manager import DuckDBMigrationManager
-from stockapp.infrastructure.data_access.schema_manager import Migration, MigrationType
-from stockapp.infrastructure.data_access.exceptions import MigrationError
+from portfolio_manager.infrastructure.duckdb.connection import DuckDBConnection
+from portfolio_manager.infrastructure.duckdb.query_executor import DuckDBQueryExecutor
+from portfolio_manager.infrastructure.duckdb.schema.migration_manager import DuckDBMigrationManager
+from portfolio_manager.infrastructure.data_access.schema_manager import Migration, MigrationType
+from portfolio_manager.infrastructure.data_access.exceptions import MigrationError
 
 
 class TestDuckDBMigrationManagerCoverage:

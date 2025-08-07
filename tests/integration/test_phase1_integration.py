@@ -9,9 +9,9 @@ from uuid import uuid4
 import pytest
 import pytest_asyncio
 
-from stockapp.domain.entities import Asset, AssetSnapshot, AssetType, Portfolio, Trade, TradeSide
-from stockapp.application.services.data_ingestion import DataIngestionService
-from stockapp.infrastructure.duckdb.repository_factory import create_repository_factory
+from portfolio_manager.domain.entities import Asset, AssetSnapshot, AssetType, Portfolio, Trade, TradeSide
+from portfolio_manager.application.services.data_ingestion import DataIngestionService
+from portfolio_manager.infrastructure.duckdb.repository_factory import create_repository_factory
 
 
 class MockDataProvider:
@@ -262,7 +262,7 @@ class TestPhase1Integration:
         portfolio_repo = repository_factory.create_portfolio_repository()
         
         # Test that repositories implement the expected interfaces
-        from stockapp.application.ports import AssetRepository, PortfolioRepository
+        from portfolio_manager.application.ports import AssetRepository, PortfolioRepository
         assert isinstance(asset_repo, AssetRepository)
         assert isinstance(portfolio_repo, PortfolioRepository)
         

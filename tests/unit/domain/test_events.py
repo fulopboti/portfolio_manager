@@ -8,8 +8,8 @@ from uuid import uuid4, UUID
 from dataclasses import asdict
 from typing import List
 
-from stockapp.domain.entities import TradeSide
-from stockapp.domain.exceptions import DomainValidationError
+from portfolio_manager.domain.entities import TradeSide
+from portfolio_manager.domain.exceptions import DomainValidationError
 
 
 # Domain Events - These will be the actual classes to implement

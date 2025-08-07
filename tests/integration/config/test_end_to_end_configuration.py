@@ -7,10 +7,10 @@ import tempfile
 import yaml
 import os
 
-from stockapp.config.factory import ConfiguredComponentFactory, ConfiguredServiceBuilder
-from stockapp.config.settings import ConfigManager
-from stockapp.infrastructure.duckdb.repository_factory import DuckDBRepositoryFactory
-from stockapp.application.services import DataIngestionService, PortfolioSimulatorService
+from portfolio_manager.config.factory import ConfiguredComponentFactory, ConfiguredServiceBuilder
+from portfolio_manager.config.settings import ConfigManager
+from portfolio_manager.infrastructure.duckdb.repository_factory import DuckDBRepositoryFactory
+from portfolio_manager.application.services import DataIngestionService, PortfolioSimulatorService
 
 
 class TestEndToEndConfigurationIntegration:
@@ -245,7 +245,7 @@ class TestEndToEndConfigurationIntegration:
         """Test complete service stack creation with configuration."""
         config_manager = ConfigManager(config_dir=temp_config_dir)
         
-        with patch('stockapp.config.factory.ConfiguredComponentFactory') as mock_factory_class:
+        with patch('portfolio_manager.config.factory.ConfiguredComponentFactory') as mock_factory_class:
             mock_factory = Mock()
             mock_factory_class.return_value = mock_factory
             

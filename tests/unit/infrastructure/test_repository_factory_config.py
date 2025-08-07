@@ -4,9 +4,9 @@ import pytest
 from unittest.mock import Mock, patch, AsyncMock
 from pathlib import Path
 
-from stockapp.infrastructure.duckdb.repository_factory import DuckDBRepositoryFactory
-from stockapp.infrastructure.duckdb.connection import DuckDBConnection, DuckDBConfig
-from stockapp.config.schema import DatabaseConfig, DatabaseConnectionConfig, DatabasePoolConfig
+from portfolio_manager.infrastructure.duckdb.repository_factory import DuckDBRepositoryFactory
+from portfolio_manager.infrastructure.duckdb.connection import DuckDBConnection, DuckDBConfig
+from portfolio_manager.config.schema import DatabaseConfig, DatabaseConnectionConfig, DatabasePoolConfig
 
 
 class TestDuckDBRepositoryFactoryConfigurationIntegration:
@@ -75,9 +75,9 @@ class TestDuckDBRepositoryFactoryConfigurationIntegration:
         )
         
         # Mock the dependencies to test initialization logic
-        with patch('stockapp.infrastructure.duckdb.repository_factory.DuckDBConnection') as mock_conn, \
-             patch('stockapp.infrastructure.duckdb.repository_factory.DuckDBQueryExecutor') as mock_executor, \
-             patch('stockapp.infrastructure.duckdb.repository_factory.DuckDBSchemaManager') as mock_schema:
+        with patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBConnection') as mock_conn, \
+             patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBQueryExecutor') as mock_executor, \
+             patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBSchemaManager') as mock_schema:
             
             mock_connection_instance = Mock()
             mock_conn.return_value = mock_connection_instance
@@ -105,9 +105,9 @@ class TestDuckDBRepositoryFactoryConfigurationIntegration:
             config=None
         )
         
-        with patch('stockapp.infrastructure.duckdb.repository_factory.DuckDBConnection') as mock_conn, \
-             patch('stockapp.infrastructure.duckdb.repository_factory.DuckDBQueryExecutor'), \
-             patch('stockapp.infrastructure.duckdb.repository_factory.DuckDBSchemaManager') as mock_schema:
+        with patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBConnection') as mock_conn, \
+             patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBQueryExecutor'), \
+             patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBSchemaManager') as mock_schema:
             
             mock_connection_instance = Mock()
             mock_conn.return_value = mock_connection_instance
@@ -146,9 +146,9 @@ class TestDuckDBRepositoryFactoryConfigurationIntegration:
             config=db_config
         )
         
-        with patch('stockapp.infrastructure.duckdb.repository_factory.DuckDBConnection') as mock_conn, \
-             patch('stockapp.infrastructure.duckdb.repository_factory.DuckDBQueryExecutor'), \
-             patch('stockapp.infrastructure.duckdb.repository_factory.DuckDBSchemaManager') as mock_schema, \
+        with patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBConnection') as mock_conn, \
+             patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBQueryExecutor'), \
+             patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBSchemaManager') as mock_schema, \
              patch.object(factory, '_logger') as mock_logger:
             
             mock_connection_instance = Mock()
@@ -195,7 +195,7 @@ class TestDuckDBRepositoryFactoryConfigurationIntegration:
             config=db_config
         )
         
-        with patch('stockapp.infrastructure.duckdb.repository_factory.DuckDBConnection') as mock_conn:
+        with patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBConnection') as mock_conn:
             mock_conn.side_effect = Exception("Connection failed")
             
             with pytest.raises(RuntimeError, match="Failed to initialize repository factory"):
@@ -252,9 +252,9 @@ class TestDuckDBRepositoryFactoryConfigurationIntegration:
         )
         
         # Initialize with mocked dependencies
-        with patch('stockapp.infrastructure.duckdb.repository_factory.DuckDBConnection') as mock_conn, \
-             patch('stockapp.infrastructure.duckdb.repository_factory.DuckDBQueryExecutor'), \
-             patch('stockapp.infrastructure.duckdb.repository_factory.DuckDBSchemaManager') as mock_schema:
+        with patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBConnection') as mock_conn, \
+             patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBQueryExecutor'), \
+             patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBSchemaManager') as mock_schema:
             
             mock_connection_instance = Mock()
             mock_conn.return_value = mock_connection_instance
@@ -362,9 +362,9 @@ class TestRepositoryFactoryConfigurationEdgeCases:
             config=db_config
         )
         
-        with patch('stockapp.infrastructure.duckdb.repository_factory.DuckDBConnection') as mock_conn, \
-             patch('stockapp.infrastructure.duckdb.repository_factory.DuckDBQueryExecutor'), \
-             patch('stockapp.infrastructure.duckdb.repository_factory.DuckDBSchemaManager') as mock_schema:
+        with patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBConnection') as mock_conn, \
+             patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBQueryExecutor'), \
+             patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBSchemaManager') as mock_schema:
             
             mock_connection_instance = Mock()
             mock_conn.return_value = mock_connection_instance
@@ -410,9 +410,9 @@ class TestRepositoryFactoryConfigurationEdgeCases:
         )
         
         # Initialize factory
-        with patch('stockapp.infrastructure.duckdb.repository_factory.DuckDBConnection') as mock_conn, \
-             patch('stockapp.infrastructure.duckdb.repository_factory.DuckDBQueryExecutor'), \
-             patch('stockapp.infrastructure.duckdb.repository_factory.DuckDBSchemaManager') as mock_schema:
+        with patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBConnection') as mock_conn, \
+             patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBQueryExecutor'), \
+             patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBSchemaManager') as mock_schema:
             
             mock_connection_instance = Mock()
             mock_conn.return_value = mock_connection_instance
@@ -435,10 +435,10 @@ class TestRepositoryFactoryConfigurationEdgeCases:
     @pytest.mark.asyncio
     async def test_factory_convenience_function_compatibility(self):
         """Test convenience function create_repository_factory still works."""
-        from stockapp.infrastructure.duckdb.repository_factory import create_repository_factory
+        from portfolio_manager.infrastructure.duckdb.repository_factory import create_repository_factory
         
         # This should work without config
-        with patch('stockapp.infrastructure.duckdb.repository_factory.DuckDBRepositoryFactory') as mock_factory_class:
+        with patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBRepositoryFactory') as mock_factory_class:
             mock_instance = Mock()
             mock_instance.initialize = AsyncMock()
             mock_factory_class.return_value = mock_instance
@@ -490,9 +490,9 @@ class TestRepositoryFactoryConfigurationValidation:
             config=db_config
         )
         
-        with patch('stockapp.infrastructure.duckdb.repository_factory.DuckDBConnection') as mock_conn, \
-             patch('stockapp.infrastructure.duckdb.repository_factory.DuckDBQueryExecutor'), \
-             patch('stockapp.infrastructure.duckdb.repository_factory.DuckDBSchemaManager') as mock_schema:
+        with patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBConnection') as mock_conn, \
+             patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBQueryExecutor'), \
+             patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBSchemaManager') as mock_schema:
             
             mock_connection_instance = Mock()
             mock_conn.return_value = mock_connection_instance
@@ -532,9 +532,9 @@ class TestRepositoryFactoryConfigurationValidation:
             config=db_config
         )
         
-        with patch('stockapp.infrastructure.duckdb.repository_factory.DuckDBConnection') as mock_conn, \
-             patch('stockapp.infrastructure.duckdb.repository_factory.DuckDBQueryExecutor'), \
-             patch('stockapp.infrastructure.duckdb.repository_factory.DuckDBSchemaManager') as mock_schema:
+        with patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBConnection') as mock_conn, \
+             patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBQueryExecutor'), \
+             patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBSchemaManager') as mock_schema:
             
             mock_connection_instance = Mock()
             mock_conn.return_value = mock_connection_instance
@@ -611,11 +611,11 @@ class TestRepositoryCreationWithConfiguration:
         )
         
         # Mock the dependencies
-        with patch('stockapp.infrastructure.duckdb.repository_factory.DuckDBConnection') as mock_conn, \
-             patch('stockapp.infrastructure.duckdb.repository_factory.DuckDBQueryExecutor') as mock_executor, \
-             patch('stockapp.infrastructure.duckdb.repository_factory.DuckDBSchemaManager'), \
-             patch('stockapp.infrastructure.duckdb.repository_factory.DuckDBAssetRepository') as mock_asset_repo, \
-             patch('stockapp.infrastructure.duckdb.repository_factory.AssetRepositoryAdapter') as mock_adapter:
+        with patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBConnection') as mock_conn, \
+             patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBQueryExecutor') as mock_executor, \
+             patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBSchemaManager'), \
+             patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBAssetRepository') as mock_asset_repo, \
+             patch('portfolio_manager.infrastructure.duckdb.repository_factory.AssetRepositoryAdapter') as mock_adapter:
             
             mock_connection_instance = Mock()
             mock_executor_instance = Mock()
@@ -661,11 +661,11 @@ class TestRepositoryCreationWithConfiguration:
         )
         
         # Mock the dependencies
-        with patch('stockapp.infrastructure.duckdb.repository_factory.DuckDBConnection') as mock_conn, \
-             patch('stockapp.infrastructure.duckdb.repository_factory.DuckDBQueryExecutor') as mock_executor, \
-             patch('stockapp.infrastructure.duckdb.repository_factory.DuckDBSchemaManager'), \
-             patch('stockapp.infrastructure.duckdb.repository_factory.DuckDBPortfolioRepository') as mock_portfolio_repo, \
-             patch('stockapp.infrastructure.duckdb.repository_factory.PortfolioRepositoryAdapter') as mock_adapter:
+        with patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBConnection') as mock_conn, \
+             patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBQueryExecutor') as mock_executor, \
+             patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBSchemaManager'), \
+             patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBPortfolioRepository') as mock_portfolio_repo, \
+             patch('portfolio_manager.infrastructure.duckdb.repository_factory.PortfolioRepositoryAdapter') as mock_adapter:
             
             mock_connection_instance = Mock()
             mock_executor_instance = Mock()

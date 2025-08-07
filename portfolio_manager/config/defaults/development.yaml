@@ -1,0 +1,41 @@
+application:
+  debug: true
+  log_level: "DEBUG"
+
+database:
+  connection:
+    database_path: "./dev_data/portfolio_manager.db"
+    pragmas:
+      threads: 2
+      memory_limit: "1GB"
+  pool:
+    max_connections: 5
+
+event_system:
+  bus:
+    max_concurrent_events: 50
+    enable_logging: true
+
+data_providers:
+  market_data:
+    cache_ttl: 60  # Shorter cache for development
+    rate_limits:
+      yahoo_finance: 1000  # Lower limits for dev
+
+logging:
+  level: "DEBUG"
+  handlers:
+    console:
+      enabled: true
+    file:
+      enabled: true
+      path: "./logs/dev_portfolio_manager.log"
+
+monitoring:
+  metrics:
+    enabled: true
+    port: 8080
+
+security:
+  api:
+    enable_auth: false  # Disabled for development

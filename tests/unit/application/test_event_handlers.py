@@ -9,8 +9,8 @@ from unittest.mock import Mock, AsyncMock, call
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
-from stockapp.domain.entities import TradeSide, Portfolio, Position
-from stockapp.domain.exceptions import (
+from portfolio_manager.domain.entities import TradeSide, Portfolio, Position
+from portfolio_manager.domain.exceptions import (
     InsufficientFundsError, 
     InvalidPositionError, 
     DomainValidationError

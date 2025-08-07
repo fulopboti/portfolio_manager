@@ -6,7 +6,7 @@ from datetime import datetime
 from decimal import Decimal
 from uuid import uuid4
 
-from stockapp.domain.entities import TradeSide
+from portfolio_manager.domain.entities import TradeSide
 
 
 class TestEventHandlerRegistry:

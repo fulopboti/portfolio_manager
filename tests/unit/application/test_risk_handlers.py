@@ -10,12 +10,12 @@ from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
-from stockapp.application.events.risk_handlers import (
+from portfolio_manager.application.events.risk_handlers import (
     RiskThresholdBreachedEventHandler,
     RiskMitigationEventHandler,
 )
-from stockapp.domain.events import RiskThresholdBreachedEvent, TradeExecutedEvent
-from stockapp.domain.entities import Portfolio
+from portfolio_manager.domain.events import RiskThresholdBreachedEvent, TradeExecutedEvent
+from portfolio_manager.domain.entities import Portfolio
 
 
 @pytest.fixture

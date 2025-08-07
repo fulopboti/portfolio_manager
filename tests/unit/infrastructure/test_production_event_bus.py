@@ -8,9 +8,9 @@ from decimal import Decimal
 from uuid import uuid4
 from unittest.mock import AsyncMock, Mock
 
-from stockapp.infrastructure.events.event_bus import EventBus, EventSubscription
-from stockapp.infrastructure.events.handlers import EventHandler
-from stockapp.domain.events import TradeExecutedEvent
+from portfolio_manager.infrastructure.events.event_bus import EventBus, EventSubscription
+from portfolio_manager.infrastructure.events.handlers import EventHandler
+from portfolio_manager.domain.events import TradeExecutedEvent
 
 
 class MockEventHandler(EventHandler):

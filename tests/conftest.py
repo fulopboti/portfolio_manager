@@ -17,11 +17,11 @@ import pytest
 import tempfile
 import os
 
-from stockapp.infrastructure.duckdb.connection import DuckDBConnection
-from stockapp.infrastructure.duckdb.query_executor import DuckDBQueryExecutor
-from stockapp.infrastructure.duckdb.schema.schema_manager import DuckDBSchemaManager
+from portfolio_manager.infrastructure.duckdb.connection import DuckDBConnection
+from portfolio_manager.infrastructure.duckdb.query_executor import DuckDBQueryExecutor
+from portfolio_manager.infrastructure.duckdb.schema.schema_manager import DuckDBSchemaManager
 
-from stockapp.domain.entities import (
+from portfolio_manager.domain.entities import (
     Asset,
     AssetSnapshot,
     AssetType,

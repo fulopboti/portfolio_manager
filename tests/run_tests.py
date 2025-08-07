@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Test runner script for StockApp.
+"""Test runner script for Portfolio Manager.
 
 This script provides convenient commands for running different categories of tests
 with appropriate configurations.
@@ -30,7 +30,7 @@ def main():
     """Main test runner."""
     if len(sys.argv) < 2:
         print("""
-StockApp Test Runner
+Portfolio Manager Test Runner
 
 Usage: python run_tests.py <test_type>
 
@@ -83,7 +83,7 @@ Examples:
             "python", "-m", "pytest", 
             "tests/unit/", 
             "tests/integration/",
-            "--cov=stockapp",
+            "--cov=portfolio_manager",
             "--cov-report=term-missing",
             "--cov-report=html",
             "-v"

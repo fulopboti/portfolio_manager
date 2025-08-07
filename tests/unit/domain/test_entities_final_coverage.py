@@ -5,11 +5,11 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from uuid import uuid4
 
-from stockapp.domain.entities import (
+from portfolio_manager.domain.entities import (
     Asset, AssetType, AssetSnapshot, Portfolio, Position, 
     Trade, TradeSide, BrokerProfile
 )
-from stockapp.domain.exceptions import (
+from portfolio_manager.domain.exceptions import (
     DomainValidationError, InsufficientFundsError, 
     InvalidPositionError, InvalidTradeError
 )

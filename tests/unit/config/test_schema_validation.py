@@ -4,7 +4,7 @@ import pytest
 from decimal import Decimal
 from typing import Dict, Any
 
-from stockapp.config.schema import (
+from portfolio_manager.config.schema import (
     DatabaseConnectionConfig, DatabasePoolConfig, DatabaseConfig,
     EventBusConfig, EventHandlersConfig, EventSystemConfig,
     APIConfig, MarketDataConfig, DataProvidersConfig,
@@ -14,7 +14,7 @@ from stockapp.config.schema import (
     LogHandlerConfig, LoggingConfig,
     MetricsConfig, HealthCheckConfig, MonitoringConfig,
     APISecurityConfig, EncryptionConfig, SecurityConfig,
-    ApplicationConfig, StockAppConfig, validate_config
+    ApplicationConfig, PortfolioManagerConfig, validate_config
 )
 from pydantic import ValidationError
 
@@ -543,11 +543,11 @@ class TestSecurityConfigValidation:
         assert config.encryption.algorithm == "AES256"
 
 
-class TestStockAppConfigValidation:
-    """Test complete StockApp configuration validation."""
+class TestPortfolioManagerConfigValidation:
+    """Test complete Portfolio Manager configuration validation."""
     
-    def test_complete_stock_app_config_valid(self):
-        """Test valid complete StockApp configuration."""
+    def test_complete_portfolio_manager_config_valid(self):
+        """Test valid complete Portfolio Manager configuration."""
         config_dict = {
             "application": {
                 "name": "TestApp",
@@ -666,7 +666,7 @@ class TestStockAppConfigValidation:
         
         config = validate_config(config_dict)
         
-        assert isinstance(config, StockAppConfig)
+        assert isinstance(config, PortfolioManagerConfig)
         assert config.application.name == "TestApp"
         assert config.database.type == "duckdb"
         assert config.event_system.bus.max_concurrent_events == 100
@@ -678,8 +678,8 @@ class TestStockAppConfigValidation:
         assert config.monitoring.metrics.enabled is False
         assert config.security.api.enable_auth is False
     
-    def test_stock_app_config_validation_errors(self):
-        """Test StockApp configuration validation errors."""
+    def test_portfolio_manager_config_validation_errors(self):
+        """Test Portfolio Manager configuration validation errors."""
         # Missing required sections
         incomplete_config = {
             "application": {"name": "TestApp"},
@@ -689,8 +689,8 @@ class TestStockAppConfigValidation:
         with pytest.raises(ValidationError):
             validate_config(incomplete_config)
     
-    def test_stock_app_config_with_invalid_nested_values(self):
-        """Test StockApp configuration with invalid nested values."""
+    def test_portfolio_manager_config_with_invalid_nested_values(self):
+        """Test Portfolio Manager configuration with invalid nested values."""
         config_dict = {
             "application": {"name": "TestApp", "version": "1.0.0"},
             "database": {

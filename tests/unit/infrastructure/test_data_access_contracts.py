@@ -11,7 +11,7 @@ from decimal import Decimal
 from typing import Any, Dict, List, Optional
 from uuid import uuid4, UUID
 
-from stockapp.infrastructure.data_access import (
+from portfolio_manager.infrastructure.data_access import (
     DatabaseConnection,
     TransactionManager,
     QueryExecutor,
@@ -23,10 +23,10 @@ from stockapp.infrastructure.data_access import (
     MetricsDataAccess,
     AuditDataAccess,
 )
-from stockapp.infrastructure.data_access.schema_manager import Migration, MigrationType, TableDefinition
-from stockapp.infrastructure.data_access.metrics_data_access import MetricType
-from stockapp.infrastructure.data_access.audit_data_access import AuditEventType, AuditSeverity
-from stockapp.domain.entities import Asset, AssetSnapshot, AssetType, Portfolio, Trade, Position, TradeSide
+from portfolio_manager.infrastructure.data_access.schema_manager import Migration, MigrationType, TableDefinition
+from portfolio_manager.infrastructure.data_access.metrics_data_access import MetricType
+from portfolio_manager.infrastructure.data_access.audit_data_access import AuditEventType, AuditSeverity
+from portfolio_manager.domain.entities import Asset, AssetSnapshot, AssetType, Portfolio, Trade, Position, TradeSide
 
 
 class TestDatabaseConnectionInterface:

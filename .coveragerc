@@ -1,11 +1,10 @@
 [run]
-source = stockapp
+source = portfolio_manager
 omit = 
     */tests/*
     */test_*
-    */__init__.py
-    stockapp/cli/*
-    stockapp/ui/frontend/*
+    portfolio_manager/cli/*
+    portfolio_manager/ui/frontend/*
 
 [report]
 exclude_lines =
@@ -22,4 +21,4 @@ exclude_lines =
 
 [html]
 directory = htmlcov
-title = Stock Analysis Platform - Test Coverage Report
+title = Portfolio Manager - Test Coverage Report

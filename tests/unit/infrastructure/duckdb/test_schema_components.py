@@ -7,29 +7,29 @@ from unittest.mock import Mock, patch, AsyncMock
 import pytest
 import pytest_asyncio
 
-from stockapp.infrastructure.duckdb.connection import DuckDBConnection, DuckDBTransactionManager
-from stockapp.infrastructure.duckdb.query_executor import DuckDBQueryExecutor
-from stockapp.infrastructure.duckdb.schema.schema_definitions import IndexDefinition, StockAppSchema, ViewDefinition
-from stockapp.infrastructure.duckdb.schema.table_builder import DuckDBTableBuilder
-from stockapp.infrastructure.duckdb.schema.schema_inspector import DuckDBSchemaInspector
-from stockapp.infrastructure.duckdb.schema.schema_manager import DuckDBSchemaManager
+from portfolio_manager.infrastructure.duckdb.connection import DuckDBConnection, DuckDBTransactionManager
+from portfolio_manager.infrastructure.duckdb.query_executor import DuckDBQueryExecutor
+from portfolio_manager.infrastructure.duckdb.schema.schema_definitions import IndexDefinition, PortfolioManagerSchema, ViewDefinition
+from portfolio_manager.infrastructure.duckdb.schema.table_builder import DuckDBTableBuilder
+from portfolio_manager.infrastructure.duckdb.schema.schema_inspector import DuckDBSchemaInspector
+from portfolio_manager.infrastructure.duckdb.schema.schema_manager import DuckDBSchemaManager
 
-from stockapp.infrastructure.data_access.schema_manager import TableDefinition
-from stockapp.infrastructure.data_access.exceptions import SchemaError, QueryError
+from portfolio_manager.infrastructure.data_access.schema_manager import TableDefinition
+from portfolio_manager.infrastructure.data_access.exceptions import SchemaError, QueryError
 
 
-class TestStockAppSchema:
-    """Test cases for StockAppSchema definitions."""
+class TestPortfolioManagerSchema:
+    """Test cases for PortfolioManagerSchema definitions."""
 
     def test_schema_version(self):
         """Test schema version is defined."""
-        assert hasattr(StockAppSchema, 'SCHEMA_VERSION')
-        assert isinstance(StockAppSchema.SCHEMA_VERSION, str)
-        assert len(StockAppSchema.SCHEMA_VERSION) > 0
+        assert hasattr(PortfolioManagerSchema, 'SCHEMA_VERSION')
+        assert isinstance(PortfolioManagerSchema.SCHEMA_VERSION, str)
+        assert len(PortfolioManagerSchema.SCHEMA_VERSION) > 0
 
     def test_get_assets_table(self):
         """Test assets table definition."""
-        table_def = StockAppSchema.get_assets_table()
+        table_def = PortfolioManagerSchema.get_assets_table()
         
         assert isinstance(table_def, TableDefinition)
         assert table_def.name == "assets"
@@ -40,7 +40,7 @@ class TestStockAppSchema:
 
     def test_get_portfolios_table(self):
         """Test portfolios table definition."""
-        table_def = StockAppSchema.get_portfolios_table()
+        table_def = PortfolioManagerSchema.get_portfolios_table()
         
         assert table_def.name == "portfolios"
         assert "portfolio_id" in table_def.columns
@@ -50,7 +50,7 @@ class TestStockAppSchema:
 
     def test_get_trades_table(self):
         """Test trades table definition."""
-        table_def = StockAppSchema.get_trades_table()
+        table_def = PortfolioManagerSchema.get_trades_table()
         
         assert table_def.name == "trades"
         assert "trade_id" in table_def.columns
@@ -62,7 +62,7 @@ class TestStockAppSchema:
 
     def test_get_positions_table(self):
         """Test positions table definition."""
-        table_def = StockAppSchema.get_positions_table()
+        table_def = PortfolioManagerSchema.get_positions_table()
         
         assert table_def.name == "positions"
         assert "portfolio_id" in table_def.columns
@@ -73,7 +73,7 @@ class TestStockAppSchema:
 
     def test_get_asset_snapshots_table(self):
         """Test asset snapshots table definition."""
-        table_def = StockAppSchema.get_asset_snapshots_table()
+        table_def = PortfolioManagerSchema.get_asset_snapshots_table()
         
         assert table_def.name == "asset_snapshots"
         assert "symbol" in table_def.columns
@@ -83,7 +83,7 @@ class TestStockAppSchema:
 
     def test_get_schema_migrations_table(self):
         """Test schema migrations table definition."""
-        table_def = StockAppSchema.get_schema_migrations_table()
+        table_def = PortfolioManagerSchema.get_schema_migrations_table()
         
         assert table_def.name == "schema_migrations"
         assert "version" in table_def.columns
@@ -93,7 +93,7 @@ class TestStockAppSchema:
 
     def test_get_all_tables(self):
         """Test getting all table definitions."""
-        tables = StockAppSchema.get_all_tables()
+        tables = PortfolioManagerSchema.get_all_tables()
         
         assert isinstance(tables, dict)
         expected_tables = {
@@ -111,7 +111,7 @@ class TestStockAppSchema:
 
     def test_get_all_indexes(self):
         """Test getting all index definitions."""
-        indexes = StockAppSchema.get_all_indexes()
+        indexes = PortfolioManagerSchema.get_all_indexes()
         
         assert isinstance(indexes, list)
         assert len(indexes) > 0
@@ -125,7 +125,7 @@ class TestStockAppSchema:
 
     def test_get_all_views(self):
         """Test getting all view definitions."""
-        views = StockAppSchema.get_all_views()
+        views = PortfolioManagerSchema.get_all_views()
         
         assert isinstance(views, list)
         # Views are optional, so just check structure if any exist
@@ -322,12 +322,12 @@ class TestDuckDBTableBuilder:
 
     def test_build_complete_schema_sql(self, table_builder):
         """Test complete schema SQL generation."""
-        tables = StockAppSchema.get_all_tables()
-        indexes = StockAppSchema.get_all_indexes()
+        tables = PortfolioManagerSchema.get_all_tables()
+        indexes = PortfolioManagerSchema.get_all_indexes()
         
         sql = table_builder.build_complete_schema_sql(tables, indexes)
         
-        assert "-- StockApp Database Schema" in sql
+        assert "-- Portfolio Manager Database Schema" in sql
         assert "-- Create Tables" in sql
         assert "CREATE TABLE" in sql
         
@@ -572,7 +572,7 @@ class TestDuckDBSchemaManager:
         
         # Should have version
         version = await schema_manager.get_schema_version()
-        assert version == StockAppSchema.SCHEMA_VERSION
+        assert version == PortfolioManagerSchema.SCHEMA_VERSION
 
     @pytest.mark.asyncio
     async def test_set_schema_version(self, schema_manager):

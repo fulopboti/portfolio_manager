@@ -1,6 +1,6 @@
 # Test Organization
 
-This directory contains all tests for the StockApp application, organized by test type and architectural layer.
+This directory contains all tests for the Portfolio Manager application, organized by test type and architectural layer.
 
 ## Directory Structure
 
@@ -86,8 +86,8 @@ pytest tests/unit/infrastructure/      # Infrastructure unit tests
 
 ### With Coverage
 ```bash
-pytest --cov=stockapp --cov-report=term-missing
-pytest --cov=stockapp --cov-report=html
+pytest --cov=portfolio_manager --cov-report=term-missing
+pytest --cov=portfolio_manager --cov-report=html
 ```
 
 ## Test Fixtures

@@ -6,13 +6,13 @@ from decimal import Decimal
 from datetime import datetime
 from uuid import uuid4
 
-from stockapp.application.services import DataIngestionService, PortfolioSimulatorService, StrategyScoreService
-from stockapp.application.services.base_service import (
+from portfolio_manager.application.services import DataIngestionService, PortfolioSimulatorService, StrategyScoreService
+from portfolio_manager.application.services.base_service import (
     BaseApplicationService, ExceptionBasedService, ResultBasedService,
     ServiceErrorStrategy, ServiceResult
 )
-from stockapp.domain.entities import AssetType, Asset
-from stockapp.domain.exceptions import DataIngestionError, DomainValidationError
+from portfolio_manager.domain.entities import AssetType, Asset
+from portfolio_manager.domain.exceptions import DataIngestionError, DomainValidationError
 
 
 class TestDataIngestionServiceConfiguration:
@@ -209,7 +209,7 @@ class TestPortfolioSimulatorServiceConfiguration:
     @pytest.mark.asyncio
     async def test_service_with_configuration_object(self):
         """Test service behavior when configuration object is available."""
-        from stockapp.config.schema import PortfolioConfig, PortfolioSimulationConfig, RiskManagementConfig
+        from portfolio_manager.config.schema import PortfolioConfig, PortfolioSimulationConfig, RiskManagementConfig
         
         mock_portfolio_repo = Mock()
         mock_asset_repo = Mock()
@@ -287,7 +287,7 @@ class TestStrategyScoreServiceConfiguration:
         )
         
         # Test configuration can be injected
-        from stockapp.config.schema import StrategiesConfig, ScoringConfig, BacktestingConfig
+        from portfolio_manager.config.schema import StrategiesConfig, ScoringConfig, BacktestingConfig
         
         strategies_config = StrategiesConfig(
             scoring=ScoringConfig(
@@ -329,7 +329,7 @@ class TestStrategyScoreServiceConfiguration:
         )
         
         # Add configuration
-        from stockapp.config.schema import StrategiesConfig, ScoringConfig, BacktestingConfig
+        from portfolio_manager.config.schema import StrategiesConfig, ScoringConfig, BacktestingConfig
         
         service._config = StrategiesConfig(
             scoring=ScoringConfig(

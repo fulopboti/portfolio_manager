@@ -7,16 +7,16 @@ from uuid import uuid4
 
 import pytest
 
-from stockapp.application.ports import (
+from portfolio_manager.application.ports import (
     AssetRepository,
     DataProvider,
     PortfolioRepository,
     StrategyCalculator,
 )
-from stockapp.application.services.data_ingestion import DataIngestionService
-from stockapp.application.services.portfolio_simulator import PortfolioSimulatorService
-from stockapp.application.services.strategy_scorer import StrategyScoreService
-from stockapp.domain.entities import (
+from portfolio_manager.application.services.data_ingestion import DataIngestionService
+from portfolio_manager.application.services.portfolio_simulator import PortfolioSimulatorService
+from portfolio_manager.application.services.strategy_scorer import StrategyScoreService
+from portfolio_manager.domain.entities import (
     Asset,
     AssetSnapshot,
     AssetType,
@@ -26,7 +26,7 @@ from stockapp.domain.entities import (
     Trade,
     TradeSide,
 )
-from stockapp.domain.exceptions import (
+from portfolio_manager.domain.exceptions import (
     DataIngestionError,
     InsufficientFundsError,
     InvalidTradeError,

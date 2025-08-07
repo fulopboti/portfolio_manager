@@ -8,14 +8,13 @@ import pytest_asyncio
 from datetime import datetime
 from decimal import Decimal
 
-from stockapp.infrastructure.duckdb.connection import DuckDBConnection, DuckDBTransactionManager
-from stockapp.infrastructure.duckdb.query_executor import DuckDBQueryExecutor
-from stockapp.infrastructure.duckdb.schema.schema_manager import DuckDBSchemaManager
-from stockapp.infrastructure.duckdb.schema.migration_manager import DuckDBMigrationManager
-from stockapp.infrastructure.duckdb.schema.schema_definitions import StockAppSchema
+from portfolio_manager.infrastructure.duckdb.connection import DuckDBConnection, DuckDBTransactionManager
+from portfolio_manager.infrastructure.duckdb.query_executor import DuckDBQueryExecutor
+from portfolio_manager.infrastructure.duckdb.schema.schema_manager import DuckDBSchemaManager
+from portfolio_manager.infrastructure.duckdb.schema.migration_manager import DuckDBMigrationManager
 
-from stockapp.infrastructure.data_access.schema_manager import Migration, MigrationType
-from stockapp.infrastructure.data_access.exceptions import ConnectionError, QueryError, SchemaError
+from portfolio_manager.infrastructure.data_access.schema_manager import Migration, MigrationType
+from portfolio_manager.infrastructure.data_access.exceptions import QueryError
 
 
 class TestDuckDBIntegration:

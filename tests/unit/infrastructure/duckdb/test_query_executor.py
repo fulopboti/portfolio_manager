@@ -11,10 +11,10 @@ from unittest.mock import Mock, patch, AsyncMock
 import pytest
 import pytest_asyncio
 
-from stockapp.infrastructure.duckdb.connection import DuckDBConnection, DuckDBTransactionManager
-from stockapp.infrastructure.duckdb.query_executor import DuckDBQueryExecutor
-from stockapp.infrastructure.data_access.query_executor import QueryResult
-from stockapp.infrastructure.data_access.exceptions import QueryError, ParameterError
+from portfolio_manager.infrastructure.duckdb.connection import DuckDBConnection, DuckDBTransactionManager
+from portfolio_manager.infrastructure.duckdb.query_executor import DuckDBQueryExecutor
+from portfolio_manager.infrastructure.data_access.query_executor import QueryResult
+from portfolio_manager.infrastructure.data_access.exceptions import QueryError, ParameterError
 
 
 class TestDuckDBQueryExecutor:

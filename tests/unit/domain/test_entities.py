@@ -6,7 +6,7 @@ from uuid import UUID, uuid4
 
 import pytest
 
-from stockapp.domain.entities import (
+from portfolio_manager.domain.entities import (
     Asset,
     AssetSnapshot,
     AssetType,
@@ -16,7 +16,7 @@ from stockapp.domain.entities import (
     Trade,
     TradeSide,
 )
-from stockapp.domain.exceptions import (
+from portfolio_manager.domain.exceptions import (
     DomainValidationError,
     InsufficientFundsError,
     InvalidPositionError,

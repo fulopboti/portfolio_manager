@@ -7,12 +7,12 @@ import pytest_asyncio
 from unittest.mock import Mock, patch, AsyncMock
 from typing import Dict, Set, Optional
 
-from stockapp.infrastructure.duckdb.connection import DuckDBConnection
-from stockapp.infrastructure.duckdb.query_executor import DuckDBQueryExecutor
-from stockapp.infrastructure.duckdb.schema.schema_manager import DuckDBSchemaManager
-from stockapp.infrastructure.duckdb.schema.schema_definitions import StockAppSchema
-from stockapp.infrastructure.data_access.schema_manager import TableDefinition
-from stockapp.infrastructure.data_access.exceptions import SchemaError
+from portfolio_manager.infrastructure.duckdb.connection import DuckDBConnection
+from portfolio_manager.infrastructure.duckdb.query_executor import DuckDBQueryExecutor
+from portfolio_manager.infrastructure.duckdb.schema.schema_manager import DuckDBSchemaManager
+from portfolio_manager.infrastructure.duckdb.schema.schema_definitions import PortfolioManagerSchema
+from portfolio_manager.infrastructure.data_access.schema_manager import TableDefinition
+from portfolio_manager.infrastructure.data_access.exceptions import SchemaError
 
 
 class TestDuckDBSchemaManagerTDD:
@@ -110,7 +110,7 @@ class TestDuckDBSchemaManagerTDD:
         await schema_manager.create_schema()
         
         # Verify indexes were created by checking if they exist
-        # This tests that the schema manager processes StockAppSchema.get_all_indexes()
+        # This tests that the schema manager processes PortfolioManagerSchema.get_all_indexes()
         result = await schema_manager.query_executor.execute_query("""
             SELECT name FROM sqlite_master 
             WHERE type = 'index' AND name NOT LIKE 'sqlite_%'
@@ -141,7 +141,7 @@ class TestDuckDBSchemaManagerTDD:
         
         # Schema version should be set
         version = await schema_manager.get_schema_version()
-        assert version == StockAppSchema.SCHEMA_VERSION
+        assert version == PortfolioManagerSchema.SCHEMA_VERSION
 
     @pytest.mark.asyncio
     async def test_create_schema_idempotent_tdd(self, schema_manager):
@@ -275,7 +275,7 @@ class TestDuckDBSchemaManagerTDD:
         await schema_manager.create_schema()
         
         version = await schema_manager.get_schema_version()
-        assert version == StockAppSchema.SCHEMA_VERSION
+        assert version == PortfolioManagerSchema.SCHEMA_VERSION
 
     @pytest.mark.asyncio
     async def test_set_schema_version_tdd(self, schema_manager):
@@ -470,7 +470,7 @@ class TestDuckDBSchemaManagerTDD:
         assert schema_manager.inspector is not None
         
         # Components should be usable
-        tables = StockAppSchema.get_all_tables()
+        tables = PortfolioManagerSchema.get_all_tables()
         table_order = schema_manager.table_builder.get_table_creation_order(tables)
         assert isinstance(table_order, list)
         assert len(table_order) > 0

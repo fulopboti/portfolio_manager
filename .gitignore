@@ -246,10 +246,10 @@ lerna-debug.log*
 .pnpm-debug.log*
 
 # Frontend build artifacts
-stockapp/ui/frontend/dist/
-stockapp/ui/frontend/build/
-stockapp/ui/frontend/.next/
-stockapp/ui/frontend/out/
+portfolio_manager/ui/frontend/dist/
+portfolio_manager/ui/frontend/build/
+portfolio_manager/ui/frontend/.next/
+portfolio_manager/ui/frontend/out/
 
 # Local development
 .local/

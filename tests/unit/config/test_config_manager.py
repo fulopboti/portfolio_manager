@@ -6,7 +6,7 @@ import pytest
 from pathlib import Path
 from unittest.mock import patch
 
-from stockapp.config.settings import ConfigManager, ConfigurationError
+from portfolio_manager.config.settings import ConfigManager, ConfigurationError
 
 
 class TestConfigManager:
@@ -17,7 +17,7 @@ class TestConfigManager:
         config = ConfigManager()
         
         # Test basic values from base.yaml (with development overrides)
-        assert config.get("application.name") == "StockApp"
+        assert config.get("application.name") == "Portfolio Manager"
         assert config.get("application.version") == "1.0.0"
         assert config.get("database.type") == "duckdb"
         assert config.get("event_system.bus.max_concurrent_events") == 50  # Overridden in development.yaml
@@ -27,7 +27,7 @@ class TestConfigManager:
         config = ConfigManager()
         
         # Existing value
-        assert config.get("application.name", "DefaultApp") == "StockApp"
+        assert config.get("application.name", "DefaultApp") == "Portfolio Manager"
         
         # Non-existing value with default
         assert config.get("nonexistent.key", "default_value") == "default_value"
@@ -72,7 +72,7 @@ class TestConfigManager:
         assert config.is_production() is False
         assert config.is_testing() is False
     
-    @patch.dict(os.environ, {"STOCKAPP_APPLICATION_DEBUG": "false"})
+    @patch.dict(os.environ, {"PORTFOLIO_MANAGER_APPLICATION_DEBUG": "false"})
     def test_environment_variable_override_boolean(self):
         """Test environment variable override for boolean values."""
         config = ConfigManager()
@@ -86,7 +86,7 @@ class TestConfigManager:
         from pathlib import Path
         
         # Set environment variable directly (note: using different key structure)
-        os.environ["STOCKAPP_DATABASE_POOL_SIZE"] = "25"
+        os.environ["PORTFOLIO_MANAGER_DATABASE_POOL_SIZE"] = "25"
         
         try:
             with tempfile.TemporaryDirectory() as temp_dir:
@@ -105,8 +105,8 @@ database:
                 assert config.get("database.pool.size") == 25
         finally:
             # Clean up
-            if "STOCKAPP_DATABASE_POOL_SIZE" in os.environ:
-                del os.environ["STOCKAPP_DATABASE_POOL_SIZE"]
+            if "PORTFOLIO_MANAGER_DATABASE_POOL_SIZE" in os.environ:
+                del os.environ["PORTFOLIO_MANAGER_DATABASE_POOL_SIZE"]
     
     def test_environment_variable_override_float(self):
         """Test environment variable override for float values."""
@@ -114,7 +114,7 @@ database:
         from pathlib import Path
         
         # Set environment variable directly
-        os.environ["STOCKAPP_PORTFOLIO_SIMULATION_RATE"] = "0.005"
+        os.environ["PORTFOLIO_MANAGER_PORTFOLIO_SIMULATION_RATE"] = "0.005"
         
         try:
             with tempfile.TemporaryDirectory() as temp_dir:
@@ -132,8 +132,8 @@ portfolio:
                 assert config.get("portfolio.simulation.rate") == 0.005
         finally:
             # Clean up
-            if "STOCKAPP_PORTFOLIO_SIMULATION_RATE" in os.environ:
-                del os.environ["STOCKAPP_PORTFOLIO_SIMULATION_RATE"]
+            if "PORTFOLIO_MANAGER_PORTFOLIO_SIMULATION_RATE" in os.environ:
+                del os.environ["PORTFOLIO_MANAGER_PORTFOLIO_SIMULATION_RATE"]
     
     def test_environment_variable_override_list(self):
         """Test environment variable override for list values."""
@@ -141,7 +141,7 @@ portfolio:
         from pathlib import Path
         
         # Set environment variable directly
-        os.environ["STOCKAPP_STRATEGIES_ENABLED"] = "momentum,value"
+        os.environ["PORTFOLIO_MANAGER_STRATEGIES_ENABLED"] = "momentum,value"
         
         try:
             with tempfile.TemporaryDirectory() as temp_dir:
@@ -159,10 +159,10 @@ strategies:
                 assert strategies == ["momentum", "value"]
         finally:
             # Clean up
-            if "STOCKAPP_STRATEGIES_ENABLED" in os.environ:
-                del os.environ["STOCKAPP_STRATEGIES_ENABLED"]
+            if "PORTFOLIO_MANAGER_STRATEGIES_ENABLED" in os.environ:
+                del os.environ["PORTFOLIO_MANAGER_STRATEGIES_ENABLED"]
     
-    @patch.dict(os.environ, {"STOCKAPP_NEW_CONFIG_KEY": "new_value"})
+    @patch.dict(os.environ, {"PORTFOLIO_MANAGER_NEW_CONFIG_KEY": "new_value"})
     def test_environment_variable_new_key(self):
         """Test environment variable creating new configuration key."""
         config = ConfigManager()
@@ -170,7 +170,7 @@ strategies:
         # Should create new configuration key
         assert config.get("new.config.key") == "new_value"
     
-    @patch.dict(os.environ, {"STOCKAPP_ENVIRONMENT": "production"})
+    @patch.dict(os.environ, {"PORTFOLIO_MANAGER_ENVIRONMENT": "production"})
     def test_environment_specific_config_loading(self):
         """Test loading environment-specific configuration."""
         import tempfile
@@ -317,10 +317,10 @@ class TestConfigManagerIntegration:
     """Integration tests for configuration manager."""
     
     @patch.dict(os.environ, {
-        "STOCKAPP_ENVIRONMENT": "testing",
-        "STOCKAPP_APPLICATION_DEBUG": "false",
-        "STOCKAPP_DATABASE_CONNECTION_DATABASE_PATH": ":memory:",
-        "STOCKAPP_EVENT_SYSTEM_BUS_MAX_CONCURRENT_EVENTS": "10"
+        "PORTFOLIO_MANAGER_ENVIRONMENT": "testing",
+        "PORTFOLIO_MANAGER_APPLICATION_DEBUG": "false",
+        "PORTFOLIO_MANAGER_DATABASE_CONNECTION_DATABASE_PATH": ":memory:",
+        "PORTFOLIO_MANAGER_EVENT_SYSTEM_BUS_MAX_CONCURRENT_EVENTS": "10"
     })
     def test_complete_configuration_flow(self):
         """Test complete configuration loading with all features."""

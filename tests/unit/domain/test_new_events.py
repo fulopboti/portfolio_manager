@@ -9,12 +9,12 @@ from decimal import Decimal
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from stockapp.domain.events import (
+from portfolio_manager.domain.events import (
     RiskThresholdBreachedEvent,
     MarketDataReceivedEvent,
     PortfolioCreatedEvent,
 )
-from stockapp.domain.exceptions import DomainValidationError
+from portfolio_manager.domain.exceptions import DomainValidationError
 
 
 class TestRiskThresholdBreachedEvent:

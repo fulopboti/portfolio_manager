@@ -10,8 +10,8 @@ from uuid import uuid4
 from unittest.mock import AsyncMock, Mock
 from typing import List
 
-from stockapp.domain.entities import Asset, AssetType, Portfolio, Position, TradeSide
-from stockapp.domain.exceptions import InsufficientFundsError, InvalidPositionError
+from portfolio_manager.domain.entities import Asset, AssetType, Portfolio, Position, TradeSide
+from portfolio_manager.domain.exceptions import InsufficientFundsError, InvalidPositionError
 
 
 # Import our TDD implementations from other test files
