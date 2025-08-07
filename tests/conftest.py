@@ -453,3 +453,131 @@ class TestDataFactory:
 def test_factory() -> TestDataFactory:
     """Provide the test data factory."""
     return TestDataFactory
+
+
+# ===== EVENT SYSTEM FIXTURES =====
+
+class MockDomainEvent:
+    """Mock domain event for testing."""
+    
+    def __init__(self, event_id: str):
+        self.event_id = event_id
+        self.timestamp = datetime.now(timezone.utc)
+
+
+class MockTradeExecutedEvent(MockDomainEvent):
+    """Mock trade executed event for testing."""
+    
+    def __init__(self, trade_id=None, portfolio_id=None, symbol="AAPL", 
+                 side=TradeSide.BUY, quantity=Decimal("10"), price=Decimal("150.00")):
+        super().__init__(str(trade_id or uuid4()))
+        self.trade_id = trade_id or uuid4()
+        self.portfolio_id = portfolio_id or uuid4()
+        self.symbol = symbol
+        self.side = side
+        self.quantity = quantity
+        self.price = price
+        self.timestamp = datetime.now(timezone.utc)
+    
+    def gross_amount(self):
+        """Calculate gross trade amount."""
+        return self.quantity * self.price
+
+
+class MockAssetPriceUpdatedEvent(MockDomainEvent):
+    """Mock asset price updated event for testing."""
+    
+    def __init__(self, symbol="AAPL", old_price=Decimal("150.00"), new_price=Decimal("155.00")):
+        super().__init__(f"price_update_{symbol}")
+        self.symbol = symbol
+        self.old_price = old_price
+        self.new_price = new_price
+        self.timestamp = datetime.now(timezone.utc)
+    
+    def price_change(self):
+        """Calculate price change amount."""
+        return self.new_price - self.old_price
+    
+    def price_change_percent(self):
+        """Calculate price change percentage."""
+        if self.old_price == 0:
+            return Decimal("0")
+        return (self.new_price - self.old_price) / self.old_price
+
+
+@pytest.fixture
+def mock_trade_executed_event(sample_portfolio: Portfolio, sample_asset: Asset) -> MockTradeExecutedEvent:
+    """Create a mock trade executed event for testing."""
+    return MockTradeExecutedEvent(
+        trade_id=uuid4(),
+        portfolio_id=sample_portfolio.portfolio_id,
+        symbol=sample_asset.symbol,
+        side=TradeSide.BUY,
+        quantity=Decimal("10"),
+        price=Decimal("150.00")
+    )
+
+
+@pytest.fixture
+def mock_price_updated_event(sample_asset: Asset) -> MockAssetPriceUpdatedEvent:
+    """Create a mock price updated event for testing."""
+    return MockAssetPriceUpdatedEvent(
+        symbol=sample_asset.symbol,
+        old_price=Decimal("150.00"),
+        new_price=Decimal("155.00")
+    )
+
+
+@pytest.fixture
+def multiple_mock_events(sample_portfolio: Portfolio) -> list[MockTradeExecutedEvent]:
+    """Create multiple mock events for testing concurrent processing."""
+    return [
+        MockTradeExecutedEvent(
+            portfolio_id=sample_portfolio.portfolio_id,
+            symbol=f"STOCK{i}",
+            side=TradeSide.BUY,
+            quantity=Decimal("10"),
+            price=Decimal("100.00")
+        )
+        for i in range(5)
+    ]
+
+
+class EventTestHelper:
+    """Helper class for event system testing."""
+    
+    @staticmethod
+    def create_trade_event(
+        portfolio_id: UUID,
+        symbol: str = "TEST",
+        side: TradeSide = TradeSide.BUY,
+        quantity: Decimal = Decimal("10"),
+        price: Decimal = Decimal("100.00")
+    ) -> MockTradeExecutedEvent:
+        """Create a mock trade event with custom parameters."""
+        return MockTradeExecutedEvent(
+            portfolio_id=portfolio_id,
+            symbol=symbol,
+            side=side,
+            quantity=quantity,
+            price=price
+        )
+    
+    @staticmethod
+    def create_price_event(
+        symbol: str = "TEST",
+        old_price: Decimal = Decimal("100.00"),
+        new_price: Decimal = Decimal("105.00")
+    ) -> MockAssetPriceUpdatedEvent:
+        """Create a mock price updated event with custom parameters."""
+        return MockAssetPriceUpdatedEvent(
+            symbol=symbol,
+            old_price=old_price,
+            new_price=new_price
+        )
+
+
+@pytest.fixture
+def event_test_helper() -> EventTestHelper:
+    """Provide the event test helper."""
+    return EventTestHelper()

@@ -1,0 +1,59 @@
+application:
+  debug: true
+  log_level: "DEBUG"
+  environment: "testing"
+
+database:
+  connection:
+    database_path: ":memory:"  # In-memory for tests
+    memory: true
+    pragmas:
+      threads: 1
+      memory_limit: "512MB"
+  pool:
+    max_connections: 1
+
+event_system:
+  bus:
+    max_concurrent_events: 10
+    error_isolation: false  # Let errors bubble up in tests
+    enable_logging: false
+  handlers:
+    timeout_seconds: 5
+    retry_attempts: 0  # No retries in tests
+
+data_providers:
+  market_data:
+    primary: "mock"  # Use mock provider for tests
+    cache_ttl: 0  # No caching in tests
+  apis:
+    yahoo_finance:
+      timeout: 1
+    alpha_vantage:
+      timeout: 1
+    iex_cloud:
+      timeout: 1
+
+portfolio:
+  simulation:
+    initial_cash: 10000.00  # Smaller amounts for tests
+    commission_rate: 0.0  # No commission in tests
+
+logging:
+  level: "DEBUG"
+  handlers:
+    console:
+      enabled: false  # Reduce test noise
+    file:
+      enabled: false
+
+monitoring:
+  metrics:
+    enabled: false
+  health_check:
+    enabled: false
+
+security:
+  api:
+    enable_auth: false
+    token_expiry: 300  # Shorter for tests

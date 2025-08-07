@@ -7,6 +7,7 @@ from typing import List, Optional
 from stockapp.application.ports import AssetRepository, DataProvider
 from stockapp.domain.entities import Asset, AssetType
 from stockapp.domain.exceptions import DataIngestionError
+from .base_service import ExceptionBasedService
 
 
 @dataclass
@@ -19,20 +20,28 @@ class IngestionResult:
     error: Optional[str] = None
 
 
-class DataIngestionService:
+class DataIngestionService(ExceptionBasedService):
     """Service for ingesting market data from external providers."""
 
     def __init__(
         self,
         data_provider: DataProvider,
         asset_repository: AssetRepository,
-        batch_size: int = 100,
-        retry_attempts: int = 3,
+        batch_size: Optional[int] = None,
+        retry_attempts: Optional[int] = None,
     ):
+        super().__init__(logger_name=f"{__name__}.{self.__class__.__name__}")
         self.data_provider = data_provider
         self.asset_repository = asset_repository
-        self.batch_size = batch_size
-        self.retry_attempts = retry_attempts
+        
+        # Use provided values or fall back to reasonable defaults
+        self.batch_size = batch_size if batch_size is not None else 100
+        self.retry_attempts = retry_attempts if retry_attempts is not None else 3
+        
+        # Log configuration for observability
+        self._log_operation_start("initialize_service", 
+            f"batch_size={self.batch_size}, retry_attempts={self.retry_attempts}")
+        self._log_operation_success("initialize_service", "DataIngestionService configured")
 
     async def ingest_symbol(
         self,

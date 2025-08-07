@@ -1,0 +1,115 @@
+application:
+  name: "StockApp"
+  version: "1.0.0"
+  environment: "development"
+  debug: true
+  log_level: "INFO"
+
+database:
+  type: "duckdb"
+  connection:
+    database_path: "./data/stockapp.db"
+    memory: false
+    read_only: false
+    pragmas:
+      threads: 4
+      memory_limit: "2GB"
+  pool:
+    max_connections: 10
+    connection_timeout: 30
+
+event_system:
+  bus:
+    max_concurrent_events: 100
+    error_isolation: true
+    enable_logging: true
+  handlers:
+    timeout_seconds: 30
+    retry_attempts: 3
+    retry_delay: 1.0
+
+data_providers:
+  batch_size: 100  # Default batch size for data ingestion
+  market_data:
+    primary: "yahoo_finance"
+    fallback: ["alpha_vantage", "iex_cloud"]
+    cache_ttl: 300
+    rate_limits:
+      yahoo_finance: 2000  # requests per hour
+      alpha_vantage: 500
+      iex_cloud: 1000
+  
+  apis:
+    yahoo_finance:
+      base_url: "https://query1.finance.yahoo.com"
+      timeout: 10
+    alpha_vantage:
+      base_url: "https://www.alphavantage.co"
+      api_key: null  # Set via env var
+      timeout: 15
+    iex_cloud:
+      base_url: "https://cloud.iexapis.com"
+      api_key: null  # Set via env var
+      timeout: 10
+
+portfolio:
+  simulation:
+    initial_cash: 100000.00
+    default_currency: "USD"
+    commission_rate: 0.001  # 0.1%
+    min_commission: 1.00
+  risk_management:
+    max_position_size: 0.10  # 10% of portfolio
+    max_sector_exposure: 0.25  # 25%
+    stop_loss_threshold: -0.05  # -5%
+
+strategies:
+  scoring:
+    enabled_strategies: ["momentum", "value", "quality"]
+    rebalance_frequency: "weekly"
+    min_score_threshold: 60
+  backtesting:
+    default_period: "1Y"
+    benchmark: "SPY"
+
+analytics:
+  technical_indicators:
+    default_periods:
+      sma: [20, 50, 200]
+      rsi: 14
+      macd: [12, 26, 9]
+  risk_metrics:
+    var_confidence: 0.95
+    var_period: 252  # trading days
+    correlation_window: 60
+
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  handlers:
+    console:
+      enabled: true
+    file:
+      enabled: false
+      path: "./logs/stockapp.log"
+      max_size: "10MB"
+      backup_count: 5
+
+monitoring:
+  metrics:
+    enabled: false
+    port: 8080
+    endpoint: "/metrics"
+  health_check:
+    enabled: true
+    endpoint: "/health"
+    timeout: 5
+
+security:
+  api:
+    enable_auth: false
+    jwt_secret: null  # Set via env var
+    token_expiry: 3600
+  encryption:
+    algorithm: "AES256"
+    key: null  # Set via env var

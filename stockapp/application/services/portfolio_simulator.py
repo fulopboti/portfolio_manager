@@ -19,6 +19,7 @@ from stockapp.domain.exceptions import (
     InvalidPositionError,
     InvalidTradeError,
 )
+from .base_service import ResultBasedService, ServiceResult
 
 
 @dataclass
@@ -42,7 +43,7 @@ class PortfolioMetrics:
     number_of_positions: int
 
 
-class PortfolioSimulatorService:
+class PortfolioSimulatorService(ResultBasedService):
     """Service for simulating portfolio operations and trade execution."""
 
     def __init__(
@@ -50,6 +51,7 @@ class PortfolioSimulatorService:
         portfolio_repository: PortfolioRepository,
         asset_repository: AssetRepository,
     ):
+        super().__init__(logger_name=f"{__name__}.{self.__class__.__name__}")
         self.portfolio_repository = portfolio_repository
         self.asset_repository = asset_repository
 
@@ -63,22 +65,33 @@ class PortfolioSimulatorService:
         comment: str = "",
     ) -> TradeResult:
         """Execute a trade within a portfolio."""
-        try:
+        context = f"{portfolio_id}:{symbol}:{side.value}:{quantity}"
+        
+        async def _execute():
+            # Validate required parameters
+            self._validate_required_params({
+                'portfolio_id': portfolio_id,
+                'symbol': symbol,
+                'side': side,
+                'quantity': quantity,
+                'broker_profile': broker_profile
+            })
+            
+            # Validate business rules
+            self._validate_business_rules([
+                (quantity > 0, "Quantity must be positive"),
+                (symbol.strip(), "Symbol cannot be empty"),
+            ])
+            
             # Get portfolio
             portfolio = await self.portfolio_repository.get_portfolio(portfolio_id)
             if not portfolio:
-                return TradeResult(
-                    success=False,
-                    error=InvalidTradeError(f"Portfolio {portfolio_id} not found")
-                )
+                raise InvalidTradeError(f"Portfolio {portfolio_id} not found")
 
             # Get current market price
             latest_snapshot = await self.asset_repository.get_latest_snapshot(symbol)
             if not latest_snapshot:
-                return TradeResult(
-                    success=False,
-                    error=InvalidTradeError(f"No market data available for {symbol}")
-                )
+                raise InvalidTradeError(f"No market data available for {symbol}")
 
             current_price = latest_snapshot.close
 
@@ -101,16 +114,24 @@ class PortfolioSimulatorService:
 
             # Validate broker can execute this trade
             if not broker_profile.can_execute_order(quantity, current_price):
-                return TradeResult(
-                    success=False,
-                    error=InvalidTradeError("Broker cannot execute this order")
-                )
+                raise InvalidTradeError("Broker cannot execute this order")
 
             if side == TradeSide.BUY:
                 return await self._execute_buy_trade(trade, portfolio)
             else:
                 return await self._execute_sell_trade(trade, portfolio)
-
+        
+        # Execute with base service error handling and convert to TradeResult
+        try:
+            result = await self._execute_operation(
+                "execute_trade", _execute, context, 
+                expected_exceptions=[InvalidTradeError, InsufficientFundsError, InvalidPositionError]
+            )
+            # If the result is already a TradeResult, return it directly
+            if isinstance(result, TradeResult):
+                return result
+            else:
+                return TradeResult(success=True, trade=result)
         except Exception as e:
             return TradeResult(success=False, error=e)
 

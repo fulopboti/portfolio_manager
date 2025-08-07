@@ -8,6 +8,7 @@ from typing import Dict, List, Optional
 from stockapp.application.ports import AssetRepository, StrategyCalculator
 from stockapp.domain.entities import Asset, Trade
 from stockapp.domain.exceptions import StrategyCalculationError
+from .base_service import ExceptionBasedService
 
 
 @dataclass
@@ -35,7 +36,7 @@ class BacktestResult:
     performance_metrics: Dict
 
 
-class StrategyScoreService:
+class StrategyScoreService(ExceptionBasedService):
     """Service for calculating and managing investment strategy scores."""
 
     def __init__(
@@ -43,6 +44,7 @@ class StrategyScoreService:
         strategy_calculators: Dict[str, StrategyCalculator],
         asset_repository: AssetRepository,
     ):
+        super().__init__(logger_name=f"{__name__}.{self.__class__.__name__}")
         self.strategy_calculators = strategy_calculators
         self.asset_repository = asset_repository
 

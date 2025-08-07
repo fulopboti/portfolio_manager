@@ -1,5 +1,6 @@
 """DuckDB configuration management."""
 
+import json
 import os
 from dataclasses import dataclass
 from typing import Optional
@@ -28,6 +29,9 @@ class DuckDBConfig:
     
     # Connection settings
     read_only: bool = False
+
+    # Pragmas
+    pragmas: dict[str, str | int] = None
     
     @classmethod
     def from_environment(cls, **overrides) -> "DuckDBConfig":
@@ -54,6 +58,7 @@ class DuckDBConfig:
             enable_optimizer=os.getenv("DUCKDB_ENABLE_OPTIMIZER", "true").lower() == "true",
             enable_profiling=os.getenv("DUCKDB_ENABLE_PROFILING", "false").lower() == "true",
             read_only=os.getenv("DUCKDB_READ_ONLY", "false").lower() == "true",
+            pragmas=json.loads(os.getenv("DUCKDB_PRAGMAS", "{}")) or None,
         )
         
         # Apply any overrides
@@ -90,5 +95,6 @@ class DuckDBConfig:
         return (
             f"DuckDBConfig(memory_limit={self.memory_limit}, "
             f"threads={self.threads}, timezone={self.timezone}, "
-            f"optimizer={self.enable_optimizer}, profiling={self.enable_profiling})"
+            f"optimizer={self.enable_optimizer}, profiling={self.enable_profiling}, "
+            f"pragmas={self.pragmas or {}})"
         )

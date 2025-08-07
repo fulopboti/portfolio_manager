@@ -32,6 +32,19 @@ class DuckDBTableBuilder:
         for column_name, column_def in table_def.columns.items():
             column_lines.append(f"    {column_name} {column_def}")
         
+        # Add primary key constraint (only if not already specified in column definition)
+        if table_def.primary_key:
+            # Check if any column already has PRIMARY KEY in its definition
+            has_inline_pk = any("PRIMARY KEY" in col_def for col_def in table_def.columns.values())
+            
+            if not has_inline_pk:
+                if len(table_def.primary_key) == 1:
+                    pk_constraint = f"    PRIMARY KEY ({table_def.primary_key[0]})"
+                else:
+                    pk_columns = ", ".join(table_def.primary_key)
+                    pk_constraint = f"    PRIMARY KEY ({pk_columns})"
+                column_lines.append(pk_constraint)
+        
         # Add table-level constraints
         if table_def.constraints:
             for constraint in table_def.constraints:

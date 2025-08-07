@@ -58,7 +58,7 @@ class DuckDBQueryExecutor(QueryExecutor):
     async def execute_query(
         self, 
         sql: str, 
-        parameters: Optional[Dict[str, Any]] = None
+        parameters: Optional[Union[Dict[str, Any], List[Any]]] = None
     ) -> QueryResult:
         """Execute a SELECT query and return results."""
         if not await self.connection.is_connected():
@@ -72,7 +72,7 @@ class DuckDBQueryExecutor(QueryExecutor):
             start_time = time.perf_counter()
             
             # Validate and prepare parameters
-            safe_params = self._prepare_parameters(parameters or {})
+            safe_params = self._prepare_parameters(parameters)
             
             # Execute query
             if safe_params:
@@ -112,7 +112,7 @@ class DuckDBQueryExecutor(QueryExecutor):
     async def execute_command(
         self, 
         sql: str, 
-        parameters: Optional[Dict[str, Any]] = None
+        parameters: Optional[Union[Dict[str, Any], List[Any]]] = None
     ) -> int:
         """Execute a non-query command (INSERT, UPDATE, DELETE)."""
         if not await self.connection.is_connected():
@@ -126,7 +126,7 @@ class DuckDBQueryExecutor(QueryExecutor):
             start_time = time.perf_counter()
             
             # Validate and prepare parameters
-            safe_params = self._prepare_parameters(parameters or {})
+            safe_params = self._prepare_parameters(parameters)
             
             # Execute command
             if safe_params:
@@ -176,11 +176,38 @@ class DuckDBQueryExecutor(QueryExecutor):
     async def execute_scalar(
         self, 
         sql: str, 
-        parameters: Optional[Dict[str, Any]] = None
+        parameters: Optional[Union[Dict[str, Any], List[Any]]] = None
     ) -> Any:
         """Execute a query and return a single scalar value."""
         result = await self.execute_query(sql, parameters)
         return result.scalar()
+    
+    async def fetch_one(
+        self, 
+        sql: str, 
+        parameters: Optional[Union[Dict[str, Any], List[Any]]] = None
+    ) -> Optional[tuple]:
+        """Execute a query and return the first row as a tuple, or None."""
+        result = await self.execute_query(sql, parameters)
+        if not result.rows:
+            return None
+        # Convert first row dict to tuple of values
+        first_row = result.rows[0]
+        return tuple(first_row.values()) if isinstance(first_row, dict) else first_row
+    
+    async def fetch_all(
+        self, 
+        sql: str, 
+        parameters: Optional[Union[Dict[str, Any], List[Any]]] = None
+    ) -> List[tuple]:
+        """Execute a query and return all rows as tuples."""
+        result = await self.execute_query(sql, parameters)
+        if not result.rows:
+            return []
+        # Convert row dicts to tuples of values
+        if isinstance(result.rows[0], dict):
+            return [tuple(row.values()) for row in result.rows]
+        return result.rows
 
     async def execute_transaction(
         self, 
@@ -250,21 +277,31 @@ class DuckDBQueryExecutor(QueryExecutor):
             escaped = str(value).replace("'", "''")
             return f"'{escaped}'"
 
-    def _prepare_parameters(self, parameters: Dict[str, Any]) -> Dict[str, Any]:
+    def _prepare_parameters(self, parameters: Optional[Union[Dict[str, Any], List[Any]]]) -> Union[Dict[str, Any], List[Any], None]:
         """Validate and prepare parameters for safe execution."""
-        if not parameters:
-            return {}
+        if parameters is None:
+            return None
             
-        safe_params = {}
+        if isinstance(parameters, list):
+            # Handle positional parameters (for DuckDB prepared statements)
+            if not parameters:  # Empty list
+                return []
+            return [self._convert_parameter_value(value) for value in parameters]
         
-        for key, value in parameters.items():
-            # Validate parameter name (cached for performance)
-            _validate_parameter_name(key)
+        elif isinstance(parameters, dict):
+            # Handle named parameters
+            safe_params = {}
+            for key, value in parameters.items():
+                # Validate parameter name (cached for performance)
+                _validate_parameter_name(key)
+                
+                # Convert and validate parameter value
+                safe_params[key] = self._convert_parameter_value(value)
             
-            # Convert and validate parameter value
-            safe_params[key] = self._convert_parameter_value(value)
+            return safe_params
         
-        return safe_params
+        else:
+            raise ParameterError(f"Parameters must be list or dict, got: {type(parameters)}")
 
     def _convert_parameter_value(self, value: Any) -> Any:
         """Convert a parameter value to a DuckDB-compatible type."""

@@ -1,7 +1,7 @@
 """DuckDB schema manager implementation."""
 
 import logging
-from typing import Dict, Optional, Set
+from typing import Any, Dict, Optional, Set
 from stockapp.infrastructure.data_access.schema_manager import SchemaManager, TableDefinition
 from stockapp.infrastructure.data_access.exceptions import SchemaError
 from ..query_executor import DuckDBQueryExecutor
@@ -147,6 +147,22 @@ class DuckDBSchemaManager(SchemaManager):
         except Exception as e:
             logger.error(f"Failed to check schema existence: {str(e)}")
             return False
+    
+    async def get_schema_info(self) -> Optional[Dict[str, Any]]:
+        """Get general schema information including version and table count."""
+        try:
+            tables = await self.get_table_names()
+            version = await self.get_schema_version()
+            
+            return {
+                "version": version,
+                "table_count": len(tables),
+                "tables": sorted(list(tables)),
+                "schema_exists": len(tables) > 0
+            }
+        except Exception as e:
+            logger.error(f"Failed to get schema info: {str(e)}")
+            return None
     
     async def get_schema_version(self) -> Optional[str]:
         """Get the current schema version."""

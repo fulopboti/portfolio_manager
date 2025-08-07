@@ -27,6 +27,7 @@ dependencies = [
     "duckdb>=0.9.0",
     "pandas>=2.1.0",
     "numpy>=1.24.0",
+    "PyYAML>=6.0.1",
     "yfinance>=0.2.0",
     "requests>=2.31.0",
     "python-multipart>=0.0.6",
