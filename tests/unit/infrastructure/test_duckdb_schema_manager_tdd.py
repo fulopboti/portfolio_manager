@@ -291,7 +291,7 @@ class TestDuckDBSchemaManagerTDD:
     @pytest.mark.asyncio
     async def test_set_schema_version_creates_metadata_table_tdd(self, schema_manager):
         """Test set_schema_version creates metadata table if needed."""
-        await schema_manager.set_schema_version("1.0.0")
+        await schema_manager.set_schema_version("0.1.0")
         
         # Schema migrations table should exist (used for version tracking)
         result = await schema_manager.query_executor.execute_query("""

@@ -26,7 +26,7 @@ class TestEndToEndConfigurationIntegration:
             base_config = {
                 'application': {
                     'name': 'TestApp',
-                    'version': '1.0.0',
+                    'version': '0.1.0',
                     'environment': 'testing',
                     'debug': True,
                     'log_level': 'DEBUG'
@@ -343,7 +343,7 @@ class TestConfigurationPerformanceIntegration:
             
             # Create large base config
             large_config = {
-                'application': {'name': 'LargeApp', 'version': '1.0.0'},
+                'application': {'name': 'LargeApp', 'version': '0.1.0'},
                 'database': {
                     'type': 'duckdb',
                     'connection': {

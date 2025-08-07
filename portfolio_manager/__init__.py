@@ -2,4 +2,4 @@
 
 __version__ = "0.1.0"
 __author__ = "Portfolio Manager Team"
-__email__ = "team@portfolio-manager.dev"
+__email__ = "fulopboti@gmail.com"

@@ -577,7 +577,7 @@ class TestDuckDBSchemaManager:
     @pytest.mark.asyncio
     async def test_set_schema_version(self, schema_manager):
         """Test schema version setting."""
-        test_version = "1.0.0"
+        test_version = "0.1.0"
         await schema_manager.set_schema_version(test_version)
         
         version = await schema_manager.get_schema_version()

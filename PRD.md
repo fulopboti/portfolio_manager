@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## Portfolio Manager
 
-**Version:** 1.0  
+**Version:** 0.1.0  
 **Date:** July 2025  
 **Document Owner:** Fulop Botond  
 
@@ -694,20 +694,15 @@ portfolio-manager serve --host 0.0.0.0 --port 8000
 ### 16.3 Compliance Requirements
 - **Financial Disclaimers**: Investment advice disclaimers
 - **Data Usage**: Third-party data usage terms
-- **Open Source**: MIT license compliance
+- **Open Source**: GPL-3.0 license compliance
 - **Privacy Policy**: Data handling and privacy practices
 
 ---
 
 **Document History:**
-- v1.0 - January 2025 - Initial PRD creation
+- v1.0 - July 2025 - Initial PRD creation
 - Future versions will track major requirement changes and feature additions
 
-**Approval:**
-- [ ] Product Owner
-- [ ] Technical Lead  
-- [ ] Security Review
-- [ ] Legal Review
 
 ---
 

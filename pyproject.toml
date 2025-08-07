@@ -4,21 +4,21 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "portfolio-manager"
-version = "1.0.0"
+version = "0.1.0"
 description = "A comprehensive, privacy-focused investment research platform"
 readme = "README.md"
-license = {text = "MIT"}
+license = {text = "GPL-3.0"}
 authors = [
-    {name = "Fulop Botond", email = "fulop.botond@example.com"}
+    {name = "Fulop Botond", email = "fulopboti@gmail.com"}
 ]
 maintainers = [
-    {name = "Fulop Botond", email = "fulop.botond@example.com"}
+    {name = "Fulop Botond", email = "fulopboti@gmail.com"}
 ]
 keywords = ["finance", "investment", "portfolio", "trading", "analysis"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Financial and Insurance Industry",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",

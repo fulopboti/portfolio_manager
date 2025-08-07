@@ -26,7 +26,7 @@ class TestConfiguredComponentFactoryInitialization:
         """Test factory accepts custom config manager."""
         mock_config = Mock()
         mock_config.get_all.return_value = {
-            'application': {'name': 'test', 'version': '1.0.0'},
+            'application': {'name': 'test', 'version': '0.1.0'},
             'database': {
                 'type': 'duckdb',
                 'connection': {'database_path': ':memory:', 'memory': True, 'read_only': False, 'pragmas': {}},
@@ -102,7 +102,7 @@ class TestConfiguredComponentFactoryConfigAccess:
     def _get_valid_config(self):
         """Get valid test configuration."""
         return {
-            'application': {'name': 'test', 'version': '1.0.0'},
+            'application': {'name': 'test', 'version': '0.1.0'},
             'database': {
                 'type': 'duckdb',
                 'connection': {'database_path': './test.db', 'memory': False, 'read_only': False, 'pragmas': {'threads': 2}},
@@ -193,7 +193,7 @@ class TestRepositoryFactoryCreation:
         """Create factory with mock configuration."""
         with patch('portfolio_manager.config.factory.config') as mock_global_config:
             mock_global_config.get_all.return_value = {
-                'application': {'name': 'test', 'version': '1.0.0'},
+                'application': {'name': 'test', 'version': '0.1.0'},
                 'database': {
                     'type': 'duckdb',
                     'connection': {'database_path': './configured.db', 'memory': False, 'read_only': True, 'pragmas': {'threads': 4, 'memory_limit': '1GB'}},
@@ -286,7 +286,7 @@ class TestDataIngestionServiceCreation:
         """Create factory with test configuration."""
         with patch('portfolio_manager.config.factory.config') as mock_global_config:
             mock_global_config.get_all.return_value = {
-                'application': {'name': 'test', 'version': '1.0.0'},
+                'application': {'name': 'test', 'version': '0.1.0'},
                 'database': {
                     'type': 'duckdb',
                     'connection': {'database_path': ':memory:', 'memory': True, 'read_only': False, 'pragmas': {}},
@@ -388,7 +388,7 @@ class TestPortfolioSimulatorServiceCreation:
         """Create factory with test configuration."""
         with patch('portfolio_manager.config.factory.config') as mock_global_config:
             mock_global_config.get_all.return_value = {
-                'application': {'name': 'test', 'version': '1.0.0'},
+                'application': {'name': 'test', 'version': '0.1.0'},
                 'database': {
                     'type': 'duckdb',
                     'connection': {'database_path': ':memory:', 'memory': True, 'read_only': False, 'pragmas': {}},
@@ -478,7 +478,7 @@ class TestStrategyScoreServiceCreation:
         """Create factory with test configuration."""
         with patch('portfolio_manager.config.factory.config') as mock_global_config:
             mock_global_config.get_all.return_value = {
-                'application': {'name': 'test', 'version': '1.0.0'},
+                'application': {'name': 'test', 'version': '0.1.0'},
                 'database': {
                     'type': 'duckdb',
                     'connection': {'database_path': ':memory:', 'memory': True, 'read_only': False, 'pragmas': {}},

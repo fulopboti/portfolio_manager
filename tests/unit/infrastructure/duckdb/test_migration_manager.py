@@ -285,7 +285,7 @@ class TestDuckDBMigrationManager:
     async def test_migrate_to_version(self, migration_manager):
         """Test migrate to specific version."""
         # Basic implementation just logs
-        await migration_manager.migrate_to_version("1.0.0")
+        await migration_manager.migrate_to_version("0.1.0")
         # Should not raise error
         
         await migration_manager.migrate_to_version()

@@ -237,7 +237,7 @@ class TestDuckDBMigrationManagerCoverage:
     async def test_migrate_to_version_with_target_coverage(self, migration_manager):
         """Test migrate_to_version with target version (lines 134-135)."""
         # This method just logs, so test it doesn't raise errors
-        await migration_manager.migrate_to_version("1.0.0")
+        await migration_manager.migrate_to_version("0.1.0")
 
     @pytest.mark.asyncio
     async def test_migrate_to_version_latest_coverage(self, migration_manager):

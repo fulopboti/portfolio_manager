@@ -18,7 +18,7 @@ class TestConfigManager:
         
         # Test basic values from base.yaml (with development overrides)
         assert config.get("application.name") == "Portfolio Manager"
-        assert config.get("application.version") == "1.0.0"
+        assert config.get("application.version") == "0.1.0"
         assert config.get("database.type") == "duckdb"
         assert config.get("event_system.bus.max_concurrent_events") == 50  # Overridden in development.yaml
     

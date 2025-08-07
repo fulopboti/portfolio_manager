@@ -551,7 +551,7 @@ class TestPortfolioManagerConfigValidation:
         config_dict = {
             "application": {
                 "name": "TestApp",
-                "version": "1.0.0"
+                "version": "0.1.0"
             },
             "database": {
                 "type": "duckdb",
@@ -692,7 +692,7 @@ class TestPortfolioManagerConfigValidation:
     def test_portfolio_manager_config_with_invalid_nested_values(self):
         """Test Portfolio Manager configuration with invalid nested values."""
         config_dict = {
-            "application": {"name": "TestApp", "version": "1.0.0"},
+            "application": {"name": "TestApp", "version": "0.1.0"},
             "database": {
                 "type": "duckdb",
                 "connection": {

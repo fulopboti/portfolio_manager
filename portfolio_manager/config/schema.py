@@ -202,7 +202,7 @@ class SecurityConfig(BaseModel):
 class ApplicationConfig(BaseModel):
     """Application-level configuration."""
     name: str = Field("Portfolio Manager", description="Application name")
-    version: str = Field("1.0.0", description="Application version")
+    version: str = Field("0.1.0", description="Application version")
     environment: str = Field("development", description="Environment name")
     debug: bool = Field(False, description="Debug mode")
     log_level: str = Field("INFO", description="Application log level")

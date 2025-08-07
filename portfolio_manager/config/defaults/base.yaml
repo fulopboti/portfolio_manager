@@ -1,6 +1,6 @@
 application:
   name: "Portfolio Manager"
-  version: "1.0.0"
+  version: "0.1.0"
   environment: "development"
   debug: true
   log_level: "INFO"
