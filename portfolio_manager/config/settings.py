@@ -160,12 +160,12 @@ class ConfigManager:
                     logger.debug(f"Applied environment override: {config_key} = {value}")
                 except Exception as e:
                     logger.warning(f"Failed to apply environment override {config_key}: {e}")
-        
+
         if applied_overrides > 0:
             logger.info(f"Applied {applied_overrides} environment variable overrides")
-        
+
         return config
-    
+
     def _parse_env_value(self, value: str) -> Any:
         """Parse environment variable value to appropriate type."""
         if value.lower() in ('', 'null', 'none'):
@@ -185,7 +185,7 @@ class ConfigManager:
                     return int(value)
             except ValueError:
                 return value
-    
+
     def _set_nested_value(self, config: Dict[str, Any], path: list, value: Any) -> None:
         """Set a nested value in configuration dictionary."""
         current = config
@@ -197,13 +197,13 @@ class ConfigManager:
                 raise ConfigurationError("Cannot set nested value")
             current = current[key]
         current[path[-1]] = value
-    
+
     def get(self, key: str, default: Any = None) -> Any:
         """Get a configuration value by dot-notation key."""
         config = self.load_config()
         keys = key.split('.')
         value = config
-        
+
         try:
             for k in keys:
                 if isinstance(value, dict):
@@ -215,7 +215,7 @@ class ConfigManager:
             return value
         except (KeyError, AttributeError):
             return default
-    
+
     def get_section(self, section: str) -> Dict[str, Any]:
         """Get a configuration section."""
         config = self.load_config()
