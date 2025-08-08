@@ -76,6 +76,8 @@ The application uses an event-driven architecture with:
 - **Primary Database**: DuckDB for analytical workloads and historical data
 - **Schema Management**: Automated migrations and schema validation
 - **Query Strategy**: Repository pattern with specialized query builders
+- **Financial Precision**: DECIMAL columns with string-based storage/retrieval to prevent float precision loss
+- **Data Types**: `DECIMAL(18,6)` for prices/quantities, `DECIMAL(18,2)` for cash balances
 
 ### Strategy Engine
 Three main investment strategies with configurable parameters:
@@ -105,16 +107,48 @@ Configuration is managed through:
 - **Type Checking**: Full MyPy compliance with strict settings
 - **Linting**: Ruff with comprehensive rule set (E, W, F, I, B, C4, UP)
 
+### Recent Code Quality Improvements
+- **Exception Handling**: All generic `Exception` usage replaced with domain-specific exceptions
+- **Financial Precision**: Float-to-string conversion implemented for all financial data
+- **Error Isolation**: Proper exception boundaries between application layers
+- **Logging**: Consistent structured logging with `self._logger` across all services
+- **Test Coverage**: 644+ tests passing with comprehensive error scenario coverage
+
 ### Repository Patterns
 When working with data access, follow the established repository patterns:
 - Use abstract ports from `application/ports.py`
 - Implement concrete repositories in `infrastructure/duckdb/`
 - Follow the existing naming conventions: `AssetRepository`, `PortfolioRepository`
 
+### Financial Data Precision
+- **Storage**: All `Decimal` values are stored as strings in the database to preserve precision
+- **Conversion Pattern**: `Decimal` → `str(value)` → Database → `Decimal(string)` → Application
+- **Detection**: Only strings matching `/^-?\d+\.\d+$/` are auto-converted back to `Decimal`
+- **Avoid**: Never use `float()` for financial data - use `str()` for database storage
+- **IDs**: Non-financial numeric strings (IDs, versions) remain as strings
+
 ### Error Handling
-- Use domain-specific exceptions from `domain/exceptions.py`
+- Use domain-specific exceptions from `domain/exceptions.py` and `infrastructure/data_access/exceptions.py`
 - Maintain clear exception hierarchies with meaningful error messages
 - Log errors using structured logging via `structlog`
+- **Pattern**: Replace generic `except Exception as e:` with specific domain exceptions
+- **Wrapping**: Unexpected exceptions should be wrapped in appropriate domain exceptions
+- **Logging**: Use `self._logger` for structured logging in services
+
+#### Exception Handling Pattern
+```python
+try:
+    # Business logic
+    result = await operation()
+except (DomainError, DataAccessError) as e:
+    # Handle expected domain errors
+    self._logger.warning(f"Expected error in {operation_name}: {e}")
+    return ErrorResult(error=e)
+except Exception as e:
+    # Handle unexpected errors - log and wrap
+    self._logger.error(f"Unexpected error in {operation_name}: {e}")
+    return ErrorResult(error=DomainSpecificError(f"Operation failed: {e}"))
+```
 
 ### Event-Driven Development
 When adding new features:
@@ -131,3 +165,8 @@ When adding new features:
 ## CLI Entry Point
 
 The main CLI is accessible via `portfolio-manager` command after installation, implemented in the (currently missing) `cli/main.py` module.
+
+## Additional Documentation
+
+- 📚 **[Development Guidelines](docs/DEVELOPMENT.md)** - Comprehensive development standards and best practices
+- 🔧 **[Code Quality Improvements](docs/IMPROVEMENTS.md)** - Recent exception handling and precision enhancements

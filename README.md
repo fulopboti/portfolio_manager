@@ -291,6 +291,8 @@ portfolio-manager/
 │   ├── integration/          # Integration tests
 │   └── conftest.py          # Test configuration
 ├── docs/                     # Documentation
+│   ├── IMPROVEMENTS.md       # Recent code quality improvements
+│   └── DEVELOPMENT.md        # Development guidelines and standards
 ├── scripts/                  # Utility scripts
 ├── pyproject.toml           # Project configuration
 ├── README.md                # This file
@@ -406,7 +408,8 @@ We welcome contributions from the community! Here's how to get involved:
 - **Architecture**: Strict adherence to Hexagonal Architecture principles
 - **Testing**: Minimum 85% test coverage, 90%+ for core business logic
 - **Documentation**: Comprehensive docstrings with type hints for all public APIs
-- **Error Handling**: Use custom exceptions from `portfolio_manager.core.exceptions`
+- **Error Handling**: Domain-specific exceptions with proper error boundaries ([see improvements](docs/IMPROVEMENTS.md))
+- **Financial Precision**: String-based `Decimal` storage to prevent floating-point errors
 - **Logging**: Structured logging with `structlog` for observability
 - **Type Safety**: Full MyPy compliance with strict type checking
 - **Code Style**: Black formatting, isort import sorting, Ruff linting
