@@ -46,7 +46,7 @@ class TestDatabaseConnectionInterface:
             'ping',
             'get_connection_info'
         ]
-        
+
         for method_name in required_methods:
             assert hasattr(DatabaseConnection, method_name)
             method = getattr(DatabaseConnection, method_name)
@@ -75,7 +75,7 @@ class TestTransactionManagerInterface:
             'rollback_transaction',
             'is_in_transaction'
         ]
-        
+
         for method_name in required_methods:
             assert hasattr(TransactionManager, method_name)
             method = getattr(TransactionManager, method_name)
@@ -102,7 +102,7 @@ class TestQueryExecutorInterface:
             'escape_identifier',
             'format_value'
         ]
-        
+
         for method_name in required_methods:
             assert hasattr(QueryExecutor, method_name)
             method = getattr(QueryExecutor, method_name)
@@ -120,7 +120,7 @@ class TestQueryResultDataClass:
             row_count=1,
             column_names=["id", "name"]
         )
-        
+
         assert result.rows == rows
         assert result.row_count == 1
         assert result.column_names == ["id", "name"]
@@ -130,10 +130,10 @@ class TestQueryResultDataClass:
         # Test with results
         rows = [{"id": 1, "name": "test"}, {"id": 2, "name": "test2"}]
         result = QueryResult(rows=rows, row_count=2, column_names=["id", "name"])
-        
+
         first_row = result.first()
         assert first_row == {"id": 1, "name": "test"}
-        
+
         # Test with no results
         empty_result = QueryResult(rows=[], row_count=0, column_names=[])
         assert empty_result.first() is None
@@ -143,20 +143,20 @@ class TestQueryResultDataClass:
         # Test with single column result
         rows = [{"count": 5}]
         result = QueryResult(rows=rows, row_count=1, column_names=["count"])
-        
+
         assert result.scalar() == 5
-        
+
         # Test with no results
         empty_result = QueryResult(rows=[], row_count=0, column_names=["count"])
         assert empty_result.scalar() is None
-        
+
         # Test with multiple columns (should return first column)
         multi_col_result = QueryResult(
             rows=[{"id": 1, "name": "test"}], 
             row_count=1, 
             column_names=["id", "name"]
         )
-        
+
         # Should return the first column value
         assert multi_col_result.scalar() == 1
 
@@ -169,7 +169,7 @@ class TestQueryResultDataClass:
             column_names=["id"]
         )
         assert not result.is_empty()
-        
+
         # Test with no results
         empty_result = QueryResult(rows=[], row_count=0, column_names=[])
         assert empty_result.is_empty()
@@ -198,7 +198,7 @@ class TestSchemaManagerInterface:
             'drop_table',
             'get_create_table_sql'
         ]
-        
+
         for method_name in required_methods:
             assert hasattr(SchemaManager, method_name)
             method = getattr(SchemaManager, method_name)
@@ -220,7 +220,7 @@ class TestMigrationDataClasses:
             created_at=datetime.now(timezone.utc),
             checksum="abc123"
         )
-        
+
         assert migration.version == "001"
         assert migration.name == "create_assets_table"
         assert migration.migration_type == MigrationType.CREATE_TABLE
@@ -237,7 +237,7 @@ class TestMigrationDataClasses:
             created_at=datetime.now(timezone.utc),
             checksum="abc123"
         )
-        
+
         assert migration.get_migration_id() == "001_create_assets_table"
 
     def test_table_definition_creation(self):
@@ -250,7 +250,7 @@ class TestMigrationDataClasses:
             indexes=["CREATE INDEX idx_symbol ON assets(symbol)"],
             constraints=["UNIQUE(symbol)"]
         )
-        
+
         assert table_def.name == "assets"
         assert "id" in table_def.columns
         assert table_def.primary_key == ["id"]
@@ -280,7 +280,7 @@ class TestAssetDataAccessInterface:
             # Data Quality and Maintenance
             'get_data_quality_report', 'vacuum_asset_data'
         ]
-        
+
         for method_name in required_methods:
             assert hasattr(AssetDataAccess, method_name)
             method = getattr(AssetDataAccess, method_name)
@@ -313,7 +313,7 @@ class TestPortfolioDataAccessInterface:
             # Data Maintenance
             'cleanup_zero_positions', 'archive_old_trades', 'validate_portfolio_integrity'
         ]
-        
+
         for method_name in required_methods:
             assert hasattr(PortfolioDataAccess, method_name)
             method = getattr(PortfolioDataAccess, method_name)
@@ -349,7 +349,7 @@ class TestMetricsDataAccessInterface:
             # Aggregation and Analysis
             'get_cross_sectional_metrics', 'calculate_metric_correlation'
         ]
-        
+
         for method_name in required_methods:
             assert hasattr(MetricsDataAccess, method_name)
             method = getattr(MetricsDataAccess, method_name)
@@ -382,7 +382,7 @@ class TestAuditDataAccessInterface:
             # Reporting and Analytics
             'generate_activity_report', 'get_usage_patterns', 'get_security_events'
         ]
-        
+
         for method_name in required_methods:
             assert hasattr(AuditDataAccess, method_name)
             method = getattr(AuditDataAccess, method_name)
@@ -398,7 +398,7 @@ class TestEnumerationDefinitions:
             "CREATE_TABLE", "ALTER_TABLE", "DROP_TABLE", 
             "CREATE_INDEX", "DROP_INDEX", "DATA_MIGRATION"
         ]
-        
+
         for type_name in required_types:
             assert hasattr(MigrationType, type_name)
 
@@ -408,7 +408,7 @@ class TestEnumerationDefinitions:
             "FUNDAMENTAL", "TECHNICAL", "STRATEGY_SCORE", 
             "PERFORMANCE", "RISK"
         ]
-        
+
         for type_name in required_types:
             assert hasattr(MetricType, type_name)
 
@@ -419,14 +419,14 @@ class TestEnumerationDefinitions:
             "PORTFOLIO_CREATE", "TRADE_EXECUTE", "SYSTEM_START",
             "ERROR_OCCURRED"
         ]
-        
+
         for type_name in required_types:
             assert hasattr(AuditEventType, type_name)
 
     def test_audit_severity_enum(self):
         """Test AuditSeverity enum has required values."""
         required_severities = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
-        
+
         for severity_name in required_severities:
             assert hasattr(AuditSeverity, severity_name)
 
@@ -441,14 +441,14 @@ class TestContractCompliance:
             SchemaManager, MigrationManager, AssetDataAccess,
             PortfolioDataAccess, MetricsDataAccess, AuditDataAccess
         ]
-        
+
         for interface in interfaces:
             assert issubclass(interface, ABC), f"{interface.__name__} should inherit from ABC"
 
     def test_method_signatures_are_consistent(self):
         """Test that method signatures follow consistent patterns."""
         # This is a basic test to ensure async methods are properly declared
-        
+
         # AssetDataAccess methods should be async
         async_methods = ['save_asset', 'get_asset', 'delete_asset']
         for method_name in async_methods:
@@ -459,30 +459,30 @@ class TestContractCompliance:
     def test_type_hints_are_present(self):
         """Test that interfaces have proper type hints."""
         # This tests that type annotations are preserved in abstract methods
-        
+
         # Check a few key methods have annotations
         save_asset = getattr(AssetDataAccess, 'save_asset')
         assert hasattr(save_asset, '__annotations__')
-        
+
         get_portfolio = getattr(PortfolioDataAccess, 'get_portfolio')
         assert hasattr(get_portfolio, '__annotations__')
 
     def test_interface_completeness(self):
         """Test that interfaces cover all required database operations."""
-        
+
         # AssetDataAccess should cover CRUD operations
         asset_methods = dir(AssetDataAccess)
         assert 'save_asset' in asset_methods  # Create
         assert 'get_asset' in asset_methods   # Read
         assert 'update_asset' in asset_methods # Update
         assert 'delete_asset' in asset_methods # Delete
-        
+
         # PortfolioDataAccess should cover portfolio, trade, and position operations
         portfolio_methods = dir(PortfolioDataAccess)
         assert 'save_portfolio' in portfolio_methods
         assert 'save_trade' in portfolio_methods
         assert 'save_position' in portfolio_methods
-        
+
         # MetricsDataAccess should cover different metric types
         metrics_methods = dir(MetricsDataAccess)
         assert 'save_strategy_scores' in metrics_methods

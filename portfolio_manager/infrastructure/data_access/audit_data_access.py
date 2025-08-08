@@ -37,7 +37,7 @@ class AuditSeverity(Enum):
 
 class AuditDataAccess(ABC):
     """Abstract interface for audit logging and system tracking.
-    
+
     Provides methods for recording and querying system events,
     user actions, and operational data for compliance and debugging.
     """
@@ -55,7 +55,7 @@ class AuditDataAccess(ABC):
         details: Optional[Dict[str, Any]] = None
     ) -> UUID:
         """Log an audit event.
-        
+
         Args:
             event_type: Type of event being logged
             severity: Severity level of the event
@@ -64,10 +64,10 @@ class AuditDataAccess(ABC):
             user_id: User who triggered the event (if applicable)
             session_id: Session identifier (if applicable)
             details: Additional structured data about the event
-            
+
         Returns:
             UUID: Unique identifier for the logged event
-            
+
         Raises:
             DataAccessError: If logging fails
         """
@@ -79,13 +79,13 @@ class AuditDataAccess(ABC):
         events: List[Dict[str, Any]]
     ) -> List[UUID]:
         """Log multiple audit events in a single batch.
-        
+
         Args:
             events: List of event dictionaries with required fields
-            
+
         Returns:
             List of UUIDs for the logged events
-            
+
         Raises:
             DataAccessError: If batch logging fails
         """
@@ -95,10 +95,10 @@ class AuditDataAccess(ABC):
     @abstractmethod
     async def get_event(self, event_id: UUID) -> Optional[Dict[str, Any]]:
         """Retrieve a specific audit event by ID.
-        
+
         Args:
             event_id: Unique event identifier
-            
+
         Returns:
             Event dictionary if found, None otherwise
         """
@@ -117,7 +117,7 @@ class AuditDataAccess(ABC):
         offset: Optional[int] = None
     ) -> List[Dict[str, Any]]:
         """Query audit events with various filters.
-        
+
         Args:
             start_date: Filter events after this date
             end_date: Filter events before this date
@@ -127,7 +127,7 @@ class AuditDataAccess(ABC):
             user_id: Filter by user
             limit: Maximum number of events to return
             offset: Number of events to skip
-            
+
         Returns:
             List of event dictionaries ordered by timestamp (newest first)
         """
@@ -141,12 +141,12 @@ class AuditDataAccess(ABC):
         limit: Optional[int] = None
     ) -> List[Dict[str, Any]]:
         """Get all audit events for a specific entity.
-        
+
         Args:
             entity_id: Entity identifier (portfolio ID, asset symbol, etc.)
             event_types: Filter by event types
             limit: Maximum number of events to return
-            
+
         Returns:
             List of event dictionaries ordered by timestamp (newest first)
         """
@@ -159,11 +159,11 @@ class AuditDataAccess(ABC):
         severity_levels: Optional[List[AuditSeverity]] = None
     ) -> List[Dict[str, Any]]:
         """Get recent audit events within the specified time window.
-        
+
         Args:
             hours: Number of hours back to look
             severity_levels: Filter by severity levels
-            
+
         Returns:
             List of event dictionaries ordered by timestamp (newest first)
         """
@@ -181,7 +181,7 @@ class AuditDataAccess(ABC):
         context: Optional[Dict[str, Any]] = None
     ) -> UUID:
         """Log an error event with detailed information.
-        
+
         Args:
             error_message: Error description
             error_type: Type/class of error
@@ -189,7 +189,7 @@ class AuditDataAccess(ABC):
             entity_id: Related entity where error occurred
             user_id: User who encountered the error
             context: Additional context data
-            
+
         Returns:
             UUID: Unique identifier for the error event
         """
@@ -202,11 +202,11 @@ class AuditDataAccess(ABC):
         end_date: datetime
     ) -> Dict[str, Any]:
         """Get summary statistics for errors in a time period.
-        
+
         Args:
             start_date: Start of analysis period
             end_date: End of analysis period
-            
+
         Returns:
             Dictionary with error counts, types, trends, etc.
         """
@@ -218,10 +218,10 @@ class AuditDataAccess(ABC):
         days: int = 7
     ) -> List[Dict[str, Any]]:
         """Analyze error patterns to identify recurring issues.
-        
+
         Args:
             days: Number of days to analyze
-            
+
         Returns:
             List of dictionaries describing error patterns
         """
@@ -237,13 +237,13 @@ class AuditDataAccess(ABC):
         details: Optional[Dict[str, Any]] = None
     ) -> UUID:
         """Log a performance metric for an operation.
-        
+
         Args:
             operation_name: Name of the operation measured
             duration_ms: Duration in milliseconds
             success: Whether the operation succeeded
             details: Additional performance details
-            
+
         Returns:
             UUID: Unique identifier for the performance record
         """
@@ -257,12 +257,12 @@ class AuditDataAccess(ABC):
         end_date: datetime
     ) -> Dict[str, Any]:
         """Get performance statistics for an operation.
-        
+
         Args:
             operation_name: Name of operation to analyze
             start_date: Start of analysis period
             end_date: End of analysis period
-            
+
         Returns:
             Dictionary with avg, min, max, percentiles, success rate
         """
@@ -275,11 +275,11 @@ class AuditDataAccess(ABC):
         hours: int = 24
     ) -> List[Dict[str, Any]]:
         """Get operations that exceeded performance thresholds.
-        
+
         Args:
             threshold_ms: Duration threshold in milliseconds
             hours: Number of hours back to analyze
-            
+
         Returns:
             List of slow operation records
         """
@@ -293,11 +293,11 @@ class AuditDataAccess(ABC):
         client_info: Optional[Dict[str, Any]] = None
     ) -> str:
         """Start a new user/system session.
-        
+
         Args:
             user_id: User identifier (if user session)
             client_info: Information about client (IP, user agent, etc.)
-            
+
         Returns:
             Session identifier string
         """
@@ -306,7 +306,7 @@ class AuditDataAccess(ABC):
     @abstractmethod
     async def end_session(self, session_id: str) -> None:
         """End an active session.
-        
+
         Args:
             session_id: Session to end
         """
@@ -315,7 +315,7 @@ class AuditDataAccess(ABC):
     @abstractmethod
     async def get_active_sessions(self) -> List[Dict[str, Any]]:
         """Get list of currently active sessions.
-        
+
         Returns:
             List of active session dictionaries
         """
@@ -328,11 +328,11 @@ class AuditDataAccess(ABC):
         days: int = 30
     ) -> List[Dict[str, Any]]:
         """Get session history for analysis.
-        
+
         Args:
             user_id: Filter by specific user (None = all users)
             days: Number of days of history to retrieve
-            
+
         Returns:
             List of session records
         """
@@ -342,10 +342,10 @@ class AuditDataAccess(ABC):
     @abstractmethod
     async def cleanup_old_events(self, days_to_keep: int) -> int:
         """Remove audit events older than specified days.
-        
+
         Args:
             days_to_keep: Number of days of events to retain
-            
+
         Returns:
             Number of events deleted
         """
@@ -358,11 +358,11 @@ class AuditDataAccess(ABC):
         archive_path: Optional[str] = None
     ) -> int:
         """Archive old events to external storage.
-        
+
         Args:
             before_date: Archive events before this date
             archive_path: Optional path for archive storage
-            
+
         Returns:
             Number of events archived
         """
@@ -371,7 +371,7 @@ class AuditDataAccess(ABC):
     @abstractmethod
     async def get_storage_stats(self) -> Dict[str, Any]:
         """Get statistics about audit log storage usage.
-        
+
         Returns:
             Dictionary with counts, sizes, oldest/newest dates
         """
@@ -386,12 +386,12 @@ class AuditDataAccess(ABC):
         user_id: Optional[str] = None
     ) -> Dict[str, Any]:
         """Generate activity report for a time period.
-        
+
         Args:
             start_date: Start of report period
             end_date: End of report period
             user_id: Filter by specific user (None = all users)
-            
+
         Returns:
             Dictionary containing activity summary and statistics
         """
@@ -403,10 +403,10 @@ class AuditDataAccess(ABC):
         days: int = 30
     ) -> Dict[str, Any]:
         """Analyze usage patterns to identify trends.
-        
+
         Args:
             days: Number of days to analyze
-            
+
         Returns:
             Dictionary with usage patterns, peak times, etc.
         """
@@ -418,10 +418,10 @@ class AuditDataAccess(ABC):
         hours: int = 24
     ) -> List[Dict[str, Any]]:
         """Get security-related events for monitoring.
-        
+
         Args:
             hours: Number of hours back to check
-            
+
         Returns:
             List of security event dictionaries
         """

@@ -10,7 +10,7 @@ from portfolio_manager.domain.entities import Asset, AssetSnapshot, AssetType
 
 class AssetDataAccess(ABC):
     """Abstract interface for asset and market data persistence.
-    
+
     Provides methods for storing and retrieving asset information,
     price history, and fundamental metrics.
     """
@@ -19,10 +19,10 @@ class AssetDataAccess(ABC):
     @abstractmethod
     async def save_asset(self, asset: Asset) -> None:
         """Persist an asset to the database.
-        
+
         Args:
             asset: Asset entity to save
-            
+
         Raises:
             DataAccessError: If save operation fails
         """
@@ -31,10 +31,10 @@ class AssetDataAccess(ABC):
     @abstractmethod
     async def get_asset(self, symbol: str) -> Optional[Asset]:
         """Retrieve an asset by symbol.
-        
+
         Args:
             symbol: Asset symbol to look up
-            
+
         Returns:
             Asset entity if found, None otherwise
         """
@@ -43,10 +43,10 @@ class AssetDataAccess(ABC):
     @abstractmethod
     async def get_assets_by_type(self, asset_type: AssetType) -> List[Asset]:
         """Retrieve all assets of a specific type.
-        
+
         Args:
             asset_type: Type of assets to retrieve
-            
+
         Returns:
             List of Asset entities
         """
@@ -55,7 +55,7 @@ class AssetDataAccess(ABC):
     @abstractmethod
     async def get_all_assets(self) -> List[Asset]:
         """Retrieve all assets in the database.
-        
+
         Returns:
             List of all Asset entities
         """
@@ -64,10 +64,10 @@ class AssetDataAccess(ABC):
     @abstractmethod
     async def update_asset(self, asset: Asset) -> None:
         """Update an existing asset.
-        
+
         Args:
             asset: Asset entity with updated information
-            
+
         Raises:
             DataAccessError: If update fails
             NotFoundError: If asset doesn't exist
@@ -77,10 +77,10 @@ class AssetDataAccess(ABC):
     @abstractmethod
     async def delete_asset(self, symbol: str) -> None:
         """Delete an asset and all related data.
-        
+
         Args:
             symbol: Symbol of asset to delete
-            
+
         Raises:
             DataAccessError: If deletion fails
         """
@@ -89,10 +89,10 @@ class AssetDataAccess(ABC):
     @abstractmethod
     async def asset_exists(self, symbol: str) -> bool:
         """Check if an asset exists in the database.
-        
+
         Args:
             symbol: Asset symbol to check
-            
+
         Returns:
             bool: True if asset exists, False otherwise
         """
@@ -101,7 +101,7 @@ class AssetDataAccess(ABC):
     @abstractmethod
     async def get_asset_symbols(self) -> Set[str]:
         """Get all asset symbols in the database.
-        
+
         Returns:
             Set of asset symbol strings
         """
@@ -111,10 +111,10 @@ class AssetDataAccess(ABC):
     @abstractmethod
     async def save_snapshot(self, snapshot: AssetSnapshot) -> None:
         """Save a price snapshot for an asset.
-        
+
         Args:
             snapshot: AssetSnapshot entity to save
-            
+
         Raises:
             DataAccessError: If save operation fails
         """
@@ -123,10 +123,10 @@ class AssetDataAccess(ABC):
     @abstractmethod
     async def get_latest_snapshot(self, symbol: str) -> Optional[AssetSnapshot]:
         """Get the most recent price snapshot for an asset.
-        
+
         Args:
             symbol: Asset symbol
-            
+
         Returns:
             Latest AssetSnapshot if available, None otherwise
         """
@@ -139,11 +139,11 @@ class AssetDataAccess(ABC):
         date: datetime
     ) -> Optional[AssetSnapshot]:
         """Get price snapshot closest to a specific date.
-        
+
         Args:
             symbol: Asset symbol
             date: Target date
-            
+
         Returns:
             AssetSnapshot closest to the date, None if none found
         """
@@ -157,12 +157,12 @@ class AssetDataAccess(ABC):
         end_date: datetime
     ) -> List[AssetSnapshot]:
         """Get historical price snapshots for a date range.
-        
+
         Args:
             symbol: Asset symbol
             start_date: Start of date range (inclusive)
             end_date: End of date range (inclusive)
-            
+
         Returns:
             List of AssetSnapshot entities ordered by timestamp
         """
@@ -175,11 +175,11 @@ class AssetDataAccess(ABC):
         date: datetime
     ) -> Dict[str, Optional[AssetSnapshot]]:
         """Get snapshots for multiple assets at a specific date.
-        
+
         Args:
             symbols: List of asset symbols
             date: Target date
-            
+
         Returns:
             Dictionary mapping symbols to their snapshots
         """
@@ -188,11 +188,11 @@ class AssetDataAccess(ABC):
     @abstractmethod
     async def delete_snapshots_before(self, symbol: str, date: datetime) -> int:
         """Delete old snapshots before a specific date.
-        
+
         Args:
             symbol: Asset symbol
             date: Cutoff date (snapshots before this will be deleted)
-            
+
         Returns:
             Number of snapshots deleted
         """
@@ -201,10 +201,10 @@ class AssetDataAccess(ABC):
     @abstractmethod
     async def get_snapshot_count(self, symbol: str) -> int:
         """Get total number of snapshots for an asset.
-        
+
         Args:
             symbol: Asset symbol
-            
+
         Returns:
             Count of snapshots
         """
@@ -219,12 +219,12 @@ class AssetDataAccess(ABC):
         as_of_date: Optional[datetime] = None
     ) -> None:
         """Save fundamental metrics for an asset.
-        
+
         Args:
             symbol: Asset symbol
             metrics: Dictionary of metric names to values
             as_of_date: Date the metrics are valid for (defaults to now)
-            
+
         Raises:
             DataAccessError: If save operation fails
         """
@@ -237,11 +237,11 @@ class AssetDataAccess(ABC):
         as_of_date: Optional[datetime] = None
     ) -> Optional[Dict[str, Decimal]]:
         """Get fundamental metrics for an asset.
-        
+
         Args:
             symbol: Asset symbol
             as_of_date: Date to get metrics for (defaults to latest)
-            
+
         Returns:
             Dictionary of metric names to values, None if not found
         """
@@ -254,11 +254,11 @@ class AssetDataAccess(ABC):
         as_of_date: Optional[datetime] = None
     ) -> Dict[str, Optional[Dict[str, Decimal]]]:
         """Get fundamental metrics for multiple assets.
-        
+
         Args:
             symbols: List of asset symbols
             as_of_date: Date to get metrics for (defaults to latest)
-            
+
         Returns:
             Dictionary mapping symbols to their metrics
         """
@@ -273,13 +273,13 @@ class AssetDataAccess(ABC):
         end_date: datetime
     ) -> List[tuple[datetime, Decimal]]:
         """Get historical values for a specific fundamental metric.
-        
+
         Args:
             symbol: Asset symbol
             metric_name: Name of the metric
             start_date: Start of date range
             end_date: End of date range
-            
+
         Returns:
             List of (date, value) tuples ordered by date
         """
@@ -292,11 +292,11 @@ class AssetDataAccess(ABC):
         before_date: Optional[datetime] = None
     ) -> int:
         """Delete fundamental metrics for an asset.
-        
+
         Args:
             symbol: Asset symbol
             before_date: Only delete metrics before this date (None = all)
-            
+
         Returns:
             Number of metric records deleted
         """
@@ -306,10 +306,10 @@ class AssetDataAccess(ABC):
     @abstractmethod
     async def get_data_quality_report(self, symbol: str) -> Dict[str, Any]:
         """Generate a data quality report for an asset.
-        
+
         Args:
             symbol: Asset symbol
-            
+
         Returns:
             Dictionary containing quality metrics and statistics
         """
@@ -318,7 +318,7 @@ class AssetDataAccess(ABC):
     @abstractmethod
     async def vacuum_asset_data(self, symbol: Optional[str] = None) -> None:
         """Optimize storage and clean up fragmented data.
-        
+
         Args:
             symbol: Specific asset to vacuum, or None for all
         """

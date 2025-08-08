@@ -25,13 +25,13 @@ class ViewDefinition:
 
 class PortfolioManagerSchema:
     """Centralized schema definitions for the Portfolio Manager database.
-    
+
     Contains all table, index, and view definitions optimized for DuckDB's
     columnar storage and analytical workloads.
     """
-    
+
     SCHEMA_VERSION = "1.0.0"
-    
+
     @classmethod
     def get_all_tables(cls) -> Dict[str, TableDefinition]:
         """Get all table definitions for the application schema."""
@@ -48,7 +48,7 @@ class PortfolioManagerSchema:
             "audit_events": cls.get_audit_events_table(),
             "schema_migrations": cls.get_schema_migrations_table(),
         }
-    
+
     @classmethod
     def get_all_indexes(cls) -> List[IndexDefinition]:
         """Get all index definitions for optimal query performance."""
@@ -56,46 +56,46 @@ class PortfolioManagerSchema:
             # Asset indexes
             IndexDefinition("idx_assets_type", "assets", ["asset_type"]),
             IndexDefinition("idx_assets_exchange", "assets", ["exchange"]),
-            
+
             # Asset snapshot indexes (time-series optimized)
             IndexDefinition("idx_snapshots_symbol_time", "asset_snapshots", ["symbol", "timestamp"]),
             IndexDefinition("idx_snapshots_timestamp", "asset_snapshots", ["timestamp"]),
-            
+
             # Asset metrics indexes
             IndexDefinition("idx_metrics_symbol_type", "asset_metrics", ["symbol", "metric_type"]),
             IndexDefinition("idx_metrics_date", "asset_metrics", ["as_of_date"]),
-            
+
             # Portfolio indexes
             IndexDefinition("idx_portfolios_currency", "portfolios", ["base_ccy"]),
-            
+
             # Trades indexes (optimized for portfolio queries)
             IndexDefinition("idx_trades_portfolio_time", "trades", ["portfolio_id", "timestamp"]),
             IndexDefinition("idx_trades_symbol", "trades", ["symbol"]),
             IndexDefinition("idx_trades_timestamp", "trades", ["timestamp"]),
-            
+
             # Position indexes
             IndexDefinition("idx_positions_portfolio", "positions", ["portfolio_id"]),
             IndexDefinition("idx_positions_symbol", "positions", ["symbol"]),
-            
+
             # Strategy scores indexes
             IndexDefinition("idx_scores_strategy_date", "strategy_scores", ["strategy_name", "as_of_date"]),
             IndexDefinition("idx_scores_symbol", "strategy_scores", ["symbol"]),
-            
+
             # Portfolio metrics indexes
             IndexDefinition("idx_portfolio_metrics_id_date", "portfolio_metrics", ["portfolio_id", "as_of_date"]),
-            
+
             # Risk metrics indexes
             IndexDefinition("idx_risk_metrics_entity", "risk_metrics", ["entity_id", "entity_type"]),
-            
+
             # Audit event indexes
             IndexDefinition("idx_audit_timestamp", "audit_events", ["timestamp"]),
             IndexDefinition("idx_audit_entity", "audit_events", ["entity_id"]),
             IndexDefinition("idx_audit_type_severity", "audit_events", ["event_type", "severity"]),
-            
+
             # Migration tracking
             IndexDefinition("idx_migrations_version", "schema_migrations", ["version"], unique=True),
         ]
-    
+
     @classmethod
     def get_all_views(cls) -> List[ViewDefinition]:
         """Get all view definitions for common analytical queries."""
@@ -118,7 +118,7 @@ class PortfolioManagerSchema:
                 """,
                 description="Summary view of all portfolios with position counts and values"
             ),
-            
+
             ViewDefinition(
                 name="latest_asset_prices",
                 sql="""
@@ -130,7 +130,7 @@ class PortfolioManagerSchema:
                 """,
                 description="Latest price for each asset"
             ),
-            
+
             ViewDefinition(
                 name="daily_portfolio_performance",
                 sql="""
@@ -146,7 +146,7 @@ class PortfolioManagerSchema:
                 description="Daily trading activity and cash flows by portfolio"
             ),
         ]
-    
+
     @classmethod
     def get_assets_table(cls) -> TableDefinition:
         """Asset master table definition."""
@@ -169,7 +169,7 @@ class PortfolioManagerSchema:
                 "CHECK (length(name) > 0)"
             ]
         )
-    
+
     @classmethod
     def get_asset_snapshots_table(cls) -> TableDefinition:
         """Asset price snapshot table optimized for time-series data."""
@@ -198,7 +198,7 @@ class PortfolioManagerSchema:
                 "CHECK (low <= close)"
             ]
         )
-    
+
     @classmethod
     def get_asset_metrics_table(cls) -> TableDefinition:
         """Asset fundamental and technical metrics table."""
@@ -222,7 +222,7 @@ class PortfolioManagerSchema:
                 "CHECK (length(metric_name) > 0)"
             ]
         )
-    
+
     @classmethod
     def get_portfolios_table(cls) -> TableDefinition:
         """Portfolio master table definition."""
@@ -244,7 +244,7 @@ class PortfolioManagerSchema:
                 "UNIQUE (name)"
             ]
         )
-    
+
     @classmethod
     def get_trades_table(cls) -> TableDefinition:
         """Trade execution log table."""
@@ -277,7 +277,7 @@ class PortfolioManagerSchema:
                 "CHECK (length(price_ccy) > 0)"
             ]
         )
-    
+
     @classmethod
     def get_positions_table(cls) -> TableDefinition:
         """Current portfolio positions table."""
@@ -304,7 +304,7 @@ class PortfolioManagerSchema:
                 "CHECK (length(price_ccy) > 0)"
             ]
         )
-    
+
     @classmethod
     def get_strategy_scores_table(cls) -> TableDefinition:
         """Strategy ranking scores table."""
@@ -327,7 +327,7 @@ class PortfolioManagerSchema:
                 "CHECK (length(strategy_name) > 0)"
             ]
         )
-    
+
     @classmethod
     def get_portfolio_metrics_table(cls) -> TableDefinition:
         """Portfolio performance metrics table."""
@@ -350,7 +350,7 @@ class PortfolioManagerSchema:
                 "CHECK (length(metric_name) > 0)"
             ]
         )
-    
+
     @classmethod
     def get_risk_metrics_table(cls) -> TableDefinition:
         """Risk metrics table for assets and portfolios."""
@@ -373,7 +373,7 @@ class PortfolioManagerSchema:
                 "CHECK (length(metric_name) > 0)"
             ]
         )
-    
+
     @classmethod
     def get_audit_events_table(cls) -> TableDefinition:
         """Audit event log table."""
@@ -399,7 +399,7 @@ class PortfolioManagerSchema:
                 "CHECK (length(message) > 0)"
             ]
         )
-    
+
     @classmethod
     def get_schema_migrations_table(cls) -> TableDefinition:
         """Schema migration tracking table."""

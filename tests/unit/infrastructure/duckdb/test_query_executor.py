@@ -67,7 +67,7 @@ class TestDuckDBQueryExecutor:
     async def test_execute_query_simple(self, query_executor):
         """Test simple query execution."""
         result = await query_executor.execute_query("SELECT 1 as test_value")
-        
+
         assert isinstance(result, QueryResult)
         assert result.row_count == 1
         assert len(result.rows) == 1
@@ -85,7 +85,7 @@ class TestDuckDBQueryExecutor:
                 (3, 'third')
             ) AS t(id, name)
         """)
-        
+
         assert result.row_count == 3
         assert len(result.rows) == 3
         assert result.column_names == ["id", "name"]
@@ -100,9 +100,9 @@ class TestDuckDBQueryExecutor:
         await query_executor.execute_command(
             "CREATE TABLE empty_test (id INTEGER, name VARCHAR)"
         )
-        
+
         result = await query_executor.execute_query("SELECT * FROM empty_test")
-        
+
         assert result.row_count == 0
         assert len(result.rows) == 0
         assert result.column_names == ["id", "name"]
@@ -117,10 +117,10 @@ class TestDuckDBQueryExecutor:
         await query_executor.execute_command("""
             INSERT INTO param_test VALUES (1, 'test1'), (2, 'test2')
         """)
-        
+
         # Test with simple string formatting (current implementation)
         result = await query_executor.execute_query("SELECT * FROM param_test WHERE id = 1")
-        
+
         assert result.row_count == 1
         assert result.rows[0]["value"] == "test1"
 
@@ -129,10 +129,10 @@ class TestDuckDBQueryExecutor:
         """Test query execution when not connected."""
         connection = DuckDBConnection(temp_db_path)  # Not connected
         executor = DuckDBQueryExecutor(connection)
-        
+
         with pytest.raises(QueryError) as exc_info:
             await executor.execute_query("SELECT 1")
-        
+
         assert "Database connection is not active" in str(exc_info.value)
 
     @pytest.mark.asyncio
@@ -140,7 +140,7 @@ class TestDuckDBQueryExecutor:
         """Test query execution with SQL error."""
         with pytest.raises(QueryError) as exc_info:
             await query_executor.execute_query("SELECT * FROM nonexistent_table")
-        
+
         assert "Failed to execute query" in str(exc_info.value)
 
     @pytest.mark.asyncio
@@ -153,10 +153,10 @@ class TestDuckDBQueryExecutor:
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
-        
+
         # CREATE TABLE typically returns 0 affected rows
         assert isinstance(affected, int)
-        
+
         # Verify table was created
         result = await query_executor.execute_query(
             "SELECT name FROM pragma_table_info('test_command')"
@@ -173,15 +173,15 @@ class TestDuckDBQueryExecutor:
         await query_executor.execute_command("""
             CREATE TABLE insert_test (id INTEGER, name VARCHAR)
         """)
-        
+
         # Insert single row
         affected = await query_executor.execute_command("""
             INSERT INTO insert_test (id, name) VALUES (1, 'test')
         """)
-        
+
         # DuckDB returns -1 for rowcount, so we just check it didn't error
         assert affected >= 0 or affected == -1  # Either meaningful count or DuckDB's -1
-        
+
         # Verify data was inserted
         result = await query_executor.execute_query("SELECT * FROM insert_test")
         assert result.row_count == 1
@@ -197,15 +197,15 @@ class TestDuckDBQueryExecutor:
         await query_executor.execute_command("""
             INSERT INTO update_test VALUES (1, 'old'), (2, 'old'), (3, 'keep')
         """)
-        
+
         # Update data
         affected = await query_executor.execute_command("""
             UPDATE update_test SET name = 'new' WHERE id <= 2
         """)
-        
+
         # DuckDB returns -1 for rowcount, verify with data instead
         assert affected >= 0 or affected == -1
-        
+
         # Verify updates
         result = await query_executor.execute_query(
             "SELECT name FROM update_test ORDER BY id"
@@ -223,15 +223,15 @@ class TestDuckDBQueryExecutor:
         await query_executor.execute_command("""
             INSERT INTO delete_test VALUES (1, 'delete'), (2, 'delete'), (3, 'keep')
         """)
-        
+
         # Delete data
         affected = await query_executor.execute_command("""
             DELETE FROM delete_test WHERE name = 'delete'
         """)
-        
+
         # DuckDB returns -1 for rowcount, verify with data instead
         assert affected >= 0 or affected == -1
-        
+
         # Verify deletions
         result = await query_executor.execute_query("SELECT * FROM delete_test")
         assert result.row_count == 1
@@ -242,7 +242,7 @@ class TestDuckDBQueryExecutor:
         """Test command execution when not connected."""
         connection = DuckDBConnection(temp_db_path)  # Not connected
         executor = DuckDBQueryExecutor(connection)
-        
+
         with pytest.raises(QueryError):
             await executor.execute_command("CREATE TABLE test (id INTEGER)")
 
@@ -259,14 +259,14 @@ class TestDuckDBQueryExecutor:
         await query_executor.execute_command("""
             CREATE TABLE batch_test (id INTEGER, name VARCHAR)
         """)
-        
+
         # Batch insert
         parameters_list = [
             {"id": 1, "name": "first"},
             {"id": 2, "name": "second"},
             {"id": 3, "name": "third"}
         ]
-        
+
         # Note: Current implementation doesn't use real parameterized queries
         # So we'll test with simple insert statements
         sql_statements = [
@@ -274,16 +274,16 @@ class TestDuckDBQueryExecutor:
             "INSERT INTO batch_test VALUES (2, 'second')",
             "INSERT INTO batch_test VALUES (3, 'third')"
         ]
-        
+
         results = []
         for sql in sql_statements:
             result = await query_executor.execute_command(sql)
             results.append(result)
-        
+
         assert len(results) == 3
         # DuckDB returns -1 for rowcount, so just verify no errors
         assert all(r >= 0 or r == -1 for r in results)
-        
+
         # Verify all data was inserted
         result = await query_executor.execute_query("SELECT COUNT(*) as count FROM batch_test")
         assert result.rows[0]["count"] == 3
@@ -299,7 +299,7 @@ class TestDuckDBQueryExecutor:
         """Test batch execution when not connected."""
         connection = DuckDBConnection(temp_db_path)
         executor = DuckDBQueryExecutor(connection)
-        
+
         with pytest.raises(QueryError):
             await executor.execute_batch("INSERT INTO test VALUES (1)", [{}])
 
@@ -326,7 +326,7 @@ class TestDuckDBQueryExecutor:
         """Test scalar extraction with no rows."""
         # Create empty table
         await query_executor.execute_command("CREATE TABLE empty_scalar (id INTEGER)")
-        
+
         scalar_value = await query_executor.execute_scalar("SELECT id FROM empty_scalar")
         assert scalar_value is None
 
@@ -348,13 +348,13 @@ class TestDuckDBQueryExecutor:
         """Test invalid identifier escaping."""
         with pytest.raises(ParameterError):
             query_executor.escape_identifier("123invalid")  # Starts with number
-        
+
         with pytest.raises(ParameterError):
             query_executor.escape_identifier("table-name")  # Contains hyphen
-        
+
         with pytest.raises(ParameterError):
             query_executor.escape_identifier("table name")  # Contains space
-        
+
         with pytest.raises(ParameterError):
             query_executor.escape_identifier("")  # Empty string
 
@@ -406,7 +406,7 @@ class TestDuckDBQueryExecutor:
             "active": True
         }
         result = query_executor._prepare_parameters(params)
-        
+
         assert "id" in result
         assert "name" in result
         assert "active" in result
@@ -415,10 +415,10 @@ class TestDuckDBQueryExecutor:
         """Test parameter preparation with invalid parameter names."""
         with pytest.raises(ParameterError):
             query_executor._prepare_parameters({"123invalid": "value"})
-        
+
         with pytest.raises(ParameterError):
             query_executor._prepare_parameters({"param-name": "value"})
-        
+
         with pytest.raises(ParameterError):
             query_executor._prepare_parameters({123: "value"})  # Non-string key
 
@@ -488,7 +488,7 @@ class TestQueryResult:
             column_names=["id", "name"],
             execution_time_ms=10.5
         )
-        
+
         assert result.rows == rows
         assert result.row_count == 1
         assert result.column_names == ["id", "name"]
@@ -498,14 +498,14 @@ class TestQueryResult:
         """Test first() method with data."""
         rows = [{"id": 1, "name": "first"}, {"id": 2, "name": "second"}]
         result = QueryResult(rows=rows, row_count=2, column_names=["id", "name"])
-        
+
         first_row = result.first()
         assert first_row == {"id": 1, "name": "first"}
 
     def test_query_result_first_empty(self):
         """Test first() method with empty result."""
         result = QueryResult(rows=[], row_count=0, column_names=[])
-        
+
         first_row = result.first()
         assert first_row is None
 
@@ -513,7 +513,7 @@ class TestQueryResult:
         """Test isEmpty check."""
         empty_result = QueryResult(rows=[], row_count=0, column_names=[])
         assert empty_result.row_count == 0
-        
+
         non_empty_result = QueryResult(
             rows=[{"id": 1}], row_count=1, column_names=["id"]
         )

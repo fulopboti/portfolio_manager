@@ -16,7 +16,7 @@ def run_command(cmd: list[str], description: str) -> bool:
     print(f"Running: {description}")
     print(f"Command: {' '.join(cmd)}")
     print(f"{'='*60}")
-    
+
     try:
         result = subprocess.run(cmd, check=True, cwd=Path(__file__).parent.parent)
         print(f"\n✅ {description} - PASSED")
@@ -43,7 +43,7 @@ Available test types:
   domain       - Run domain layer tests
   application  - Run application layer tests
   infrastructure - Run infrastructure layer tests
-  
+
 Examples:
   python run_tests.py unit
   python run_tests.py coverage
@@ -61,7 +61,7 @@ Examples:
             "-v", 
             "-m", "unit"
         ], "Unit Tests")
-        
+
     elif test_type == "integration":
         success = run_command([
             "python", "-m", "pytest", 
@@ -69,7 +69,7 @@ Examples:
             "-v", 
             "-m", "integration"
         ], "Integration Tests")
-        
+
     elif test_type == "all":
         success = run_command([
             "python", "-m", "pytest", 
@@ -77,7 +77,7 @@ Examples:
             "tests/integration/",
             "-v"
         ], "All Tests")
-        
+
     elif test_type == "coverage":
         success = run_command([
             "python", "-m", "pytest", 
@@ -88,21 +88,21 @@ Examples:
             "--cov-report=html",
             "-v"
         ], "All Tests with Coverage")
-        
+
     elif test_type == "duckdb":
         success = run_command([
             "python", "-m", "pytest", 
             "-m", "duckdb",
             "-v"
         ], "DuckDB Tests")
-        
+
     elif test_type == "domain":
         success = run_command([
             "python", "-m", "pytest", 
             "tests/unit/domain/",
             "-v"
         ], "Domain Layer Tests")
-        
+
     elif test_type == "application":
         success = run_command([
             "python", "-m", "pytest", 
@@ -110,7 +110,7 @@ Examples:
             "tests/integration/application/",
             "-v"
         ], "Application Layer Tests")
-        
+
     elif test_type == "infrastructure":
         success = run_command([
             "python", "-m", "pytest", 
@@ -118,7 +118,7 @@ Examples:
             "tests/integration/infrastructure/",
             "-v"
         ], "Infrastructure Layer Tests")
-        
+
     else:
         print(f"Unknown test type: {test_type}")
         return

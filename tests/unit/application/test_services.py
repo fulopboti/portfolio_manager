@@ -83,7 +83,7 @@ class TestDataIngestionService:
             close=Decimal("152.75"),
             volume=50000000
         )
-        
+
         mock_data_provider.get_ohlcv_data.return_value = [sample_snapshot]
         mock_data_provider.get_fundamental_data.return_value = {
             "pe_ratio": Decimal("25.5"),
@@ -144,7 +144,7 @@ class TestDataIngestionService:
     ):
         """Test batch ingestion of multiple symbols."""
         symbols = ["AAPL", "MSFT", "GOOGL"]
-        
+
         # Setup mocks
         mock_data_provider.get_ohlcv_data.return_value = [
             AssetSnapshot(
@@ -190,7 +190,7 @@ class TestDataIngestionService:
             close=Decimal("98.00"),
             volume=1000000
         )
-        
+
         mock_data_provider.get_ohlcv_data.return_value = [valid_snapshot]
         mock_asset_repository.get_asset.return_value = None
         # Make save_snapshot raise a validation error
@@ -296,7 +296,7 @@ class TestPortfolioSimulatorService:
             cash_balance=Decimal("1000.00"),  # Low balance
             created=sample_portfolio.created
         )
-        
+
         mock_portfolio_repository.get_portfolio.return_value = low_cash_portfolio
         mock_asset_repository.get_latest_snapshot.return_value = AssetSnapshot(
             symbol="AAPL",
@@ -433,7 +433,7 @@ class TestPortfolioSimulatorService:
                 last_updated=datetime.now(timezone.utc)
             )
         ]
-        
+
         mock_portfolio_repository.get_portfolio.return_value = sample_portfolio
         mock_portfolio_repository.get_positions_for_portfolio.return_value = positions
         mock_asset_repository.get_latest_snapshot.side_effect = [
@@ -541,7 +541,7 @@ class TestPortfolioSimulatorExceptionCoverage:
             price_ccy="USD",
             last_updated=datetime.now(timezone.utc)
         )
-        
+
         mock_portfolio_repository.get_portfolio.return_value = sample_portfolio
         mock_portfolio_repository.get_position.return_value = existing_position
         mock_asset_repository.get_latest_snapshot.return_value = AssetSnapshot(
@@ -567,10 +567,10 @@ class TestPortfolioSimulatorExceptionCoverage:
         # Verify success
         assert result.success is True
         assert result.trade is not None
-        
+
         # Verify existing position was updated (lines 139-141)
         mock_portfolio_repository.save_position.assert_called_once_with(existing_position)
-        
+
         # Verify position quantities were updated via add_shares
         assert existing_position.qty == Decimal("75")  # 50 + 25
 
@@ -591,7 +591,7 @@ class TestPortfolioSimulatorExceptionCoverage:
             close=Decimal("152.75"),
             volume=50000000
         )
-        
+
         # Make save_position throw an exception
         mock_portfolio_repository.save_position.side_effect = RuntimeError("Database error")
 
@@ -624,7 +624,7 @@ class TestPortfolioSimulatorExceptionCoverage:
             price_ccy="USD",
             last_updated=datetime.now(timezone.utc)
         )
-        
+
         mock_portfolio_repository.get_portfolio.return_value = sample_portfolio
         mock_portfolio_repository.get_position.return_value = existing_position
         mock_asset_repository.get_latest_snapshot.return_value = AssetSnapshot(
@@ -636,7 +636,7 @@ class TestPortfolioSimulatorExceptionCoverage:
             close=Decimal("152.75"),
             volume=50000000
         )
-        
+
         # Make save_position throw an exception
         mock_portfolio_repository.save_position.side_effect = RuntimeError("Database error")
 
@@ -792,7 +792,7 @@ class TestStrategyScoreService:
             close=Decimal("102.00"),
             volume=1000000
         )
-        
+
         # Return different scores for different symbols
         scores = [Decimal("95.0"), Decimal("85.0"), Decimal("75.0"), Decimal("65.0")]
         mock_strategy_calculator.calculate_score.side_effect = scores
@@ -911,7 +911,7 @@ class TestDataIngestionServiceAdditionalCoverage:
             close=Decimal("152.75"),
             volume=50000000
         )
-        
+
         mock_data_provider.get_ohlcv_data.return_value = [sample_snapshot]
         mock_data_provider.get_fundamental_data.side_effect = Exception("Fundamentals API Error")
         mock_asset_repository.get_asset.return_value = None
@@ -939,7 +939,7 @@ class TestDataIngestionServiceAdditionalCoverage:
             Asset(symbol="AAPL", exchange="NASDAQ", asset_type=AssetType.STOCK, name="Apple"),
             Asset(symbol="MSFT", exchange="NASDAQ", asset_type=AssetType.STOCK, name="Microsoft"),
         ]
-        
+
         mock_asset_repository.get_all_assets.return_value = existing_assets
         mock_data_provider.get_ohlcv_data.return_value = [
             AssetSnapshot(
@@ -1333,7 +1333,7 @@ class TestStrategyScoreServiceAdditionalCoverage:
     def test_get_strategy_info(self, strategy_score_service, mock_strategy_calculator):
         """Test getting strategy information."""
         info = strategy_score_service.get_strategy_info("VALUE")
-        
+
         assert info["id"] == "VALUE"
         assert info["name"] == "Value Investor Strategy"
         assert info["description"] == "A value-based investment strategy"
@@ -1342,7 +1342,7 @@ class TestStrategyScoreServiceAdditionalCoverage:
     def test_list_available_strategies(self, strategy_score_service):
         """Test listing all available strategies."""
         strategies = strategy_score_service.list_available_strategies()
-        
+
         assert len(strategies) == 1
         assert strategies[0]["id"] == "VALUE"
 
@@ -1470,7 +1470,7 @@ class TestStrategyScoreServiceExceptionCoverage:
             Asset(symbol="AAPL", exchange="NASDAQ", asset_type=AssetType.STOCK, name="Apple"),
             Asset(symbol="MISSING", exchange="NASDAQ", asset_type=AssetType.STOCK, name="Missing Data")
         ]
-        
+
         # First asset has snapshot, second doesn't
         def snapshot_side_effect(symbol):
             if symbol == "AAPL":
@@ -1484,7 +1484,7 @@ class TestStrategyScoreServiceExceptionCoverage:
                     volume=50000000
                 )
             return None  # Missing snapshot for other symbols
-        
+
         mock_asset_repository.get_latest_snapshot.side_effect = snapshot_side_effect
         mock_asset_repository.get_fundamental_metrics.return_value = {
             "pe_ratio": Decimal("25.5"),
@@ -1510,7 +1510,7 @@ class TestStrategyScoreServiceExceptionCoverage:
             Asset(symbol="AAPL", exchange="NASDAQ", asset_type=AssetType.STOCK, name="Apple"),
             Asset(symbol="INVALID", exchange="NASDAQ", asset_type=AssetType.STOCK, name="Invalid Data")
         ]
-        
+
         mock_asset_repository.get_latest_snapshot.return_value = AssetSnapshot(
             symbol="TEST",
             timestamp=datetime.now(timezone.utc),
@@ -1520,18 +1520,18 @@ class TestStrategyScoreServiceExceptionCoverage:
             close=Decimal("152.75"),
             volume=50000000
         )
-        
+
         # First asset has valid fundamentals, second doesn't
         def fundamentals_side_effect(symbol):
             if symbol == "AAPL":
                 return {"pe_ratio": Decimal("25.5"), "dividend_yield": Decimal("0.015")}
             return None  # Missing fundamentals for other symbols
-        
+
         def validate_side_effect(fundamentals):
             if fundamentals is None:
                 return False
             return True
-        
+
         mock_asset_repository.get_fundamental_metrics.side_effect = fundamentals_side_effect
         mock_strategy_calculator.validate_metrics.side_effect = validate_side_effect
         mock_strategy_calculator.calculate_score.return_value = Decimal("85.0")
@@ -1554,7 +1554,7 @@ class TestStrategyScoreServiceExceptionCoverage:
             Asset(symbol="AAPL", exchange="NASDAQ", asset_type=AssetType.STOCK, name="Apple"),
             Asset(symbol="ERROR", exchange="NASDAQ", asset_type=AssetType.STOCK, name="Error Asset")
         ]
-        
+
         mock_asset_repository.get_latest_snapshot.return_value = AssetSnapshot(
             symbol="TEST",
             timestamp=datetime.now(timezone.utc),
@@ -1564,18 +1564,18 @@ class TestStrategyScoreServiceExceptionCoverage:
             close=Decimal("152.75"),
             volume=50000000
         )
-        
+
         mock_asset_repository.get_fundamental_metrics.return_value = {
             "pe_ratio": Decimal("25.5"),
             "dividend_yield": Decimal("0.015")
         }
-        
+
         # First asset calculates successfully, second throws exception
         def score_side_effect(asset, snapshot, fundamentals):
             if asset.symbol == "AAPL":
                 return Decimal("85.0")
             raise RuntimeError("Calculation failed")
-        
+
         mock_strategy_calculator.calculate_score.side_effect = score_side_effect
 
         # Should only return results for assets that don't throw exceptions
@@ -1606,4 +1606,3 @@ class TestStrategyScoreServiceExceptionCoverage:
         """Test get_strategy_info with unknown strategy (covers line 163)."""
         with pytest.raises(StrategyCalculationError, match="Unknown strategy: UNKNOWN"):
             strategy_score_service.get_strategy_info("UNKNOWN")
-

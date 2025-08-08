@@ -41,46 +41,46 @@ class TestPortfolioRepositoryInterface:
         class ConcretePortfolioRepository(PortfolioRepository):
             async def save_portfolio(self, portfolio):
                 pass
-                
+
             async def get_portfolio(self, portfolio_id):
                 pass
-                
+
             async def get_all_portfolios(self):
                 pass
-                
+
             async def delete_portfolio(self, portfolio_id):
                 pass
-                
+
             async def save_trade(self, trade):
                 pass
-                
+
             async def get_trade(self, trade_id):
                 pass
-                
+
             async def get_trades_for_portfolio(self, portfolio_id, limit=None):
                 pass
-                
+
             async def save_position(self, position):
                 pass
-                
+
             async def get_position(self, portfolio_id, symbol):
                 pass
-                
+
             async def get_positions_for_portfolio(self, portfolio_id):
                 return [sample_position]
-                
+
             async def delete_position(self, portfolio_id, symbol):
                 pass
-                
+
             async def portfolio_exists(self, portfolio_id):
                 pass
-        
+
         repo = ConcretePortfolioRepository()
         portfolio_id = uuid4()
-        
+
         # Test the alias method
         result = await repo.get_positions(portfolio_id)
-        
+
         # Verify it returns the same result as get_positions_for_portfolio
         expected = await repo.get_positions_for_portfolio(portfolio_id)
         assert result == expected

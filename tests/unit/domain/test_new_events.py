@@ -25,7 +25,7 @@ class TestRiskThresholdBreachedEvent:
         portfolio_id = uuid4()
         event_id = f"risk_breach_{portfolio_id}"
         timestamp = datetime.now(timezone.utc)
-        
+
         event = RiskThresholdBreachedEvent(
             event_id=event_id,
             timestamp=timestamp,
@@ -35,7 +35,7 @@ class TestRiskThresholdBreachedEvent:
             current_value=Decimal("12000.00"),
             severity="HIGH"
         )
-        
+
         assert event.event_id == event_id
         assert event.timestamp == timestamp
         assert event.portfolio_id == portfolio_id
@@ -86,7 +86,7 @@ class TestRiskThresholdBreachedEvent:
     def test_risk_threshold_event_valid_severities(self):
         """Test all valid severity values."""
         valid_severities = ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
-        
+
         for severity in valid_severities:
             event = RiskThresholdBreachedEvent(
                 event_id=f"test_event_{severity}",
@@ -110,7 +110,7 @@ class TestRiskThresholdBreachedEvent:
             current_value=Decimal("1250.00"),
             severity="HIGH"
         )
-        
+
         assert event.breach_amount() == Decimal("250.00")
 
     def test_breach_amount_calculation_negative_breach(self):
@@ -124,7 +124,7 @@ class TestRiskThresholdBreachedEvent:
             current_value=Decimal("3000.00"),
             severity="MEDIUM"
         )
-        
+
         assert event.breach_amount() == Decimal("2000.00")
 
     def test_is_critical_breach(self):
@@ -138,7 +138,7 @@ class TestRiskThresholdBreachedEvent:
             current_value=Decimal("0.35"),
             severity="CRITICAL"
         )
-        
+
         high_event = RiskThresholdBreachedEvent(
             event_id="high_event",
             timestamp=datetime.now(timezone.utc),
@@ -148,7 +148,7 @@ class TestRiskThresholdBreachedEvent:
             current_value=Decimal("1200"),
             severity="HIGH"
         )
-        
+
         assert critical_event.is_critical_breach() is True
         assert high_event.is_critical_breach() is False
 
@@ -160,7 +160,7 @@ class TestMarketDataReceivedEvent:
         """Test creating a valid market data received event."""
         event_id = "market_data_AAPL_123"
         timestamp = datetime.now(timezone.utc)
-        
+
         event = MarketDataReceivedEvent(
             event_id=event_id,
             timestamp=timestamp,
@@ -169,7 +169,7 @@ class TestMarketDataReceivedEvent:
             volume=1000000,
             market_cap=Decimal("2500000000000")
         )
-        
+
         assert event.event_id == event_id
         assert event.timestamp == timestamp
         assert event.symbol == "AAPL"
@@ -186,7 +186,7 @@ class TestMarketDataReceivedEvent:
             price=Decimal("150.25"),
             volume=1000000
         )
-        
+
         assert event.market_cap is None
 
     def test_market_data_event_validation_empty_symbol(self):
@@ -277,7 +277,7 @@ class TestPortfolioCreatedEvent:
         portfolio_id = uuid4()
         event_id = f"portfolio_created_{portfolio_id}"
         timestamp = datetime.now(timezone.utc)
-        
+
         event = PortfolioCreatedEvent(
             event_id=event_id,
             timestamp=timestamp,
@@ -286,7 +286,7 @@ class TestPortfolioCreatedEvent:
             initial_cash=Decimal("100000.00"),
             strategy="balanced_growth"
         )
-        
+
         assert event.event_id == event_id
         assert event.timestamp == timestamp
         assert event.portfolio_id == portfolio_id
@@ -353,7 +353,7 @@ class TestPortfolioCreatedEvent:
                 initial_cash=Decimal("100000.00"),
                 strategy="balanced_growth"
             )
-        
+
         with pytest.raises(DomainValidationError, match="Strategy cannot be empty"):
             PortfolioCreatedEvent(
                 event_id="test_event",

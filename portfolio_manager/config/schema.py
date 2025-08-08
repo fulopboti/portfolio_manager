@@ -228,13 +228,13 @@ class PortfolioManagerConfig(BaseModel):
 def validate_config(config_dict: dict) -> PortfolioManagerConfig:
     """
     Validate configuration dictionary against schema.
-    
+
     Args:
         config_dict: Configuration dictionary to validate
-        
+
     Returns:
         Validated configuration object
-        
+
     Raises:
         ValidationError: If configuration is invalid
     """

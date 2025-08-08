@@ -14,7 +14,7 @@ from .base_service import ExceptionBasedService
 @dataclass
 class StrategyScore:
     """Result of a strategy score calculation."""
-    
+
     symbol: str
     strategy_id: str
     score: Decimal
@@ -25,7 +25,7 @@ class StrategyScore:
 @dataclass
 class BacktestResult:
     """Result of a strategy backtest."""
-    
+
     strategy_id: str
     start_date: datetime
     end_date: datetime
@@ -59,7 +59,7 @@ class StrategyScoreService(ExceptionBasedService):
             raise StrategyCalculationError(f"Unknown strategy: {strategy_id}")
 
         calculator = self.strategy_calculators[strategy_id]
-        
+
         if symbols:
             assets = []
             for symbol in symbols:
@@ -86,7 +86,7 @@ class StrategyScoreService(ExceptionBasedService):
 
                 # Calculate score
                 score = calculator.calculate_score(asset, snapshot, fundamentals)
-                
+
                 results.append(StrategyScore(
                     symbol=asset.symbol,
                     strategy_id=strategy_id,
@@ -111,7 +111,7 @@ class StrategyScoreService(ExceptionBasedService):
             strategy_id=strategy_id,
             as_of_date=as_of_date,
         )
-        
+
         # Sort by score descending and return top N
         sorted_scores = sorted(all_scores, key=lambda x: x.score, reverse=True)
         return sorted_scores[:limit]
@@ -128,14 +128,14 @@ class StrategyScoreService(ExceptionBasedService):
             raise StrategyCalculationError(f"Unknown strategy: {strategy_id}")
 
         calculator = self.strategy_calculators[strategy_id]
-        
+
         # Get all assets for backtesting
         assets = await self.asset_repository.get_all_assets()
-        
+
         # For this implementation, create a simple backtest result
         # In a full implementation, this would simulate trades over time
         trades = []  # Placeholder for backtest trades
-        
+
         # Calculate simple performance metrics
         final_value = initial_capital * Decimal('1.05')  # Placeholder 5% return
         total_return = (final_value - initial_capital) / initial_capital
@@ -165,7 +165,7 @@ class StrategyScoreService(ExceptionBasedService):
             raise StrategyCalculationError(f"Unknown strategy: {strategy_id}")
 
         calculator = self.strategy_calculators[strategy_id]
-        
+
         return {
             "id": strategy_id,
             "name": calculator.get_strategy_name(),

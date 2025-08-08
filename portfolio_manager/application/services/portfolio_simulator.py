@@ -25,7 +25,7 @@ from .base_service import ResultBasedService, ServiceResult
 @dataclass
 class TradeResult:
     """Result of a trade execution."""
-    
+
     success: bool
     trade: Optional[Trade] = None
     error: Optional[Exception] = None
@@ -34,7 +34,7 @@ class TradeResult:
 @dataclass
 class PortfolioMetrics:
     """Portfolio performance metrics."""
-    
+
     total_market_value: Decimal
     total_cost_basis: Decimal
     total_unrealized_pnl: Decimal
@@ -66,7 +66,7 @@ class PortfolioSimulatorService(ResultBasedService):
     ) -> TradeResult:
         """Execute a trade within a portfolio."""
         context = f"{portfolio_id}:{symbol}:{side.value}:{quantity}"
-        
+
         async def _execute():
             # Validate required parameters
             self._validate_required_params({
@@ -76,13 +76,13 @@ class PortfolioSimulatorService(ResultBasedService):
                 'quantity': quantity,
                 'broker_profile': broker_profile
             })
-            
+
             # Validate business rules
             self._validate_business_rules([
                 (quantity > 0, "Quantity must be positive"),
                 (symbol.strip(), "Symbol cannot be empty"),
             ])
-            
+
             # Get portfolio
             portfolio = await self.portfolio_repository.get_portfolio(portfolio_id)
             if not portfolio:
@@ -120,7 +120,7 @@ class PortfolioSimulatorService(ResultBasedService):
                 return await self._execute_buy_trade(trade, portfolio)
             else:
                 return await self._execute_sell_trade(trade, portfolio)
-        
+
         # Execute with base service error handling and convert to TradeResult
         try:
             result = await self._execute_operation(
@@ -236,17 +236,17 @@ class PortfolioSimulatorService(ResultBasedService):
             raise InvalidTradeError(f"Portfolio {portfolio_id} not found")
 
         positions = await self.portfolio_repository.get_positions_for_portfolio(portfolio_id)
-        
+
         total_market_value = Decimal('0')
         total_cost_basis = Decimal('0')
-        
+
         for position in positions:
             # Get current market price
             latest_snapshot = await self.asset_repository.get_latest_snapshot(position.symbol)
             if latest_snapshot:
                 current_price = latest_snapshot.close
                 total_market_value += position.market_value(current_price)
-            
+
             total_cost_basis += position.cost_basis()
 
         total_unrealized_pnl = total_market_value - total_cost_basis

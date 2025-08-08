@@ -19,7 +19,7 @@ class MetricType(Enum):
 
 class MetricsDataAccess(ABC):
     """Abstract interface for metrics and analytics data persistence.
-    
+
     Provides methods for storing and retrieving various types of
     calculated metrics, scores, and analytical data.
     """
@@ -36,7 +36,7 @@ class MetricsDataAccess(ABC):
         metadata: Optional[Dict[str, Any]] = None
     ) -> None:
         """Save a single metric value.
-        
+
         Args:
             entity_id: Identifier for the entity (asset symbol, portfolio ID)
             metric_name: Name of the metric
@@ -44,7 +44,7 @@ class MetricsDataAccess(ABC):
             value: Metric value
             as_of_date: Date/time the metric applies to
             metadata: Additional context data
-            
+
         Raises:
             DataAccessError: If save operation fails
         """
@@ -56,10 +56,10 @@ class MetricsDataAccess(ABC):
         metrics: List[Tuple[str, str, MetricType, Decimal, datetime, Optional[Dict[str, Any]]]]
     ) -> None:
         """Save multiple metrics in a single batch operation.
-        
+
         Args:
             metrics: List of (entity_id, metric_name, metric_type, value, as_of_date, metadata) tuples
-            
+
         Raises:
             DataAccessError: If batch save operation fails
         """
@@ -73,12 +73,12 @@ class MetricsDataAccess(ABC):
         as_of_date: Optional[datetime] = None
     ) -> Optional[Tuple[Decimal, datetime, Optional[Dict[str, Any]]]]:
         """Get a specific metric value.
-        
+
         Args:
             entity_id: Entity identifier
             metric_name: Name of the metric
             as_of_date: Specific date to get metric for (None = latest)
-            
+
         Returns:
             Tuple of (value, date, metadata) if found, None otherwise
         """
@@ -92,12 +92,12 @@ class MetricsDataAccess(ABC):
         as_of_date: Optional[datetime] = None
     ) -> Dict[str, Tuple[Decimal, datetime, Optional[Dict[str, Any]]]]:
         """Get all metrics for an entity.
-        
+
         Args:
             entity_id: Entity identifier
             metric_type: Filter by metric type (None = all types)
             as_of_date: Specific date to get metrics for (None = latest)
-            
+
         Returns:
             Dictionary mapping metric names to (value, date, metadata) tuples
         """
@@ -111,12 +111,12 @@ class MetricsDataAccess(ABC):
         as_of_date: Optional[datetime] = None
     ) -> Dict[str, Dict[str, Optional[Tuple[Decimal, datetime, Optional[Dict[str, Any]]]]]]:
         """Get specific metrics for multiple entities.
-        
+
         Args:
             entity_ids: List of entity identifiers
             metric_names: List of metric names to retrieve
             as_of_date: Specific date to get metrics for (None = latest)
-            
+
         Returns:
             Nested dictionary: entity_id -> metric_name -> (value, date, metadata)
         """
@@ -132,13 +132,13 @@ class MetricsDataAccess(ABC):
         end_date: datetime
     ) -> List[Tuple[datetime, Decimal, Optional[Dict[str, Any]]]]:
         """Get historical values for a metric.
-        
+
         Args:
             entity_id: Entity identifier
             metric_name: Name of the metric
             start_date: Start of date range
             end_date: End of date range
-            
+
         Returns:
             List of (date, value, metadata) tuples ordered by date
         """
@@ -153,13 +153,13 @@ class MetricsDataAccess(ABC):
         end_date: datetime
     ) -> Dict[str, Decimal]:
         """Get statistical summary for a metric over time.
-        
+
         Args:
             entity_id: Entity identifier
             metric_name: Name of the metric
             start_date: Start of analysis period
             end_date: End of analysis period
-            
+
         Returns:
             Dictionary with min, max, mean, std_dev, median, etc.
         """
@@ -174,12 +174,12 @@ class MetricsDataAccess(ABC):
         as_of_date: datetime
     ) -> None:
         """Save strategy scores for multiple assets.
-        
+
         Args:
             strategy_name: Name of the strategy
             scores: Dictionary mapping asset symbols to scores
             as_of_date: Date the scores were calculated
-            
+
         Raises:
             DataAccessError: If save operation fails
         """
@@ -193,12 +193,12 @@ class MetricsDataAccess(ABC):
         limit: Optional[int] = None
     ) -> List[Tuple[str, Decimal]]:
         """Get strategy scores for assets.
-        
+
         Args:
             strategy_name: Name of the strategy
             as_of_date: Specific date to get scores for (None = latest)
             limit: Maximum number of results (None = all)
-            
+
         Returns:
             List of (asset_symbol, score) tuples ordered by score (descending)
         """
@@ -213,13 +213,13 @@ class MetricsDataAccess(ABC):
         end_date: datetime
     ) -> List[Tuple[datetime, Decimal]]:
         """Get historical strategy scores for an asset.
-        
+
         Args:
             strategy_name: Name of the strategy
             asset_symbol: Asset to get scores for
             start_date: Start of date range
             end_date: End of date range
-            
+
         Returns:
             List of (date, score) tuples ordered by date
         """
@@ -228,7 +228,7 @@ class MetricsDataAccess(ABC):
     @abstractmethod
     async def get_available_strategies(self) -> List[str]:
         """Get list of all strategies that have scores stored.
-        
+
         Returns:
             List of strategy name strings
         """
@@ -243,12 +243,12 @@ class MetricsDataAccess(ABC):
         as_of_date: datetime
     ) -> None:
         """Save portfolio performance metrics.
-        
+
         Args:
             portfolio_id: Portfolio identifier
             performance_data: Dictionary of performance metrics
             as_of_date: Date the metrics were calculated
-            
+
         Raises:
             DataAccessError: If save operation fails
         """
@@ -261,11 +261,11 @@ class MetricsDataAccess(ABC):
         as_of_date: Optional[datetime] = None
     ) -> Optional[Dict[str, Decimal]]:
         """Get portfolio performance metrics.
-        
+
         Args:
             portfolio_id: Portfolio identifier
             as_of_date: Specific date to get metrics for (None = latest)
-            
+
         Returns:
             Dictionary of performance metrics if found, None otherwise
         """
@@ -279,12 +279,12 @@ class MetricsDataAccess(ABC):
         end_date: datetime
     ) -> List[Tuple[datetime, Dict[str, Decimal]]]:
         """Get historical portfolio performance data.
-        
+
         Args:
             portfolio_id: Portfolio identifier
             start_date: Start of date range
             end_date: End of date range
-            
+
         Returns:
             List of (date, performance_metrics) tuples ordered by date
         """
@@ -299,12 +299,12 @@ class MetricsDataAccess(ABC):
         as_of_date: datetime
     ) -> None:
         """Save risk metrics for an entity.
-        
+
         Args:
             entity_id: Entity identifier
             risk_data: Dictionary of risk metrics (VaR, beta, etc.)
             as_of_date: Date the metrics were calculated
-            
+
         Raises:
             DataAccessError: If save operation fails
         """
@@ -317,11 +317,11 @@ class MetricsDataAccess(ABC):
         as_of_date: Optional[datetime] = None
     ) -> Optional[Dict[str, Decimal]]:
         """Get risk metrics for an entity.
-        
+
         Args:
             entity_id: Entity identifier
             as_of_date: Specific date to get metrics for (None = latest)
-            
+
         Returns:
             Dictionary of risk metrics if found, None otherwise
         """
@@ -336,12 +336,12 @@ class MetricsDataAccess(ABC):
         metric_type: Optional[MetricType] = None
     ) -> int:
         """Delete old metrics before a specific date.
-        
+
         Args:
             entity_id: Entity identifier
             before_date: Delete metrics before this date
             metric_type: Only delete metrics of this type (None = all types)
-            
+
         Returns:
             Number of metric records deleted
         """
@@ -350,10 +350,10 @@ class MetricsDataAccess(ABC):
     @abstractmethod
     async def cleanup_stale_metrics(self, days_old: int) -> int:
         """Clean up metrics that are older than specified days.
-        
+
         Args:
             days_old: Delete metrics older than this many days
-            
+
         Returns:
             Number of metric records deleted
         """
@@ -362,7 +362,7 @@ class MetricsDataAccess(ABC):
     @abstractmethod
     async def get_metric_storage_stats(self) -> Dict[str, int]:
         """Get statistics about metric storage usage.
-        
+
         Returns:
             Dictionary with counts by metric type, entity, etc.
         """
@@ -371,7 +371,7 @@ class MetricsDataAccess(ABC):
     @abstractmethod
     async def validate_metric_integrity(self) -> List[str]:
         """Validate integrity of stored metrics.
-        
+
         Returns:
             List of validation error messages (empty if no issues)
         """
@@ -386,12 +386,12 @@ class MetricsDataAccess(ABC):
         as_of_date: Optional[datetime] = None
     ) -> Dict[str, Optional[Decimal]]:
         """Get a specific metric for multiple entities at a point in time.
-        
+
         Args:
             metric_name: Name of the metric
             entity_ids: List of entity identifiers
             as_of_date: Date to get metrics for (None = latest)
-            
+
         Returns:
             Dictionary mapping entity IDs to metric values
         """
@@ -406,13 +406,13 @@ class MetricsDataAccess(ABC):
         end_date: datetime
     ) -> Dict[Tuple[str, str], Decimal]:
         """Calculate correlation matrix for a metric across entities.
-        
+
         Args:
             entity_ids: List of entity identifiers
             metric_name: Name of the metric to analyze
             start_date: Start of analysis period
             end_date: End of analysis period
-            
+
         Returns:
             Dictionary with (entity1, entity2) -> correlation pairs
         """

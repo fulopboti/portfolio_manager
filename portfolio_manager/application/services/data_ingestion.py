@@ -13,7 +13,7 @@ from .base_service import ExceptionBasedService
 @dataclass
 class IngestionResult:
     """Result of a data ingestion operation."""
-    
+
     symbol: str
     success: bool
     snapshots_count: int
@@ -33,11 +33,11 @@ class DataIngestionService(ExceptionBasedService):
         super().__init__(logger_name=f"{__name__}.{self.__class__.__name__}")
         self.data_provider = data_provider
         self.asset_repository = asset_repository
-        
+
         # Use provided values or fall back to reasonable defaults
         self.batch_size = batch_size if batch_size is not None else 100
         self.retry_attempts = retry_attempts if retry_attempts is not None else 3
-        
+
         # Log configuration for observability
         self._log_operation_start("initialize_service", 
             f"batch_size={self.batch_size}, retry_attempts={self.retry_attempts}")
@@ -61,7 +61,7 @@ class DataIngestionService(ExceptionBasedService):
                 end_date = datetime.now()
 
             snapshots = await self.data_provider.get_ohlcv_data(symbol, start_date, end_date)
-            
+
             # Only create asset if data fetching succeeds
             existing_asset = await self.asset_repository.get_asset(symbol)
             if not existing_asset:
@@ -72,7 +72,7 @@ class DataIngestionService(ExceptionBasedService):
                     name=name,
                 )
                 await self.asset_repository.save_asset(asset)
-            
+
             # Save snapshots to repository
             snapshots_saved = 0
             for snapshot in snapshots:
@@ -121,7 +121,7 @@ class DataIngestionService(ExceptionBasedService):
     ) -> List[IngestionResult]:
         """Ingest data for multiple symbols."""
         results = []
-        
+
         for symbol in symbols:
             # For this test implementation, use symbol as name
             # In real implementation, this would come from a lookup service
@@ -141,7 +141,7 @@ class DataIngestionService(ExceptionBasedService):
         """Refresh data for all existing assets."""
         all_assets = await self.asset_repository.get_all_assets()
         results = []
-        
+
         for asset in all_assets:
             result = await self.ingest_symbol(
                 symbol=asset.symbol,
@@ -150,5 +150,5 @@ class DataIngestionService(ExceptionBasedService):
                 name=asset.name,
             )
             results.append(result)
-        
+
         return results

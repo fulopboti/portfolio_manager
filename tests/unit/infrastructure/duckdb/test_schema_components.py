@@ -30,7 +30,7 @@ class TestPortfolioManagerSchema:
     def test_get_assets_table(self):
         """Test assets table definition."""
         table_def = PortfolioManagerSchema.get_assets_table()
-        
+
         assert isinstance(table_def, TableDefinition)
         assert table_def.name == "assets"
         assert "symbol" in table_def.columns
@@ -41,7 +41,7 @@ class TestPortfolioManagerSchema:
     def test_get_portfolios_table(self):
         """Test portfolios table definition."""
         table_def = PortfolioManagerSchema.get_portfolios_table()
-        
+
         assert table_def.name == "portfolios"
         assert "portfolio_id" in table_def.columns
         assert "name" in table_def.columns
@@ -51,7 +51,7 @@ class TestPortfolioManagerSchema:
     def test_get_trades_table(self):
         """Test trades table definition."""
         table_def = PortfolioManagerSchema.get_trades_table()
-        
+
         assert table_def.name == "trades"
         assert "trade_id" in table_def.columns
         assert "portfolio_id" in table_def.columns
@@ -63,7 +63,7 @@ class TestPortfolioManagerSchema:
     def test_get_positions_table(self):
         """Test positions table definition."""
         table_def = PortfolioManagerSchema.get_positions_table()
-        
+
         assert table_def.name == "positions"
         assert "portfolio_id" in table_def.columns
         assert "symbol" in table_def.columns
@@ -74,7 +74,7 @@ class TestPortfolioManagerSchema:
     def test_get_asset_snapshots_table(self):
         """Test asset snapshots table definition."""
         table_def = PortfolioManagerSchema.get_asset_snapshots_table()
-        
+
         assert table_def.name == "asset_snapshots"
         assert "symbol" in table_def.columns
         assert "timestamp" in table_def.columns
@@ -84,7 +84,7 @@ class TestPortfolioManagerSchema:
     def test_get_schema_migrations_table(self):
         """Test schema migrations table definition."""
         table_def = PortfolioManagerSchema.get_schema_migrations_table()
-        
+
         assert table_def.name == "schema_migrations"
         assert "version" in table_def.columns
         assert "applied_at" in table_def.columns
@@ -94,16 +94,16 @@ class TestPortfolioManagerSchema:
     def test_get_all_tables(self):
         """Test getting all table definitions."""
         tables = PortfolioManagerSchema.get_all_tables()
-        
+
         assert isinstance(tables, dict)
         expected_tables = {
             "assets", "portfolios", "trades", "positions", 
             "asset_snapshots", "asset_metrics", "risk_metrics",
             "strategy_scores", "portfolio_metrics", "audit_events"
         }
-        
+
         assert set(tables.keys()) >= expected_tables
-        
+
         # Verify all are TableDefinition instances
         for table_name, table_def in tables.items():
             assert isinstance(table_def, TableDefinition)
@@ -112,10 +112,10 @@ class TestPortfolioManagerSchema:
     def test_get_all_indexes(self):
         """Test getting all index definitions."""
         indexes = PortfolioManagerSchema.get_all_indexes()
-        
+
         assert isinstance(indexes, list)
         assert len(indexes) > 0
-        
+
         # Verify all are IndexDefinition instances
         for index_def in indexes:
             assert isinstance(index_def, IndexDefinition)
@@ -126,7 +126,7 @@ class TestPortfolioManagerSchema:
     def test_get_all_views(self):
         """Test getting all view definitions."""
         views = PortfolioManagerSchema.get_all_views()
-        
+
         assert isinstance(views, list)
         # Views are optional, so just check structure if any exist
         for view_def in views:
@@ -160,9 +160,9 @@ class TestDuckDBTableBuilder:
             indexes=[],
             constraints=[]
         )
-        
+
         sql = table_builder.build_create_table_sql(table_def)
-        
+
         assert "CREATE TABLE IF NOT EXISTS simple_table" in sql
         assert "id INTEGER PRIMARY KEY" in sql
         assert "name VARCHAR NOT NULL" in sql
@@ -181,9 +181,9 @@ class TestDuckDBTableBuilder:
             indexes=[],
             constraints=["UNIQUE(email)", "CHECK(age >= 0)"]
         )
-        
+
         sql = table_builder.build_create_table_sql(table_def)
-        
+
         # Check for table name and constraints
         assert "CREATE TABLE IF NOT EXISTS constrained_table" in sql
         assert "UNIQUE(email)" in sql
@@ -193,7 +193,7 @@ class TestDuckDBTableBuilder:
         """Test table drop SQL generation."""
         sql = table_builder.build_drop_table_sql("test_table")
         assert sql == "DROP TABLE IF EXISTS test_table;"
-        
+
         sql_cascade = table_builder.build_drop_table_sql("test_table", cascade=True)
         assert sql_cascade == "DROP TABLE IF EXISTS test_table CASCADE;"
 
@@ -205,9 +205,9 @@ class TestDuckDBTableBuilder:
             columns=["column1", "column2"],
             unique=False
         )
-        
+
         sql = table_builder.build_create_index_sql(index_def)
-        
+
         assert "CREATE INDEX idx_test" in sql
         assert "ON test_table" in sql
         assert "(column1, column2)" in sql
@@ -220,7 +220,7 @@ class TestDuckDBTableBuilder:
             columns=["email"],
             unique=True
         )
-        
+
         sql = table_builder.build_create_index_sql(index_def)
         assert "CREATE UNIQUE INDEX" in sql
 
@@ -234,7 +234,7 @@ class TestDuckDBTableBuilder:
         sql = table_builder.build_add_foreign_key_sql(
             "child_table", "parent_id", "parent_table.id"
         )
-        
+
         assert "ALTER TABLE child_table" in sql
         assert "ADD CONSTRAINT" in sql
         assert "FOREIGN KEY (parent_id)" in sql
@@ -244,7 +244,7 @@ class TestDuckDBTableBuilder:
         """Test view creation SQL generation."""
         view_sql = "SELECT id, name FROM users WHERE active = true"
         sql = table_builder.build_create_view_sql("active_users", view_sql)
-        
+
         assert "CREATE VIEW active_users AS" in sql
         assert view_sql in sql
 
@@ -281,14 +281,14 @@ class TestDuckDBTableBuilder:
                 constraints=[]
             )
         }
-        
+
         order = table_builder.get_table_creation_order(tables)
-        
+
         # Parent should come before child
         parent_idx = order.index("parent")
         child_idx = order.index("child")
         assert parent_idx < child_idx
-        
+
         # Independent can be anywhere
         assert "independent" in order
 
@@ -312,9 +312,9 @@ class TestDuckDBTableBuilder:
                 constraints=[]
             )
         }
-        
+
         order = table_builder.get_table_drop_order(tables)
-        
+
         # Child should be dropped before parent (reverse of creation order)
         child_idx = order.index("child")
         parent_idx = order.index("parent")
@@ -324,13 +324,13 @@ class TestDuckDBTableBuilder:
         """Test complete schema SQL generation."""
         tables = PortfolioManagerSchema.get_all_tables()
         indexes = PortfolioManagerSchema.get_all_indexes()
-        
+
         sql = table_builder.build_complete_schema_sql(tables, indexes)
-        
+
         assert "-- Portfolio Manager Database Schema" in sql
         assert "-- Create Tables" in sql
         assert "CREATE TABLE" in sql
-        
+
         if indexes:
             assert "-- Create Indexes" in sql
 
@@ -374,9 +374,9 @@ class TestDuckDBSchemaInspector:
         # Create test tables
         await query_executor.execute_command("CREATE TABLE test1 (id INTEGER)")
         await query_executor.execute_command("CREATE TABLE test2 (id INTEGER)")
-        
+
         tables = await schema_inspector.get_existing_tables()
-        
+
         assert isinstance(tables, set)
         assert "test1" in tables
         assert "test2" in tables
@@ -387,10 +387,10 @@ class TestDuckDBSchemaInspector:
         # Initially doesn't exist
         exists = await schema_inspector.table_exists("test_table")
         assert exists is False
-        
+
         # Create table
         await query_executor.execute_command("CREATE TABLE test_table (id INTEGER)")
-        
+
         # Now should exist
         exists = await schema_inspector.table_exists("test_table")
         assert exists is True
@@ -407,9 +407,9 @@ class TestDuckDBSchemaInspector:
                 active BOOLEAN DEFAULT true
             )
         """)
-        
+
         structure = await schema_inspector.get_table_structure("struct_test")
-        
+
         assert isinstance(structure, dict)
         assert "id" in structure
         assert "name" in structure
@@ -428,9 +428,9 @@ class TestDuckDBSchemaInspector:
         # Create test table and index
         await query_executor.execute_command("CREATE TABLE idx_test (id INTEGER, name VARCHAR)")
         await query_executor.execute_command("CREATE INDEX idx_name ON idx_test (name)")
-        
+
         indexes = await schema_inspector.get_table_indexes("idx_test")
-        
+
         assert isinstance(indexes, list)
         # Check if our index is found (may include system indexes)
         index_names = [idx.get("name", "") for idx in indexes]
@@ -442,9 +442,9 @@ class TestDuckDBSchemaInspector:
         # Create some test data
         await query_executor.execute_command("CREATE TABLE stats_test (id INTEGER)")
         await query_executor.execute_command("INSERT INTO stats_test VALUES (1), (2), (3)")
-        
+
         stats = await schema_inspector.get_database_statistics()
-        
+
         assert isinstance(stats, dict)
         assert "table_count" in stats
         assert stats["table_count"] >= 1
@@ -453,7 +453,7 @@ class TestDuckDBSchemaInspector:
     async def test_check_referential_integrity(self, schema_inspector):
         """Test referential integrity checking."""
         violations = await schema_inspector.check_referential_integrity()
-        
+
         assert isinstance(violations, list)
         # Should be empty for new database
         assert len(violations) == 0
@@ -472,17 +472,17 @@ class TestDuckDBSchemaInspector:
                 constraints=[]
             )
         }
-        
+
         # Create the actual table
         await query_executor.execute_command("CREATE TABLE users (id INTEGER PRIMARY KEY, name VARCHAR)")
-        
+
         result = await schema_inspector.validate_schema_integrity(expected_tables)
-        
+
         assert isinstance(result, dict)
         assert "missing_tables" in result
         assert "extra_tables" in result
         assert "column_mismatches" in result
-        
+
         # Should have no missing tables since we created it
         assert "users" not in result["missing_tables"]
 
@@ -526,7 +526,7 @@ class TestDuckDBSchemaManager:
     async def test_create_schema(self, schema_manager):
         """Test complete schema creation."""
         await schema_manager.create_schema()
-        
+
         # Verify core tables were created
         tables = await schema_manager.get_table_names()
         expected_core_tables = {"assets", "portfolios", "trades", "positions"}
@@ -538,10 +538,10 @@ class TestDuckDBSchemaManager:
         # Initially should not exist
         exists = await schema_manager.schema_exists()
         assert exists is False
-        
+
         # Create schema
         await schema_manager.create_schema()
-        
+
         # Now should exist
         exists = await schema_manager.schema_exists()
         assert exists is True
@@ -552,10 +552,10 @@ class TestDuckDBSchemaManager:
         # Create schema first
         await schema_manager.create_schema()
         assert await schema_manager.schema_exists() is True
-        
+
         # Drop schema
         await schema_manager.drop_schema()
-        
+
         # Should no longer exist
         exists = await schema_manager.schema_exists()
         assert exists is False
@@ -566,10 +566,10 @@ class TestDuckDBSchemaManager:
         # Initially no version
         version = await schema_manager.get_schema_version()
         assert version is None
-        
+
         # Create schema
         await schema_manager.create_schema()
-        
+
         # Should have version
         version = await schema_manager.get_schema_version()
         assert version == PortfolioManagerSchema.SCHEMA_VERSION
@@ -579,7 +579,7 @@ class TestDuckDBSchemaManager:
         """Test schema version setting."""
         test_version = "0.1.0"
         await schema_manager.set_schema_version(test_version)
-        
+
         version = await schema_manager.get_schema_version()
         assert version == test_version
 
@@ -589,10 +589,10 @@ class TestDuckDBSchemaManager:
         # Initially doesn't exist
         exists = await schema_manager.table_exists("test_table")
         assert exists is False
-        
+
         # Create table
         await query_executor.execute_command("CREATE TABLE test_table (id INTEGER)")
-        
+
         # Now should exist
         exists = await schema_manager.table_exists("test_table")
         assert exists is True
@@ -611,9 +611,9 @@ class TestDuckDBSchemaManager:
             indexes=[],
             constraints=[]
         )
-        
+
         await schema_manager.create_table(table_def)
-        
+
         # Verify table was created
         exists = await schema_manager.table_exists("custom_table")
         assert exists is True
@@ -624,10 +624,10 @@ class TestDuckDBSchemaManager:
         # Create table first
         await query_executor.execute_command("CREATE TABLE drop_test (id INTEGER)")
         assert await schema_manager.table_exists("drop_test") is True
-        
+
         # Drop table
         await schema_manager.drop_table("drop_test")
-        
+
         # Should no longer exist
         exists = await schema_manager.table_exists("drop_test")
         assert exists is False
@@ -636,10 +636,10 @@ class TestDuckDBSchemaManager:
     async def test_get_create_table_sql(self, schema_manager):
         """Test SQL generation for all tables."""
         sql_statements = await schema_manager.get_create_table_sql()
-        
+
         assert isinstance(sql_statements, dict)
         assert len(sql_statements) > 0
-        
+
         # Check some expected tables
         expected_tables = ["assets", "portfolios", "trades"]
         for table_name in expected_tables:
@@ -651,9 +651,9 @@ class TestDuckDBSchemaManager:
         """Test schema validation."""
         # Create schema first
         await schema_manager.create_schema()
-        
+
         validation = await schema_manager.validate_schema()
-        
+
         assert isinstance(validation, dict)
         assert "status" in validation
         assert "schema_version" in validation

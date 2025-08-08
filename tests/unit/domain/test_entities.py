@@ -54,7 +54,7 @@ class TestAsset:
             asset_type=AssetType.STOCK,
             name="Microsoft"
         )
-        
+
         assert asset1 == asset2  # Same symbol
         assert asset1 != asset3  # Different symbol
         assert hash(asset1) == hash(asset2)
@@ -124,7 +124,7 @@ class TestAssetSnapshot:
     def test_asset_snapshot_validation_ohlc_relationships(self):
         """Test AssetSnapshot OHLC validation rules."""
         base_time = datetime(2024, 1, 15, 16, 0, 0, tzinfo=timezone.utc)
-        
+
         # High should be >= Open, Close, Low
         with pytest.raises(DomainValidationError, match="High price must be >= low price"):
             AssetSnapshot(
@@ -152,7 +152,7 @@ class TestAssetSnapshot:
     def test_asset_snapshot_validation_negative_prices(self):
         """Test AssetSnapshot validation with negative prices."""
         base_time = datetime(2024, 1, 15, 16, 0, 0, tzinfo=timezone.utc)
-        
+
         with pytest.raises(DomainValidationError, match="Prices must be positive"):
             AssetSnapshot(
                 symbol="TEST",
@@ -167,7 +167,7 @@ class TestAssetSnapshot:
     def test_asset_snapshot_validation_negative_volume(self):
         """Test AssetSnapshot validation with negative volume."""
         base_time = datetime(2024, 1, 15, 16, 0, 0, tzinfo=timezone.utc)
-        
+
         with pytest.raises(DomainValidationError, match="Volume must be non-negative"):
             AssetSnapshot(
                 symbol="TEST",
@@ -188,7 +188,7 @@ class TestAssetSnapshot:
     def test_asset_snapshot_is_green_day(self, sample_asset_snapshot: AssetSnapshot):
         """Test green day detection."""
         assert sample_asset_snapshot.is_green_day() is True
-        
+
         # Create a red day snapshot
         red_snapshot = AssetSnapshot(
             symbol="TEST",
@@ -377,13 +377,13 @@ class TestTrade:
             price_ccy="USD",
             comment="Test"
         )
-        
+
         total_fees = trade.total_fees()
         gross = Decimal("100") * Decimal("150.00")  # 15000
         expected_pip = gross * Decimal("0.001")     # 15.00
         expected_commission = gross * Decimal("0.001")  # 15.00
         expected_total = expected_pip + Decimal("5.00") + expected_commission  # 35.00
-        
+
         assert total_fees == expected_total
 
     def test_trade_net_amount_buy(self, sample_buy_trade: Trade):
@@ -457,18 +457,18 @@ class TestPosition:
         """Test unrealized P&L calculation."""
         current_price = Decimal("160.00")
         pnl = sample_position.unrealized_pnl(current_price)
-        
+
         market_value = Decimal("100") * Decimal("160.00")  # 16000
         cost_basis = Decimal("100") * Decimal("150.00")    # 15000
         expected = market_value - cost_basis                # 1000
-        
+
         assert pnl == expected
 
     def test_position_unrealized_pnl_percentage(self, sample_position: Position):
         """Test unrealized P&L percentage calculation."""
         current_price = Decimal("160.00")
         pnl_pct = sample_position.unrealized_pnl_pct(current_price)
-        
+
         expected = (Decimal("160.00") - Decimal("150.00")) / Decimal("150.00")
         assert abs(pnl_pct - expected) < Decimal("0.0001")
 
@@ -482,13 +482,13 @@ class TestPosition:
         """Test adding shares to position."""
         original_qty = sample_position.qty
         original_cost = sample_position.avg_cost
-        
+
         # Add 50 shares at $160
         sample_position.add_shares(Decimal("50"), Decimal("160.00"))
-        
+
         # New quantity should be 150
         assert sample_position.qty == Decimal("150")
-        
+
         # New average cost should be weighted average
         total_cost = (original_qty * original_cost) + (Decimal("50") * Decimal("160.00"))
         expected_avg = total_cost / Decimal("150")
@@ -498,10 +498,10 @@ class TestPosition:
         """Test reducing shares partially."""
         original_qty = sample_position.qty
         original_cost = sample_position.avg_cost
-        
+
         # Reduce by 30 shares
         sample_position.reduce_shares(Decimal("30"))
-        
+
         assert sample_position.qty == original_qty - Decimal("30")
         assert sample_position.avg_cost == original_cost  # Cost basis unchanged
 
@@ -574,12 +574,12 @@ class TestBrokerProfile:
             price_ccy="USD",
             comment="Test"
         )
-        
+
         total_cost = sample_broker_profile.calculate_total_cost(trade)
         gross = Decimal("100") * Decimal("150.00")  # 15000
         pip_cost = gross * Decimal("0.001")         # 15.00
         expected = gross + pip_cost                 # 15015.00
-        
+
         assert total_cost == expected
 
     def test_broker_profile_supports_currency(self, sample_broker_profile: BrokerProfile):
@@ -591,11 +591,11 @@ class TestBrokerProfile:
         """Test fractional share execution capability."""
         fractional_qty = Decimal("10.5")
         whole_qty = Decimal("10")
-        
+
         # Robinhood supports fractional
         assert sample_broker_profile.can_execute_order(fractional_qty, Decimal("150.00")) is True
         assert sample_broker_profile.can_execute_order(whole_qty, Decimal("150.00")) is True
-        
+
         # IBKR doesn't support fractional
         assert sample_ibkr_broker.can_execute_order(fractional_qty, Decimal("150.00")) is False
         assert sample_ibkr_broker.can_execute_order(whole_qty, Decimal("150.00")) is True
@@ -604,7 +604,7 @@ class TestBrokerProfile:
         """Test minimum order value validation."""
         # Order below minimum
         assert sample_broker_profile.can_execute_order(Decimal("0.001"), Decimal("150.00")) is False
-        
+
         # Order above minimum
         assert sample_broker_profile.can_execute_order(Decimal("1"), Decimal("150.00")) is True
 
@@ -642,7 +642,7 @@ class TestAssetAdditionalCoverage:
             asset_type=AssetType.STOCK,
             name="Apple Inc."
         )
-        
+
         # Test equality with non-Asset objects
         assert asset != "AAPL"  # string
         assert asset != 123     # number
@@ -653,7 +653,7 @@ class TestAssetAdditionalCoverage:
         """Test all AssetType enum values."""
         # Test creating assets with all asset types
         asset_types = [AssetType.STOCK, AssetType.ETF, AssetType.CRYPTO, AssetType.COMMODITY]
-        
+
         for asset_type in asset_types:
             asset = Asset(
                 symbol=f"TEST_{asset_type.value}",
@@ -678,7 +678,7 @@ class TestAssetSnapshotAdditionalCoverage:
             close=Decimal("0.015"),
             volume=1000
         )
-        
+
         daily_return = snapshot.daily_return()
         expected = (Decimal("0.015") - Decimal("0.01")) / Decimal("0.01")
         assert daily_return == expected
@@ -695,17 +695,17 @@ class TestAssetSnapshotAdditionalCoverage:
             close=Decimal("1.05"),
             volume=1000
         )
-        
+
         # Manually override open to zero to test the edge case
         object.__setattr__(snapshot, 'open', Decimal('0'))
-        
+
         daily_return = snapshot.daily_return()
         assert daily_return == Decimal('0')
 
     def test_asset_snapshot_validation_edge_cases(self):
         """Test AssetSnapshot validation edge cases."""
         base_time = datetime.now(timezone.utc)
-        
+
         # Test high == open (valid)
         AssetSnapshot(
             symbol="TEST",
@@ -716,7 +716,7 @@ class TestAssetSnapshotAdditionalCoverage:
             close=Decimal("98.00"),
             volume=0  # Zero volume is valid
         )
-        
+
         # Test low == close (valid)
         AssetSnapshot(
             symbol="TEST",
@@ -752,7 +752,7 @@ class TestPortfolioAdditionalCoverage:
             cash_balance=Decimal("10000.00"),
             created=datetime.now(timezone.utc)
         )
-        
+
         with pytest.raises(DomainValidationError, match="Cash amount must be positive"):
             portfolio.deduct_cash(Decimal("0"))
 
@@ -765,7 +765,7 @@ class TestPortfolioAdditionalCoverage:
             cash_balance=Decimal("10000.00"),
             created=datetime.now(timezone.utc)
         )
-        
+
         with pytest.raises(DomainValidationError, match="Cash amount must be positive"):
             portfolio.add_cash(Decimal("0"))
 
@@ -809,7 +809,7 @@ class TestTradeAdditionalCoverage:
             price_ccy="USD",
             comment="Test"
         )
-        
+
         commission = trade.commission_cost()
         expected = Decimal("100") * Decimal("150.00") * Decimal("0.002")  # 30.00
         assert commission == expected
@@ -850,7 +850,7 @@ class TestPositionAdditionalCoverage:
             price_ccy="USD",
             last_updated=datetime.now(timezone.utc)
         )
-        
+
         with pytest.raises(InvalidPositionError, match="Additional quantity must be positive"):
             position.add_shares(Decimal("0"), Decimal("160.00"))
 
@@ -865,7 +865,7 @@ class TestPositionAdditionalCoverage:
             price_ccy="USD",
             last_updated=datetime.now(timezone.utc)
         )
-        
+
         with pytest.raises(InvalidPositionError, match="Price must be positive"):
             position.add_shares(Decimal("50"), Decimal("0"))
 
@@ -880,7 +880,7 @@ class TestPositionAdditionalCoverage:
             price_ccy="USD",
             last_updated=datetime.now(timezone.utc)
         )
-        
+
         with pytest.raises(InvalidPositionError, match="Reduction quantity must be positive"):
             position.reduce_shares(Decimal("0"))
 
@@ -895,10 +895,10 @@ class TestPositionAdditionalCoverage:
             price_ccy="USD",
             last_updated=datetime.now(timezone.utc)
         )
-        
+
         # Manually set avg_cost to zero to test edge case
         object.__setattr__(position, 'avg_cost', Decimal('0'))
-        
+
         pnl_pct = position.unrealized_pnl_pct(Decimal("150.00"))
         assert pnl_pct == Decimal('0')
 
@@ -974,14 +974,14 @@ class TestBrokerProfileAdditionalCoverage:
             supported_currencies=["USD"],
             supports_fractional=False
         )
-        
+
         # Test fractional shares when not supported
         assert broker.can_execute_order(Decimal("10.5"), Decimal("50.00")) is False
-        
+
         # Test minimum order value exactly at threshold
         assert broker.can_execute_order(Decimal("2"), Decimal("50.00")) is True  # 2 * 50 = 100
         assert broker.can_execute_order(Decimal("1"), Decimal("50.00")) is False  # 1 * 50 = 50 < 100
-        
+
         # Test whole shares meeting minimum
         assert broker.can_execute_order(Decimal("3"), Decimal("50.00")) is True
 
@@ -1044,7 +1044,7 @@ class TestPositionValidationEdgeCases:
             price_ccy="USD",
             last_updated=datetime.now(timezone.utc)
         )
-        
+
         # Try to reduce exactly 50 shares (should work)
         position.reduce_shares(Decimal("50"))
         assert position.qty == Decimal("0")
@@ -1060,7 +1060,7 @@ class TestPositionValidationEdgeCases:
             price_ccy="USD",
             last_updated=datetime.now(timezone.utc)
         )
-        
+
         # Try to reduce exactly 50.01 shares (should work)
         position.reduce_shares(Decimal("50.01"))
         assert position.qty == Decimal("0")
@@ -1086,10 +1086,10 @@ class TestTradeCalculationEdgeCases:
             price_ccy="USD",
             comment="Test zero pip"
         )
-        
+
         # Pip cost should be zero
         assert trade.pip_cost() == Decimal("0")
-        
+
         # Net amount should only include gross amount and fees (no pip cost)
         gross = trade.gross_amount()
         fees = trade.total_fees()

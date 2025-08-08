@@ -27,7 +27,7 @@ class DuckDBConnection(DatabaseConnection):
 
     def __init__(self, database_path: str, config: Optional[DuckDBConfig] = None):
         """Initialize DuckDB connection.
-        
+
         Args:
             database_path: Path to DuckDB database file
             config: DuckDB configuration settings (uses defaults if None)
@@ -43,19 +43,19 @@ class DuckDBConnection(DatabaseConnection):
             # Ensure database directory exists
             db_path = Path(self.database_path)
             db_path.parent.mkdir(parents=True, exist_ok=True)
-            
+
             # Create DuckDB connection
             self._connection = duckdb.connect(
                 database=self.database_path,
                 read_only=self.config.read_only
             )
-            
+
             # Configure connection settings
             await self._configure_connection()
-            
+
             self._is_connected = True
             logger.info(f"Connected to DuckDB database: {self.database_path}")
-            
+
         except Exception as e:
             self._is_connected = False
             raise ConnectionError(f"Failed to connect to DuckDB: {str(e)}") from e
@@ -80,7 +80,7 @@ class DuckDBConnection(DatabaseConnection):
         """Ping the database to verify connectivity."""
         if not await self.is_connected():
             return False
-            
+
         try:
             # Execute a simple query to test connectivity
             result = self._connection.execute("SELECT 1").fetchone()
@@ -93,16 +93,16 @@ class DuckDBConnection(DatabaseConnection):
         """Get information about the current connection."""
         if not await self.is_connected():
             return {"status": "disconnected"}
-            
+
         try:
             # Get DuckDB version
             version_result = self._connection.execute("SELECT version()").fetchone()
             version = version_result[0] if version_result else "unknown"
-            
+
             # Get database size
             db_path = Path(self.database_path)
             db_size = db_path.stat().st_size if db_path.exists() else 0
-            
+
             return {
                 "status": "connected",
                 "database_path": self.database_path,
@@ -120,7 +120,7 @@ class DuckDBConnection(DatabaseConnection):
         """Configure DuckDB connection settings using configuration object."""
         if not self._connection:
             return
-            
+
         try:
             # Apply all configuration settings
             for setting in self.config.get_connection_settings():
@@ -129,9 +129,9 @@ class DuckDBConnection(DatabaseConnection):
                 except Exception as setting_error:
                     # Log individual setting failures but continue with others
                     logger.warning(f"Configuration setting failed: {setting} - {str(setting_error)}")
-            
+
             logger.debug(f"DuckDB connection configured: {self.config}")
-            
+
         except Exception as e:
             logger.warning(f"Failed to configure DuckDB connection: {str(e)}")
 
@@ -146,7 +146,7 @@ class DuckDBTransactionManager(TransactionManager):
 
     def __init__(self, connection: DuckDBConnection):
         """Initialize transaction manager.
-        
+
         Args:
             connection: DuckDB connection to manage transactions for
         """
@@ -159,7 +159,7 @@ class DuckDBTransactionManager(TransactionManager):
         """Create a new database transaction context."""
         if not await self.connection.is_connected():
             raise TransactionError("Database connection is not active")
-            
+
         raw_conn = self.connection.raw_connection
         if not raw_conn:
             raise TransactionError("No raw connection available")
@@ -168,7 +168,7 @@ class DuckDBTransactionManager(TransactionManager):
         if self._transaction_depth > 0:
             savepoint_name = f"sp_{self._savepoint_counter}"
             self._savepoint_counter += 1
-            
+
             async with self.savepoint(savepoint_name):
                 yield
         else:
@@ -186,7 +186,7 @@ class DuckDBTransactionManager(TransactionManager):
         """Create a savepoint within an existing transaction."""
         if not await self.is_in_transaction():
             raise TransactionError("Cannot create savepoint outside of transaction")
-            
+
         raw_conn = self.connection.raw_connection
         if not raw_conn:
             raise TransactionError("No raw connection available")
@@ -202,14 +202,14 @@ class DuckDBTransactionManager(TransactionManager):
                 # This means nested transactions will share the same transaction scope
                 savepoint_supported = False
                 logger.debug(f"Savepoints not supported, using transaction semantics: {sp_error}")
-            
+
             yield
-            
+
             # Release savepoint on success (if supported)
             if savepoint_supported:
                 raw_conn.execute(f"RELEASE SAVEPOINT {name}")
                 logger.debug(f"Released savepoint: {name}")
-            
+
         except Exception as e:
             # Rollback to savepoint on error (if supported)
             if savepoint_supported:
@@ -230,7 +230,7 @@ class DuckDBTransactionManager(TransactionManager):
         """Explicitly begin a new transaction."""
         if not await self.connection.is_connected():
             raise TransactionError("Database connection is not active")
-            
+
         raw_conn = self.connection.raw_connection
         if not raw_conn:
             raise TransactionError("No raw connection available")
@@ -246,7 +246,7 @@ class DuckDBTransactionManager(TransactionManager):
         """Commit the current transaction."""
         if not await self.is_in_transaction():
             raise TransactionError("No active transaction to commit")
-            
+
         raw_conn = self.connection.raw_connection
         if not raw_conn:
             raise TransactionError("No raw connection available")

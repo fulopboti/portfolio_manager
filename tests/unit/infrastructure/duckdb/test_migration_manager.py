@@ -67,15 +67,15 @@ class TestDuckDBMigrationManager:
     async def test_initialize_migration_tracking(self, migration_manager, query_executor):
         """Test migration tracking table initialization."""
         await migration_manager.initialize_migration_tracking()
-        
+
         # Verify schema_migrations table was created
         result = await query_executor.execute_query("""
             SELECT name FROM pragma_table_info('schema_migrations')
         """)
-        
+
         column_names = [row["name"] for row in result.rows]
         expected_columns = ["version", "name", "migration_type", "applied_at", "checksum", "success"]
-        
+
         for col in expected_columns:
             assert col in column_names
 
@@ -89,7 +89,7 @@ class TestDuckDBMigrationManager:
                 name VARCHAR NOT NULL
             )
         """)
-        
+
         # Should not error when called again
         await migration_manager.initialize_migration_tracking()
 
@@ -100,17 +100,17 @@ class TestDuckDBMigrationManager:
         mock_executor = Mock()
         mock_executor.execute_command = AsyncMock(side_effect=Exception("Database error"))
         migration_manager.query_executor = mock_executor
-        
+
         with pytest.raises(MigrationError) as exc_info:
             await migration_manager.initialize_migration_tracking()
-        
+
         assert "Cannot initialize migration tracking" in str(exc_info.value)
 
     @pytest.mark.asyncio
     async def test_get_applied_migrations_empty(self, migration_manager):
         """Test getting applied migrations when none exist."""
         migrations = await migration_manager.get_applied_migrations()
-        
+
         assert isinstance(migrations, list)
         assert len(migrations) == 0
 
@@ -119,7 +119,7 @@ class TestDuckDBMigrationManager:
         """Test getting applied migrations with existing data."""
         # Initialize tracking
         await migration_manager.initialize_migration_tracking()
-        
+
         # Insert test migration records
         await query_executor.execute_command(f"""
             INSERT INTO schema_migrations 
@@ -129,9 +129,9 @@ class TestDuckDBMigrationManager:
             ('002', 'second_migration', 'DATA_MIGRATION', CURRENT_TIMESTAMP, 'hash2', true),
             ('003', 'failed_migration', 'create_table', CURRENT_TIMESTAMP, 'hash3', false)
         """)
-        
+
         migrations = await migration_manager.get_applied_migrations()
-        
+
         assert len(migrations) == 2  # Only successful ones
         assert "001" in migrations
         assert "002" in migrations
@@ -145,7 +145,7 @@ class TestDuckDBMigrationManager:
         mock_executor.execute_command = AsyncMock()  # For initialize
         mock_executor.execute_query = AsyncMock(side_effect=Exception("Query error"))
         migration_manager.query_executor = mock_executor
-        
+
         with pytest.raises(MigrationError):
             await migration_manager.get_applied_migrations()
 
@@ -154,7 +154,7 @@ class TestDuckDBMigrationManager:
         """Test getting pending migrations."""
         # Basic implementation returns empty list
         migrations = await migration_manager.get_pending_migrations()
-        
+
         assert isinstance(migrations, list)
         assert len(migrations) == 0
 
@@ -163,15 +163,15 @@ class TestDuckDBMigrationManager:
         """Test successful migration application."""
         # Initialize migration tracking first
         await migration_manager.initialize_migration_tracking()
-        
+
         await migration_manager.apply_migration(sample_migration)
-        
+
         # Verify migration was applied
         result = await query_executor.execute_query("SELECT name FROM pragma_table_info('test_migration')")
         column_names = [row["name"] for row in result.rows]
         assert "id" in column_names
         assert "name" in column_names
-        
+
         # Verify migration was recorded
         result = await query_executor.execute_query(
             "SELECT * FROM schema_migrations WHERE version = '001'"
@@ -192,12 +192,12 @@ class TestDuckDBMigrationManager:
             created_at=datetime.now(),
             checksum="bad123"
         )
-        
+
         with pytest.raises(MigrationError) as exc_info:
             await migration_manager.apply_migration(bad_migration)
-        
+
         assert "Failed to apply migration" in str(exc_info.value)
-        
+
         # Verify failure was recorded (if tracking exists)
         try:
             result = await query_executor.execute_query(
@@ -218,7 +218,7 @@ class TestDuckDBMigrationManager:
             Exception("Record error")  # Recording fails
         ])
         migration_manager.query_executor = mock_executor
-        
+
         with pytest.raises(MigrationError):
             await migration_manager.apply_migration(sample_migration)
 
@@ -227,14 +227,14 @@ class TestDuckDBMigrationManager:
         """Test successful migration rollback."""
         # Initialize migration tracking first
         await migration_manager.initialize_migration_tracking()
-        
+
         # Apply migration first
         await migration_manager.apply_migration(sample_migration)
         assert await query_executor.execute_scalar("SELECT COUNT(*) FROM pragma_table_info('test_migration')") > 0
-        
+
         # Rollback migration
         await migration_manager.rollback_migration(sample_migration)
-        
+
         # Verify table was dropped - should not exist anymore
         try:
             result = await query_executor.execute_query("SELECT name FROM pragma_table_info('test_migration')")
@@ -242,7 +242,7 @@ class TestDuckDBMigrationManager:
         except:
             # Better - table doesn't exist at all
             pass
-        
+
         # Verify migration record was removed
         result = await query_executor.execute_query(
             "SELECT COUNT(*) as count FROM schema_migrations WHERE version = '001'"
@@ -262,7 +262,7 @@ class TestDuckDBMigrationManager:
             created_at=datetime.now(),
             checksum="rollback123"
         )
-        
+
         # Apply first (assuming it works)
         try:
             await migration_manager.apply_migration(Migration(
@@ -277,7 +277,7 @@ class TestDuckDBMigrationManager:
             ))
         except:
             pass
-        
+
         with pytest.raises(MigrationError):
             await migration_manager.rollback_migration(bad_rollback)
 
@@ -287,7 +287,7 @@ class TestDuckDBMigrationManager:
         # Basic implementation just logs
         await migration_manager.migrate_to_version("0.1.0")
         # Should not raise error
-        
+
         await migration_manager.migrate_to_version()
         # Should not raise error
 
@@ -301,7 +301,7 @@ class TestDuckDBMigrationManager:
             (version, name, migration_type, applied_at, checksum, success)
             VALUES ('001', 'test', 'create_table', CURRENT_TIMESTAMP, 'hash1', true)
         """)
-        
+
         is_valid = await migration_manager.validate_migration_integrity()
         assert is_valid is True
 
@@ -315,7 +315,7 @@ class TestDuckDBMigrationManager:
             (version, name, migration_type, applied_at, checksum, success)
             VALUES ('001', 'failed', 'create_table', CURRENT_TIMESTAMP, 'hash1', false)
         """)
-        
+
         is_valid = await migration_manager.validate_migration_integrity()
         assert is_valid is False
 
@@ -327,14 +327,14 @@ class TestDuckDBMigrationManager:
         mock_executor.execute_command = AsyncMock()  # For initialize
         mock_executor.execute_query = AsyncMock(side_effect=Exception("Query error"))
         migration_manager.query_executor = mock_executor
-        
+
         is_valid = await migration_manager.validate_migration_integrity()
         assert is_valid is False
 
     def test_load_migrations_from_directory(self, migration_manager):
         """Test loading migrations from directory."""
         migrations = migration_manager.load_migrations_from_directory("/fake/path")
-        
+
         # Basic implementation returns empty list
         assert isinstance(migrations, list)
         assert len(migrations) == 0
@@ -344,7 +344,7 @@ class TestDuckDBMigrationManager:
         """Test complete migration workflow."""
         # Initialize migration tracking first
         await migration_manager.initialize_migration_tracking()
-        
+
         # Create a series of migrations
         migration1 = Migration(
             version="001",
@@ -356,7 +356,7 @@ class TestDuckDBMigrationManager:
             created_at=datetime.now(),
             checksum="hash001"
         )
-        
+
         migration2 = Migration(
             version="002", 
             name="add_email_column",
@@ -367,29 +367,29 @@ class TestDuckDBMigrationManager:
             created_at=datetime.now(),
             checksum="hash002"
         )
-        
+
         # Apply migrations
         await migration_manager.apply_migration(migration1)
         await migration_manager.apply_migration(migration2)
-        
+
         # Verify both are applied
         applied = await migration_manager.get_applied_migrations()
         assert "001" in applied
         assert "002" in applied
-        
+
         # Verify table structure
         result = await query_executor.execute_query("SELECT name FROM pragma_table_info('users')")
         column_names = [row["name"] for row in result.rows]
         assert "id" in column_names
         assert "name" in column_names
         assert "email" in column_names
-        
+
         # Test rollback
         await migration_manager.rollback_migration(migration2)
         applied = await migration_manager.get_applied_migrations()
         assert "001" in applied
         assert "002" not in applied
-        
+
         # Verify integrity
         is_valid = await migration_manager.validate_migration_integrity()
         assert is_valid is True
@@ -407,7 +407,7 @@ class TestDuckDBMigrationManager:
             created_at=datetime.now(),
             checksum="conc1"
         )
-        
+
         migration2 = Migration(
             version="concurrent2",
             name="test2", 
@@ -418,14 +418,14 @@ class TestDuckDBMigrationManager:
             created_at=datetime.now(),
             checksum="conc2"
         )
-        
+
         # Initialize migration manager first
         await migration_manager.initialize_migration_tracking()
-        
+
         # Apply both migrations
         await migration_manager.apply_migration(migration1)
         await migration_manager.apply_migration(migration2)
-        
+
         # Both should be applied
         applied = await migration_manager.get_applied_migrations()
         assert "concurrent1" in applied
@@ -449,10 +449,10 @@ class TestDuckDBMigrationManager:
             created_at=datetime.now(),
             checksum="fail123"
         )
-        
+
         with pytest.raises(MigrationError):
             await migration_manager.apply_migration(failing_migration)
-        
+
         # Verify no partial state exists (table should not exist)
         try:
             result = await query_executor.execute_query("SELECT * FROM success_table")

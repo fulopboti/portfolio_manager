@@ -30,13 +30,13 @@ __all__ = [
     "QueryResult",
     "SchemaManager",
     "MigrationManager",
-    
+
     # Data access interfaces
     "AssetDataAccess",
     "PortfolioDataAccess", 
     "MetricsDataAccess",
     "AuditDataAccess",
-    
+
     # Exceptions
     "DataAccessError",
     "ConnectionError",

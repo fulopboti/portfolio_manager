@@ -32,7 +32,7 @@ class TradeSide(Enum):
 @dataclass(frozen=True)
 class Asset:
     """Represents a financial asset that can be traded."""
-    
+
     symbol: str
     exchange: str
     asset_type: AssetType
@@ -42,13 +42,13 @@ class Asset:
         """Validate asset data after initialization."""
         if not self.symbol or not self.symbol.strip():
             raise DomainValidationError("Symbol cannot be empty")
-        
+
         if not self.exchange or not self.exchange.strip():
             raise DomainValidationError("Exchange cannot be empty")
-        
+
         if not self.name or not self.name.strip():
             raise DomainValidationError("Name cannot be empty")
-        
+
         # Normalize symbol and exchange to uppercase
         object.__setattr__(self, 'symbol', self.symbol.upper().strip())
         object.__setattr__(self, 'exchange', self.exchange.upper().strip())
@@ -71,7 +71,7 @@ class Asset:
 @dataclass(frozen=True)
 class AssetSnapshot:
     """Represents a point-in-time snapshot of asset price data (OHLCV)."""
-    
+
     symbol: str
     timestamp: datetime
     open: Decimal
@@ -85,25 +85,25 @@ class AssetSnapshot:
         # Validate prices are positive
         if any(price <= 0 for price in [self.open, self.high, self.low, self.close]):
             raise DomainValidationError("Prices must be positive")
-        
+
         # Validate OHLC relationships - high must be highest, low must be lowest
         if self.high < self.low:
             raise DomainValidationError("High price must be >= low price")
-        
+
         # Check high is >= all other prices
         if self.high < self.open:
             raise DomainValidationError("High price must be >= low price")
-        
+
         if self.high < self.close:
             raise DomainValidationError("High price must be >= low price")
-        
+
         # Check low is <= all other prices
         if self.low > self.open:
             raise DomainValidationError("High price must be >= low price")
-        
+
         if self.low > self.close:
             raise DomainValidationError("High price must be >= low price")
-        
+
         # Validate volume is non-negative
         if self.volume < 0:
             raise DomainValidationError("Volume must be non-negative")
@@ -126,7 +126,7 @@ class AssetSnapshot:
 @dataclass
 class Portfolio:
     """Represents an investment portfolio."""
-    
+
     portfolio_id: UUID
     name: str
     base_ccy: str
@@ -137,12 +137,12 @@ class Portfolio:
         """Validate portfolio data after initialization."""
         if not self.name or not self.name.strip():
             raise DomainValidationError("Portfolio name cannot be empty")
-        
+
         # Validate currency code (simple validation for major currencies)
         valid_currencies = {"USD", "EUR", "RON", "GBP", "JPY", "CAD", "AUD", "CHF"}
         if self.base_ccy not in valid_currencies:
             raise DomainValidationError(f"Invalid currency code: {self.base_ccy}")
-        
+
         if self.cash_balance < 0:
             raise DomainValidationError("Cash balance cannot be negative")
 
@@ -150,19 +150,19 @@ class Portfolio:
         """Add cash to the portfolio."""
         if amount <= 0:
             raise DomainValidationError("Cash amount must be positive")
-        
+
         self.cash_balance += amount
 
     def deduct_cash(self, amount: Decimal) -> None:
         """Deduct cash from the portfolio."""
         if amount <= 0:
             raise DomainValidationError("Cash amount must be positive")
-        
+
         if self.cash_balance < amount:
             raise InsufficientFundsError(
                 f"Insufficient funds: available {self.cash_balance}, required {amount}"
             )
-        
+
         self.cash_balance -= amount
 
     def has_sufficient_cash(self, amount: Decimal) -> bool:
@@ -173,7 +173,7 @@ class Portfolio:
 @dataclass(frozen=True)
 class Trade:
     """Represents a trade execution record."""
-    
+
     trade_id: UUID
     portfolio_id: UUID
     symbol: str
@@ -192,13 +192,13 @@ class Trade:
         """Validate trade data after initialization."""
         if self.qty <= 0:
             raise InvalidTradeError("Trade quantity must be positive")
-        
+
         if self.price <= 0:
             raise InvalidTradeError("Trade price must be positive")
-        
+
         if self.pip_pct < 0 or self.fee_pct < 0:
             raise InvalidTradeError("Fee percentages must be non-negative")
-        
+
         if self.fee_flat < 0:
             raise InvalidTradeError("Flat fees must be non-negative")
 
@@ -222,7 +222,7 @@ class Trade:
         """Calculate the net trade amount including fees."""
         gross = self.gross_amount()
         fees = self.total_fees()
-        
+
         if self.side == TradeSide.BUY:
             # For buy trades, we pay gross + fees
             return gross + fees
@@ -242,7 +242,7 @@ class Trade:
 @dataclass
 class Position:
     """Represents a position in a portfolio."""
-    
+
     portfolio_id: UUID
     symbol: str
     qty: Decimal
@@ -255,7 +255,7 @@ class Position:
         """Validate position data after initialization."""
         if self.qty <= 0:
             raise InvalidPositionError("Position quantity must be positive")
-        
+
         if self.avg_cost <= 0:
             raise InvalidPositionError("Average cost must be positive")
 
@@ -281,14 +281,14 @@ class Position:
         """Add shares to the position and update average cost."""
         if additional_qty <= 0:
             raise InvalidPositionError("Additional quantity must be positive")
-        
+
         if price <= 0:
             raise InvalidPositionError("Price must be positive")
-        
+
         # Calculate new weighted average cost
         total_cost = (self.qty * self.avg_cost) + (additional_qty * price)
         new_qty = self.qty + additional_qty
-        
+
         self.qty = new_qty
         self.avg_cost = total_cost / new_qty
 
@@ -296,12 +296,12 @@ class Position:
         """Reduce shares in the position."""
         if reduction_qty <= 0:
             raise InvalidPositionError("Reduction quantity must be positive")
-        
+
         if reduction_qty > self.qty:
             raise InvalidPositionError(
                 f"Cannot reduce position by {reduction_qty}, only {self.qty} available"
             )
-        
+
         self.qty -= reduction_qty
         # Average cost remains the same when reducing position
 
@@ -309,7 +309,7 @@ class Position:
 @dataclass(frozen=True)
 class BrokerProfile:
     """Represents a broker's fee structure and capabilities."""
-    
+
     broker_id: str
     name: str
     pip_pct: Decimal
@@ -323,19 +323,19 @@ class BrokerProfile:
         """Validate broker profile data after initialization."""
         if not self.broker_id or not self.broker_id.strip():
             raise DomainValidationError("Broker ID cannot be empty")
-        
+
         if not self.name or not self.name.strip():
             raise DomainValidationError("Broker name cannot be empty")
-        
+
         if self.pip_pct < 0 or self.fee_pct < 0:
             raise DomainValidationError("Fee percentages must be non-negative")
-        
+
         if self.fee_flat < 0:
             raise DomainValidationError("Flat fees must be non-negative")
-        
+
         if self.min_order_value < 0:
             raise DomainValidationError("Minimum order value must be non-negative")
-        
+
         if not self.supported_currencies:
             raise DomainValidationError("Supported currencies list cannot be empty")
 
@@ -356,10 +356,10 @@ class BrokerProfile:
         # Check fractional shares
         if not self.supports_fractional and quantity != quantity.to_integral_value():
             return False
-        
+
         # Check minimum order value
         order_value = quantity * price
         if order_value < self.min_order_value:
             return False
-        
+
         return True

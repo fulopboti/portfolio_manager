@@ -50,7 +50,7 @@ class TestDuckDBSchemaManagerTDD:
     def test_initialization_tdd(self, query_executor):
         """Test schema manager initialization with all required components."""
         schema_manager = DuckDBSchemaManager(query_executor)
-        
+
         # Should initialize with all required components
         assert schema_manager.query_executor is query_executor
         assert hasattr(schema_manager, 'table_builder')
@@ -63,14 +63,14 @@ class TestDuckDBSchemaManagerTDD:
         # Initially no schema should exist
         exists = await schema_manager.schema_exists()
         assert exists is False
-        
+
         # Create the schema
         await schema_manager.create_schema()
-        
+
         # Schema should now exist
         exists = await schema_manager.schema_exists()
         assert exists is True
-        
+
         # All expected tables should be created
         table_names = await schema_manager.get_table_names()
         expected_tables = {
@@ -86,9 +86,9 @@ class TestDuckDBSchemaManagerTDD:
         # Mock the table builder to verify optimization is called
         with patch.object(schema_manager.table_builder, 'optimize_for_analytics') as mock_optimize:
             mock_optimize.return_value = "PRAGMA enable_profiling='json';\nPRAGMA enable_progress_bar=true;"
-            
+
             await schema_manager.create_schema()
-            
+
             # Optimization should have been called
             mock_optimize.assert_called_once()
 
@@ -98,9 +98,9 @@ class TestDuckDBSchemaManagerTDD:
         with patch.object(schema_manager.table_builder, 'get_table_creation_order') as mock_order:
             expected_order = ["assets", "portfolios", "positions", "trades"]
             mock_order.return_value = expected_order
-            
+
             await schema_manager.create_schema()
-            
+
             # Table creation order should have been determined
             mock_order.assert_called_once()
 
@@ -108,14 +108,14 @@ class TestDuckDBSchemaManagerTDD:
     async def test_create_schema_handles_indexes_tdd(self, schema_manager):
         """Test schema creation creates all indexes."""
         await schema_manager.create_schema()
-        
+
         # Verify indexes were created by checking if they exist
         # This tests that the schema manager processes PortfolioManagerSchema.get_all_indexes()
         result = await schema_manager.query_executor.execute_query("""
             SELECT name FROM sqlite_master 
             WHERE type = 'index' AND name NOT LIKE 'sqlite_%'
         """)
-        
+
         # Should have created some indexes
         assert len(result.rows) > 0
 
@@ -123,13 +123,13 @@ class TestDuckDBSchemaManagerTDD:
     async def test_create_schema_handles_views_tdd(self, schema_manager):
         """Test schema creation creates all views."""
         await schema_manager.create_schema()
-        
+
         # Verify views were created
         result = await schema_manager.query_executor.execute_query("""
             SELECT name FROM sqlite_master 
             WHERE type = 'view'
         """)
-        
+
         view_names = {row["name"] for row in result.rows}
         expected_views = {"portfolio_summary", "latest_asset_prices", "daily_portfolio_performance"}
         assert expected_views.issubset(view_names)
@@ -138,7 +138,7 @@ class TestDuckDBSchemaManagerTDD:
     async def test_create_schema_sets_version_tdd(self, schema_manager):
         """Test schema creation sets the schema version."""
         await schema_manager.create_schema()
-        
+
         # Schema version should be set
         version = await schema_manager.get_schema_version()
         assert version == PortfolioManagerSchema.SCHEMA_VERSION
@@ -149,11 +149,11 @@ class TestDuckDBSchemaManagerTDD:
         # Create schema first time
         await schema_manager.create_schema()
         table_count_1 = len(await schema_manager.get_table_names())
-        
+
         # Create schema second time - should not fail or duplicate
         await schema_manager.create_schema()
         table_count_2 = len(await schema_manager.get_table_names())
-        
+
         # Should have same number of tables
         assert table_count_1 == table_count_2
 
@@ -163,10 +163,10 @@ class TestDuckDBSchemaManagerTDD:
         # Mock query executor to simulate failure
         with patch.object(schema_manager.query_executor, 'execute_command') as mock_exec:
             mock_exec.side_effect = Exception("Database error")
-            
+
             with pytest.raises(SchemaError) as exc_info:
                 await schema_manager.create_schema()
-            
+
             assert "Failed to create schema" in str(exc_info.value)
 
     @pytest.mark.asyncio
@@ -175,13 +175,13 @@ class TestDuckDBSchemaManagerTDD:
         # Create schema first
         await schema_manager.create_schema()
         assert await schema_manager.schema_exists() is True
-        
+
         # Drop schema
         await schema_manager.drop_schema()
-        
+
         # Schema should no longer exist
         assert await schema_manager.schema_exists() is False
-        
+
         # No application tables should remain
         table_names = await schema_manager.get_table_names()
         expected_tables = {
@@ -194,13 +194,13 @@ class TestDuckDBSchemaManagerTDD:
     async def test_drop_schema_handles_dependencies_tdd(self, schema_manager):
         """Test drop_schema handles table dependencies correctly."""
         await schema_manager.create_schema()
-        
+
         with patch.object(schema_manager.table_builder, 'get_table_drop_order') as mock_order:
             expected_order = ["trades", "positions", "portfolios", "assets"]
             mock_order.return_value = expected_order
-            
+
             await schema_manager.drop_schema()
-            
+
             # Table drop order should have been determined
             mock_order.assert_called_once()
 
@@ -208,15 +208,15 @@ class TestDuckDBSchemaManagerTDD:
     async def test_drop_schema_removes_views_and_indexes_tdd(self, schema_manager):
         """Test drop_schema removes views and indexes before tables."""
         await schema_manager.create_schema()
-        
+
         # Verify views exist before drop
         result = await schema_manager.query_executor.execute_query(
             "SELECT name FROM sqlite_master WHERE type = 'view'"
         )
         assert len(result.rows) > 0
-        
+
         await schema_manager.drop_schema()
-        
+
         # Views should be gone
         result = await schema_manager.query_executor.execute_query(
             "SELECT name FROM sqlite_master WHERE type = 'view'"
@@ -229,11 +229,11 @@ class TestDuckDBSchemaManagerTDD:
         # Test that drop_schema continues even when individual operations fail
         with patch.object(schema_manager.query_executor, 'execute_command') as mock_exec:
             mock_exec.side_effect = Exception("Cannot drop table")
-            
+
             # Should not raise error - it logs errors but continues
             # This is the robust behavior - try to clean up as much as possible
             await schema_manager.drop_schema()
-            
+
             # Should have attempted to call execute_command multiple times
             assert mock_exec.call_count > 0
 
@@ -250,7 +250,7 @@ class TestDuckDBSchemaManagerTDD:
         await schema_manager.query_executor.execute_command(
             "CREATE TABLE assets (symbol VARCHAR PRIMARY KEY, name VARCHAR)"
         )
-        
+
         # Should still return False as schema is incomplete
         exists = await schema_manager.schema_exists()
         assert exists is False
@@ -259,7 +259,7 @@ class TestDuckDBSchemaManagerTDD:
     async def test_schema_exists_when_complete_schema_tdd(self, schema_manager):
         """Test schema_exists returns True when complete schema exists."""
         await schema_manager.create_schema()
-        
+
         exists = await schema_manager.schema_exists()
         assert exists is True
 
@@ -273,7 +273,7 @@ class TestDuckDBSchemaManagerTDD:
     async def test_get_schema_version_with_version_tdd(self, schema_manager):
         """Test get_schema_version returns correct version when set."""
         await schema_manager.create_schema()
-        
+
         version = await schema_manager.get_schema_version()
         assert version == PortfolioManagerSchema.SCHEMA_VERSION
 
@@ -281,9 +281,9 @@ class TestDuckDBSchemaManagerTDD:
     async def test_set_schema_version_tdd(self, schema_manager):
         """Test set_schema_version stores version correctly."""
         test_version = "2.0.0"
-        
+
         await schema_manager.set_schema_version(test_version)
-        
+
         # Should be able to retrieve the version
         retrieved_version = await schema_manager.get_schema_version()
         assert retrieved_version == test_version
@@ -292,7 +292,7 @@ class TestDuckDBSchemaManagerTDD:
     async def test_set_schema_version_creates_metadata_table_tdd(self, schema_manager):
         """Test set_schema_version creates metadata table if needed."""
         await schema_manager.set_schema_version("0.1.0")
-        
+
         # Schema migrations table should exist (used for version tracking)
         result = await schema_manager.query_executor.execute_query("""
             SELECT name FROM sqlite_master 
@@ -311,9 +311,9 @@ class TestDuckDBSchemaManagerTDD:
     async def test_get_table_names_with_tables_tdd(self, schema_manager):
         """Test get_table_names returns correct table names."""
         await schema_manager.create_schema()
-        
+
         table_names = await schema_manager.get_table_names()
-        
+
         assert isinstance(table_names, set)
         expected_tables = {"assets", "portfolios", "trades", "positions"}
         assert expected_tables.issubset(table_names)
@@ -328,7 +328,7 @@ class TestDuckDBSchemaManagerTDD:
     async def test_table_exists_true_tdd(self, schema_manager):
         """Test table_exists returns True for existing table."""
         await schema_manager.create_schema()
-        
+
         exists = await schema_manager.table_exists("assets")
         assert exists is True
 
@@ -342,9 +342,9 @@ class TestDuckDBSchemaManagerTDD:
     async def test_get_table_definition_existing_table_tdd(self, schema_manager):
         """Test get_table_definition returns correct definition for existing table."""
         await schema_manager.create_schema()
-        
+
         table_def = await schema_manager.get_table_definition("assets")
-        
+
         assert table_def is not None
         assert isinstance(table_def, TableDefinition)
         assert table_def.name == "assets"
@@ -362,9 +362,9 @@ class TestDuckDBSchemaManagerTDD:
             indexes=[],
             constraints=[]
         )
-        
+
         await schema_manager.create_table(table_def)
-        
+
         # Table should exist
         exists = await schema_manager.table_exists("test_table")
         assert exists is True
@@ -380,10 +380,10 @@ class TestDuckDBSchemaManagerTDD:
             indexes=[],
             constraints=[]
         )
-        
+
         # Create table first time
         await schema_manager.create_table(table_def)
-        
+
         # Creating again should handle gracefully (not fail)
         await schema_manager.create_table(table_def)
 
@@ -400,10 +400,10 @@ class TestDuckDBSchemaManagerTDD:
             constraints=[]
         )
         await schema_manager.create_table(table_def)
-        
+
         # Drop the table
         await schema_manager.drop_table("drop_test")
-        
+
         # Table should no longer exist
         exists = await schema_manager.table_exists("drop_test")
         assert exists is False
@@ -418,9 +418,9 @@ class TestDuckDBSchemaManagerTDD:
     async def test_get_create_table_sql_tdd(self, schema_manager):
         """Test get_create_table_sql returns all table creation statements."""
         sql_statements = await schema_manager.get_create_table_sql()
-        
+
         assert isinstance(sql_statements, dict)
-        
+
         # Should include all schema tables
         expected_tables = {"assets", "portfolios", "trades", "positions"}
         for table_name in expected_tables:
@@ -432,17 +432,17 @@ class TestDuckDBSchemaManagerTDD:
         """Test complete schema validation workflow."""
         # Initially schema is invalid
         assert await schema_manager.schema_exists() is False
-        
+
         # Create schema
         await schema_manager.create_schema()
-        
+
         # Schema should be valid
         assert await schema_manager.schema_exists() is True
-        
+
         # Version should be set
         version = await schema_manager.get_schema_version()
         assert version is not None
-        
+
         # All required tables should exist
         required_tables = {"assets", "portfolios", "trades", "positions"}
         table_names = await schema_manager.get_table_names()
@@ -452,13 +452,13 @@ class TestDuckDBSchemaManagerTDD:
     async def test_concurrent_schema_operations_tdd(self, schema_manager):
         """Test schema operations are safe under concurrent access."""
         import asyncio
-        
+
         # Multiple concurrent schema creations should be safe
         tasks = [schema_manager.create_schema() for _ in range(3)]
-        
+
         # Should complete without error
         await asyncio.gather(*tasks, return_exceptions=True)
-        
+
         # Schema should exist and be valid
         assert await schema_manager.schema_exists() is True
 
@@ -468,13 +468,13 @@ class TestDuckDBSchemaManagerTDD:
         # Verify components are properly integrated
         assert schema_manager.table_builder is not None
         assert schema_manager.inspector is not None
-        
+
         # Components should be usable
         tables = PortfolioManagerSchema.get_all_tables()
         table_order = schema_manager.table_builder.get_table_creation_order(tables)
         assert isinstance(table_order, list)
         assert len(table_order) > 0
-        
+
         # Inspector should work after schema creation
         await schema_manager.create_schema()
         existing_tables = await schema_manager.inspector.get_existing_tables()

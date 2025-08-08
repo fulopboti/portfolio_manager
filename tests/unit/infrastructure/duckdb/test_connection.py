@@ -66,7 +66,7 @@ class TestDuckDBConnection:
         assert parent_dir.exists()
 
         await connection.connect()
-        
+
         assert connection._is_connected is True
         assert connection._connection is not None
         assert await connection.is_connected() is True
@@ -77,10 +77,10 @@ class TestDuckDBConnection:
         temp_dir = tempfile.mkdtemp()
         import shutil
         shutil.rmtree(temp_dir)  # Remove the directory
-        
+
         db_path = os.path.join(temp_dir, "subdir", "test.db")
         connection = DuckDBConnection(db_path)
-        
+
         try:
             await connection.connect()
             assert os.path.exists(os.path.dirname(db_path))
@@ -96,10 +96,10 @@ class TestDuckDBConnection:
         # Use invalid path to trigger connection error
         invalid_path = "/invalid\x00path/test.db"  # null byte causes error
         connection = DuckDBConnection(invalid_path)
-        
+
         with pytest.raises(ConnectionError) as exc_info:
             await connection.connect()
-        
+
         assert "Failed to connect to DuckDB" in str(exc_info.value)
         assert connection._is_connected is False
 
@@ -107,9 +107,9 @@ class TestDuckDBConnection:
     async def test_disconnect(self, connected_connection):
         """Test connection disconnection."""
         assert await connected_connection.is_connected() is True
-        
+
         await connected_connection.disconnect()
-        
+
         assert connected_connection._is_connected is False
         assert connected_connection._connection is None
         assert await connected_connection.is_connected() is False
@@ -118,10 +118,10 @@ class TestDuckDBConnection:
     async def test_disconnect_not_connected(self, connection):
         """Test disconnecting when not connected."""
         assert await connection.is_connected() is False
-        
+
         # Should not raise error
         await connection.disconnect()
-        
+
         assert connection._is_connected is False
 
     @pytest.mark.asyncio
@@ -131,10 +131,10 @@ class TestDuckDBConnection:
         mock_conn = Mock()
         mock_conn.close.side_effect = Exception("Close error")
         connected_connection._connection = mock_conn
-        
+
         # Should handle error gracefully
         await connected_connection.disconnect()
-        
+
         assert connected_connection._is_connected is False
         assert connected_connection._connection is None
 
@@ -143,11 +143,11 @@ class TestDuckDBConnection:
         """Test connection status checking."""
         # Initially not connected
         assert await connection.is_connected() is False
-        
+
         # After connecting
         await connection.connect()
         assert await connection.is_connected() is True
-        
+
         # After disconnecting
         await connection.disconnect()
         assert await connection.is_connected() is False
@@ -171,7 +171,7 @@ class TestDuckDBConnection:
         mock_conn = Mock()
         mock_conn.execute.side_effect = Exception("Query error")
         connected_connection._connection = mock_conn
-        
+
         result = await connected_connection.ping()
         assert result is False
 
@@ -179,7 +179,7 @@ class TestDuckDBConnection:
     async def test_get_connection_info_connected(self, connected_connection, temp_db_path):
         """Test getting connection info when connected."""
         info = await connected_connection.get_connection_info()
-        
+
         assert info["status"] == "connected"
         assert info["database_path"] == temp_db_path
         assert info["read_only"] is False
@@ -192,7 +192,7 @@ class TestDuckDBConnection:
         """Test getting connection info for memory database."""
         connection = DuckDBConnection(":memory:")
         await connection.connect()
-        
+
         try:
             info = await connection.get_connection_info()
             assert info["connection_type"] == "memory"
@@ -212,7 +212,7 @@ class TestDuckDBConnection:
         mock_conn = Mock()
         mock_conn.execute.side_effect = Exception("Query error")
         connected_connection._connection = mock_conn
-        
+
         info = await connected_connection.get_connection_info()
         assert info["status"] == "error"
         assert "error" in info
@@ -221,7 +221,7 @@ class TestDuckDBConnection:
     async def test_configure_connection(self, connection, temp_db_path):
         """Test connection configuration."""
         await connection.connect()
-        
+
         # Verify connection is configured (no errors during setup)
         assert await connection.is_connected() is True
         assert connection._connection is not None
@@ -230,12 +230,12 @@ class TestDuckDBConnection:
     async def test_configure_connection_error(self, connection):
         """Test configuration error handling."""
         await connection.connect()
-        
+
         # Mock connection to cause configuration error
         mock_conn = Mock()
         mock_conn.execute.side_effect = Exception("Config error")
         connection._connection = mock_conn
-        
+
         # Call private method directly
         await connection._configure_connection()
         # Should not raise error, just log warning
@@ -244,11 +244,11 @@ class TestDuckDBConnection:
         """Test raw connection property access."""
         # Initially None
         assert connection.raw_connection is None
-        
+
         # Mock connection
         mock_conn = Mock()
         connection._connection = mock_conn
-        
+
         assert connection.raw_connection is mock_conn
 
 
@@ -290,24 +290,24 @@ class TestDuckDBTransactionManager:
     async def test_transaction_success(self, transaction_manager):
         """Test successful transaction."""
         assert transaction_manager._transaction_depth == 0
-        
+
         async with transaction_manager.transaction():
             assert transaction_manager._transaction_depth == 1
             # Do some work within transaction
             pass
-        
+
         assert transaction_manager._transaction_depth == 0
 
     @pytest.mark.asyncio
     async def test_transaction_rollback(self, transaction_manager):
         """Test transaction rollback on exception."""
         assert transaction_manager._transaction_depth == 0
-        
+
         with pytest.raises(ValueError):
             async with transaction_manager.transaction():
                 assert transaction_manager._transaction_depth == 1
                 raise ValueError("Test error")
-        
+
         assert transaction_manager._transaction_depth == 0
 
     @pytest.mark.asyncio
@@ -315,7 +315,7 @@ class TestDuckDBTransactionManager:
         """Test nested transactions with savepoints."""
         async with transaction_manager.transaction():
             assert transaction_manager._transaction_depth == 1
-            
+
             async with transaction_manager.transaction():
                 # Nested transaction should use savepoint
                 assert transaction_manager._transaction_depth == 1
@@ -326,11 +326,11 @@ class TestDuckDBTransactionManager:
         """Test transaction when not connected."""
         connection = DuckDBConnection(temp_db_path)  # Not connected
         tm = DuckDBTransactionManager(connection)
-        
+
         with pytest.raises(TransactionError) as exc_info:
             async with tm.transaction():
                 pass
-        
+
         assert "Database connection is not active" in str(exc_info.value)
 
     @pytest.mark.asyncio
@@ -338,7 +338,7 @@ class TestDuckDBTransactionManager:
         """Test successful savepoint creation and release."""
         # Start a transaction first
         await transaction_manager.begin_transaction()
-        
+
         try:
             async with transaction_manager.savepoint("test_sp"):
                 # Do some work within savepoint
@@ -350,7 +350,7 @@ class TestDuckDBTransactionManager:
     async def test_savepoint_rollback(self, transaction_manager):
         """Test savepoint rollback on exception."""
         await transaction_manager.begin_transaction()
-        
+
         try:
             with pytest.raises(ValueError):
                 async with transaction_manager.savepoint("test_sp"):
@@ -364,19 +364,19 @@ class TestDuckDBTransactionManager:
         with pytest.raises(TransactionError) as exc_info:
             async with transaction_manager.savepoint("test_sp"):
                 pass
-        
+
         assert "Cannot create savepoint outside of transaction" in str(exc_info.value)
 
     @pytest.mark.asyncio
     async def test_savepoint_rollback_error(self, transaction_manager):
         """Test savepoint rollback error handling."""
         await transaction_manager.begin_transaction()
-        
+
         # Mock connection to cause rollback error
         mock_conn = Mock()
         mock_conn.execute.side_effect = [None, Exception("Rollback error")]
         transaction_manager.connection._connection = mock_conn
-        
+
         try:
             with pytest.raises(TransactionError):
                 async with transaction_manager.savepoint("test_sp"):
@@ -389,11 +389,11 @@ class TestDuckDBTransactionManager:
     async def test_begin_transaction(self, transaction_manager):
         """Test explicit transaction begin."""
         assert await transaction_manager.is_in_transaction() is False
-        
+
         await transaction_manager.begin_transaction()
         assert await transaction_manager.is_in_transaction() is True
         assert transaction_manager._transaction_depth == 1
-        
+
         await transaction_manager.rollback_transaction()
 
     @pytest.mark.asyncio
@@ -401,7 +401,7 @@ class TestDuckDBTransactionManager:
         """Test begin transaction when not connected."""
         connection = DuckDBConnection(temp_db_path)
         tm = DuckDBTransactionManager(connection)
-        
+
         with pytest.raises(TransactionError):
             await tm.begin_transaction()
 
@@ -412,7 +412,7 @@ class TestDuckDBTransactionManager:
         mock_conn = Mock()
         mock_conn.execute.side_effect = Exception("Begin error")
         transaction_manager.connection._connection = mock_conn
-        
+
         with pytest.raises(TransactionError):
             await transaction_manager.begin_transaction()
 
@@ -421,7 +421,7 @@ class TestDuckDBTransactionManager:
         """Test transaction commit."""
         await transaction_manager.begin_transaction()
         assert await transaction_manager.is_in_transaction() is True
-        
+
         await transaction_manager.commit_transaction()
         assert await transaction_manager.is_in_transaction() is False
 
@@ -435,12 +435,12 @@ class TestDuckDBTransactionManager:
     async def test_commit_transaction_error(self, transaction_manager):
         """Test commit transaction with error."""
         await transaction_manager.begin_transaction()
-        
+
         # Mock connection to cause commit error
         mock_conn = Mock()
         mock_conn.execute.side_effect = Exception("Commit error")
         transaction_manager.connection._connection = mock_conn
-        
+
         with pytest.raises(TransactionError):
             await transaction_manager.commit_transaction()
 
@@ -449,7 +449,7 @@ class TestDuckDBTransactionManager:
         """Test transaction rollback."""
         await transaction_manager.begin_transaction()
         assert await transaction_manager.is_in_transaction() is True
-        
+
         await transaction_manager.rollback_transaction()
         assert await transaction_manager.is_in_transaction() is False
 
@@ -459,7 +459,7 @@ class TestDuckDBTransactionManager:
         connection = DuckDBConnection(temp_db_path)
         tm = DuckDBTransactionManager(connection)
         tm._transaction_depth = 1  # Simulate active transaction
-        
+
         # Should not raise error
         await tm.rollback_transaction()
         assert tm._transaction_depth == 0
@@ -468,12 +468,12 @@ class TestDuckDBTransactionManager:
     async def test_rollback_transaction_error(self, transaction_manager):
         """Test rollback with error."""
         await transaction_manager.begin_transaction()
-        
+
         # Mock connection to cause rollback error
         mock_conn = Mock()
         mock_conn.execute.side_effect = Exception("Rollback error")
         transaction_manager.connection._connection = mock_conn
-        
+
         # Should not raise error, but reset depth
         await transaction_manager.rollback_transaction()
         assert transaction_manager._transaction_depth == 0
@@ -482,10 +482,10 @@ class TestDuckDBTransactionManager:
     async def test_is_in_transaction(self, transaction_manager):
         """Test transaction status checking."""
         assert await transaction_manager.is_in_transaction() is False
-        
+
         await transaction_manager.begin_transaction()
         assert await transaction_manager.is_in_transaction() is True
-        
+
         await transaction_manager.commit_transaction()
         assert await transaction_manager.is_in_transaction() is False
 

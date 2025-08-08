@@ -44,15 +44,15 @@ def event_loop():
 @pytest.fixture
 async def temp_database() -> AsyncGenerator[str, None]:
     """Create a temporary database for testing.
-    
+
     Yields:
         str: Path to temporary database file
     """
     temp_dir = tempfile.mkdtemp()
     db_path = os.path.join(temp_dir, "test.db")
-    
+
     yield db_path
-    
+
     # Cleanup
     import shutil
     if os.path.exists(temp_dir):
@@ -62,28 +62,28 @@ async def temp_database() -> AsyncGenerator[str, None]:
 @pytest.fixture 
 async def duckdb_connection(temp_database: str) -> AsyncGenerator[DuckDBConnection, None]:
     """Create a connected DuckDB connection for testing.
-    
+
     Args:
         temp_database: Path to temporary database
-        
+
     Yields:
         DuckDBConnection: Connected database connection
     """
     connection = DuckDBConnection(temp_database)
     await connection.connect()
-    
+
     yield connection
-    
+
     await connection.disconnect()
 
 
 @pytest.fixture
 def query_executor(duckdb_connection: DuckDBConnection) -> DuckDBQueryExecutor:
     """Create a query executor for testing.
-    
+
     Args:
         duckdb_connection: Connected database connection
-        
+
     Returns:
         DuckDBQueryExecutor: Query executor instance
     """
@@ -93,10 +93,10 @@ def query_executor(duckdb_connection: DuckDBConnection) -> DuckDBQueryExecutor:
 @pytest.fixture
 def schema_manager(query_executor: DuckDBQueryExecutor) -> DuckDBSchemaManager:
     """Create a schema manager for testing.
-    
+
     Args:
         query_executor: Query executor instance
-        
+
     Returns:
         DuckDBSchemaManager: Schema manager instance
     """
@@ -106,10 +106,10 @@ def schema_manager(query_executor: DuckDBQueryExecutor) -> DuckDBSchemaManager:
 @pytest.fixture
 async def initialized_database(schema_manager: DuckDBSchemaManager) -> DuckDBSchemaManager:
     """Create a database with initialized schema.
-    
+
     Args:
         schema_manager: Schema manager instance
-        
+
     Returns:
         DuckDBSchemaManager: Schema manager with initialized database
     """
@@ -146,21 +146,21 @@ def pytest_collection_modifyitems(config, items):
         if "/integration/" in item.nodeid or "test_integration" in item.nodeid:
             item.add_marker(pytest.mark.integration)
             item.add_marker(pytest.mark.slow)
-        
+
         # Mark unit tests
         elif "/unit/" in item.nodeid:
             item.add_marker(pytest.mark.unit)
-        
+
         # Mark DuckDB tests
         if "/duckdb/" in item.nodeid:
             item.add_marker(pytest.mark.duckdb)
-        
+
         # Mark performance tests
         if "performance" in item.name.lower():
             item.add_marker(pytest.mark.performance)
             item.add_marker(pytest.mark.slow)
-        
-        
+
+
         # Mark other tests as unit tests by default if not already marked
         if not any(marker.name in ["integration", "unit", "performance"] for marker in item.iter_markers()):
             item.add_marker(pytest.mark.unit)
@@ -356,7 +356,7 @@ def multiple_assets() -> list[Asset]:
 def multiple_snapshots(multiple_assets: list[Asset]) -> list[AssetSnapshot]:
     """Create multiple asset snapshots for testing."""
     base_time = datetime(2024, 1, 15, 16, 0, 0, tzinfo=timezone.utc)
-    
+
     return [
         AssetSnapshot(
             symbol="AAPL",
@@ -459,7 +459,7 @@ def test_factory() -> TestDataFactory:
 
 class MockDomainEvent:
     """Mock domain event for testing."""
-    
+
     def __init__(self, event_id: str):
         self.event_id = event_id
         self.timestamp = datetime.now(timezone.utc)
@@ -467,7 +467,7 @@ class MockDomainEvent:
 
 class MockTradeExecutedEvent(MockDomainEvent):
     """Mock trade executed event for testing."""
-    
+
     def __init__(self, trade_id=None, portfolio_id=None, symbol="AAPL", 
                  side=TradeSide.BUY, quantity=Decimal("10"), price=Decimal("150.00")):
         super().__init__(str(trade_id or uuid4()))
@@ -478,7 +478,7 @@ class MockTradeExecutedEvent(MockDomainEvent):
         self.quantity = quantity
         self.price = price
         self.timestamp = datetime.now(timezone.utc)
-    
+
     def gross_amount(self):
         """Calculate gross trade amount."""
         return self.quantity * self.price
@@ -486,18 +486,18 @@ class MockTradeExecutedEvent(MockDomainEvent):
 
 class MockAssetPriceUpdatedEvent(MockDomainEvent):
     """Mock asset price updated event for testing."""
-    
+
     def __init__(self, symbol="AAPL", old_price=Decimal("150.00"), new_price=Decimal("155.00")):
         super().__init__(f"price_update_{symbol}")
         self.symbol = symbol
         self.old_price = old_price
         self.new_price = new_price
         self.timestamp = datetime.now(timezone.utc)
-    
+
     def price_change(self):
         """Calculate price change amount."""
         return self.new_price - self.old_price
-    
+
     def price_change_percent(self):
         """Calculate price change percentage."""
         if self.old_price == 0:
@@ -545,7 +545,7 @@ def multiple_mock_events(sample_portfolio: Portfolio) -> list[MockTradeExecutedE
 
 class EventTestHelper:
     """Helper class for event system testing."""
-    
+
     @staticmethod
     def create_trade_event(
         portfolio_id: UUID,
@@ -562,7 +562,7 @@ class EventTestHelper:
             quantity=quantity,
             price=price
         )
-    
+
     @staticmethod
     def create_price_event(
         symbol: str = "TEST",

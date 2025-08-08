@@ -16,7 +16,7 @@ __all__ = [
 def get_config() -> ConfigManager:
     """
     Get the global configuration manager instance.
-    
+
     Returns:
         ConfigManager: Global configuration instance
     """
@@ -26,7 +26,7 @@ def get_config() -> ConfigManager:
 def reload_config() -> None:
     """
     Reload configuration from files and environment variables.
-    
+
     Useful for development or when configuration files change.
     """
     global config
@@ -36,7 +36,7 @@ def reload_config() -> None:
 def get_database_url() -> str:
     """
     Get database connection URL for the current environment.
-    
+
     Returns:
         Database connection URL
     """
@@ -49,12 +49,12 @@ def get_database_url() -> str:
 def get_log_config() -> dict:
     """
     Get logging configuration suitable for Python's logging.dictConfig().
-    
+
     Returns:
         Logging configuration dictionary
     """
     log_config = config.get_section("logging")
-    
+
     # Convert our config format to Python logging dictConfig format
     handlers = {}
     loggers = {
@@ -63,7 +63,7 @@ def get_log_config() -> dict:
             "handlers": []
         }
     }
-    
+
     # Console handler
     if log_config.get("handlers", {}).get("console", {}).get("enabled", True):
         handlers["console"] = {
@@ -72,7 +72,7 @@ def get_log_config() -> dict:
             "formatter": "default"
         }
         loggers["root"]["handlers"].append("console")
-    
+
     # File handler
     file_config = log_config.get("handlers", {}).get("file", {})
     if file_config.get("enabled", False):
@@ -85,7 +85,7 @@ def get_log_config() -> dict:
             "backupCount": file_config.get("backup_count", 5)
         }
         loggers["root"]["handlers"].append("file")
-    
+
     return {
         "version": 1,
         "disable_existing_loggers": False,
@@ -102,10 +102,10 @@ def get_log_config() -> dict:
 def _parse_size(size_str: str) -> int:
     """
     Parse size string to bytes.
-    
+
     Args:
         size_str: Size string like "10MB", "1GB"
-        
+
     Returns:
         Size in bytes
     """
@@ -116,10 +116,10 @@ def _parse_size(size_str: str) -> int:
         'MB': 1024 * 1024,
         'GB': 1024 * 1024 * 1024
     }
-    
+
     for suffix, multiplier in multipliers.items():
         if size_str.endswith(suffix):
             return int(float(size_str[:-len(suffix)]) * multiplier)
-    
+
     # Default to bytes if no suffix
     return int(size_str)
