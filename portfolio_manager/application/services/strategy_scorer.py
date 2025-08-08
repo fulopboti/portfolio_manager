@@ -8,6 +8,7 @@ from typing import Dict, List, Optional
 from portfolio_manager.application.ports import AssetRepository, StrategyCalculator
 from portfolio_manager.domain.entities import Asset, Trade
 from portfolio_manager.domain.exceptions import StrategyCalculationError
+from portfolio_manager.infrastructure.data_access.exceptions import DataAccessError
 from .base_service import ExceptionBasedService
 
 
@@ -94,8 +95,14 @@ class StrategyScoreService(ExceptionBasedService):
                     timestamp=calculation_time,
                 ))
 
-            except Exception:
-                # Skip assets that fail calculation
+            except (StrategyCalculationError, DataAccessError) as e:
+                # Skip assets that fail calculation, but log the error
+                self._logger.warning(f"Failed to calculate strategy score for {asset.symbol}: {e}")
+                continue
+            except Exception as e:
+                # Unexpected errors - log and wrap in domain exception
+                self._logger.error(f"Unexpected error calculating score for {asset.symbol}: {e}")
+                # Continue processing other assets but log the unexpected error
                 continue
 
         return results

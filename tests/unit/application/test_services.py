@@ -32,6 +32,7 @@ from portfolio_manager.domain.exceptions import (
     InvalidTradeError,
     StrategyCalculationError,
 )
+from portfolio_manager.infrastructure.data_access.exceptions import DataAccessError
 
 
 class TestDataIngestionService:
@@ -400,7 +401,7 @@ class TestPortfolioSimulatorService:
 
         # Verify
         assert trade_result.success is False
-        assert "insufficient position" in trade_result.error.lower()
+        assert "insufficient position" in str(trade_result.error).lower()
 
         mock_portfolio_repository.save_trade.assert_not_called()
 
@@ -593,7 +594,7 @@ class TestPortfolioSimulatorExceptionCoverage:
         )
 
         # Make save_position throw an exception
-        mock_portfolio_repository.save_position.side_effect = RuntimeError("Database error")
+        mock_portfolio_repository.save_position.side_effect = DataAccessError("Database error")
 
         # Execute buy trade
         result = await portfolio_simulator.execute_trade(
@@ -604,10 +605,10 @@ class TestPortfolioSimulatorExceptionCoverage:
             broker_profile=sample_broker_profile
         )
 
-        # Verify exception handling (lines 160-161)
+        # Verify exception handling - exception gets wrapped in InvalidTradeError
         assert result.success is False
-        assert isinstance(result.error, RuntimeError)
-        assert str(result.error) == "Database error"
+        assert isinstance(result.error, InvalidTradeError)
+        assert "Database error" in str(result.error)
 
     @pytest.mark.asyncio
     async def test_execute_sell_trade_exception_handling(
@@ -638,7 +639,7 @@ class TestPortfolioSimulatorExceptionCoverage:
         )
 
         # Make save_position throw an exception
-        mock_portfolio_repository.save_position.side_effect = RuntimeError("Database error")
+        mock_portfolio_repository.save_position.side_effect = DataAccessError("Database error")
 
         # Execute sell trade
         result = await portfolio_simulator.execute_trade(
@@ -649,10 +650,10 @@ class TestPortfolioSimulatorExceptionCoverage:
             broker_profile=sample_broker_profile
         )
 
-        # Verify exception handling (lines 208-209)
+        # Verify exception handling - exception gets wrapped in InvalidTradeError  
         assert result.success is False
-        assert isinstance(result.error, RuntimeError)
-        assert str(result.error) == "Database error"
+        assert isinstance(result.error, InvalidTradeError)
+        assert "Database error" in str(result.error)
 
 
 class TestStrategyScoreService:
@@ -1406,8 +1407,8 @@ class TestPortfolioSimulatorServiceExceptionCoverage:
         )
 
         assert result.success is False
-        assert isinstance(result.error, RuntimeError)
-        assert "Unexpected database error" in str(result.error)
+        assert isinstance(result.error, InvalidTradeError)
+        assert "Unexpected trade execution error" in str(result.error)
 
 
     @pytest.mark.asyncio
@@ -1574,7 +1575,7 @@ class TestStrategyScoreServiceExceptionCoverage:
         def score_side_effect(asset, snapshot, fundamentals):
             if asset.symbol == "AAPL":
                 return Decimal("85.0")
-            raise RuntimeError("Calculation failed")
+            raise StrategyCalculationError("Calculation failed")
 
         mock_strategy_calculator.calculate_score.side_effect = score_side_effect
 

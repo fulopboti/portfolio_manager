@@ -6,6 +6,7 @@ from typing import Optional
 from portfolio_manager.application.ports import AssetRepository, PortfolioRepository
 from portfolio_manager.infrastructure.data_access.asset_data_access import AssetDataAccess
 from portfolio_manager.infrastructure.data_access.portfolio_data_access import PortfolioDataAccess
+from portfolio_manager.infrastructure.data_access.exceptions import DataAccessError, ConnectionError
 from portfolio_manager.config.schema import DatabaseConfig
 
 from .connection import DuckDBConnection, DuckDBConfig
@@ -213,7 +214,7 @@ class DuckDBRepositoryFactory:
         except Exception as e:
             error_msg = f"Failed to initialize repository factory: {str(e)}"
             self.logger.error(error_msg)
-            raise RuntimeError(error_msg) from e
+            raise ConnectionError(error_msg) from e
 
     async def shutdown(self) -> None:
         """Shutdown the factory and clean up resources."""
@@ -236,7 +237,7 @@ class DuckDBRepositoryFactory:
     def _ensure_initialized(self) -> None:
         """Ensure the factory has been initialized."""
         if self._connection is None or self._query_executor is None:
-            raise RuntimeError("Repository factory must be initialized before use")
+            raise ConnectionError("Repository factory must be initialized before use")
 
     def create_asset_repository(self) -> AssetRepository:
         """Create an AssetRepository instance.
@@ -356,7 +357,7 @@ class DuckDBRepositoryFactory:
         except Exception as e:
             error_msg = f"Failed to reset database: {str(e)}"
             self.logger.error(error_msg)
-            raise RuntimeError(error_msg) from e
+            raise DataAccessError(error_msg) from e
 
 
 # Convenience function for quick setup

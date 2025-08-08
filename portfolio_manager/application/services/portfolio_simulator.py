@@ -15,10 +15,12 @@ from portfolio_manager.domain.entities import (
     TradeSide,
 )
 from portfolio_manager.domain.exceptions import (
+    DomainError,
     InsufficientFundsError,
     InvalidPositionError,
     InvalidTradeError,
 )
+from portfolio_manager.infrastructure.data_access.exceptions import DataAccessError
 from .base_service import ResultBasedService, ServiceResult
 
 
@@ -132,8 +134,12 @@ class PortfolioSimulatorService(ResultBasedService):
                 return result
             else:
                 return TradeResult(success=True, trade=result)
-        except Exception as e:
+        except (DomainError, DataAccessError) as e:
             return TradeResult(success=False, error=e)
+        except Exception as e:
+            # Log unexpected errors and wrap them in domain error
+            self._logger.error(f"Unexpected error during trade execution: {e}")
+            return TradeResult(success=False, error=InvalidTradeError(f"Unexpected trade execution error: {e}"))
 
     async def _execute_buy_trade(self, trade: Trade, portfolio: Portfolio) -> TradeResult:
         """Execute a buy trade."""
@@ -179,7 +185,8 @@ class PortfolioSimulatorService(ResultBasedService):
             return TradeResult(success=True, trade=trade)
 
         except Exception as e:
-            return TradeResult(success=False, error=e)
+            self._logger.error(f"Unexpected error in buy trade for {trade.symbol}: {e}")
+            return TradeResult(success=False, error=InvalidTradeError(f"Buy trade failed: {e}"))
 
     async def _execute_sell_trade(self, trade: Trade, portfolio: Portfolio) -> TradeResult:
         """Execute a sell trade."""
@@ -199,8 +206,8 @@ class PortfolioSimulatorService(ResultBasedService):
             if existing_position.qty < trade.qty:
                 return TradeResult(
                     success=False,
-                    error="Insufficient position: have {} shares, trying to sell {}".format(
-                        existing_position.qty, trade.qty
+                    error=InvalidPositionError(
+                        f"Insufficient position: have {existing_position.qty} shares, trying to sell {trade.qty}"
                     )
                 )
 
@@ -227,7 +234,8 @@ class PortfolioSimulatorService(ResultBasedService):
             return TradeResult(success=True, trade=trade)
 
         except Exception as e:
-            return TradeResult(success=False, error=e)
+            self._logger.error(f"Unexpected error in sell trade for {trade.symbol}: {e}")
+            return TradeResult(success=False, error=InvalidTradeError(f"Sell trade failed: {e}"))
 
     async def calculate_portfolio_metrics(self, portfolio_id: UUID) -> PortfolioMetrics:
         """Calculate comprehensive portfolio metrics."""

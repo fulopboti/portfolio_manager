@@ -1,6 +1,7 @@
 """Configuration validation schemas using Pydantic."""
 
 from typing import Dict, List, Optional, Union
+from decimal import Decimal
 from pydantic import BaseModel, Field, validator
 from pathlib import Path
 
@@ -82,10 +83,10 @@ class DataProvidersConfig(BaseModel):
 
 class PortfolioSimulationConfig(BaseModel):
     """Portfolio simulation configuration."""
-    initial_cash: float = Field(100000.0, gt=0, description="Initial cash amount")
+    initial_cash: Decimal = Field(Decimal('100000.0'), gt=0, description="Initial cash amount")
     default_currency: str = Field("USD", description="Default currency")
     commission_rate: float = Field(0.001, ge=0, le=1, description="Commission rate")
-    min_commission: float = Field(1.0, ge=0, description="Minimum commission")
+    min_commission: Decimal = Field(Decimal('1.0'), ge=0, description="Minimum commission")
 
 
 class RiskManagementConfig(BaseModel):

@@ -397,9 +397,9 @@ class QueryParameterBuilder:
         return str(value)
 
     @staticmethod
-    def prepare_decimal(value: Decimal) -> float:
-        """Convert Decimal to float for database."""
-        return float(value)
+    def prepare_decimal(value: Decimal) -> str:
+        """Convert Decimal to string for database to preserve precision."""
+        return str(value)
 
     @staticmethod
     def prepare_datetime(value: datetime) -> datetime:

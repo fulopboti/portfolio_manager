@@ -5,6 +5,7 @@ import re
 import time
 from functools import lru_cache
 from decimal import Decimal
+import decimal
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 
@@ -310,7 +311,7 @@ class DuckDBQueryExecutor(QueryExecutor):
         elif isinstance(value, (str, int, float, bool)):
             return value
         elif isinstance(value, Decimal):
-            return float(value)  # DuckDB handles decimals as floats
+            return str(value)  # Store Decimal as string to preserve precision
         elif isinstance(value, datetime):
             return value.isoformat()
         elif isinstance(value, (list, tuple)):
@@ -328,12 +329,20 @@ class DuckDBQueryExecutor(QueryExecutor):
         if value is None:
             return None
         elif isinstance(value, str):
-            # Try to parse datetime strings
+            # Try to parse datetime strings first
             if self._looks_like_datetime(value):
                 try:
                     return datetime.fromisoformat(value.replace('Z', '+00:00'))
                 except ValueError:
-                    return value
+                    pass
+            
+            # Try to parse Decimal strings (financial values)
+            if self._looks_like_decimal(value):
+                try:
+                    return Decimal(value)
+                except (ValueError, decimal.InvalidOperation):
+                    pass
+                    
             return value
         elif isinstance(value, (int, bool)):
             return value
@@ -351,6 +360,16 @@ class DuckDBQueryExecutor(QueryExecutor):
             '-' in value and
             ('T' in value or ' ' in value or ':' in value)
         )
+
+    def _looks_like_decimal(self, value: str) -> bool:
+        """Check if a string looks like a decimal number.
+        
+        This is conservative - only converts values that are clearly financial decimals.
+        We avoid converting IDs, version numbers, and other non-financial numeric strings.
+        """
+        # Must contain a decimal point to be considered a financial decimal
+        # This avoids converting migration IDs like "001" or version strings like "1"
+        return bool(re.match(r'^-?\d+\.\d+$', value.strip()))
 
     def _is_select_query(self, sql: str) -> bool:
         """Determine if SQL is a SELECT query."""

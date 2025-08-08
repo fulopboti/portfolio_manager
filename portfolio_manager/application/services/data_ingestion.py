@@ -6,7 +6,8 @@ from typing import List, Optional
 
 from portfolio_manager.application.ports import AssetRepository, DataProvider
 from portfolio_manager.domain.entities import Asset, AssetType
-from portfolio_manager.domain.exceptions import DataIngestionError
+from portfolio_manager.domain.exceptions import DataIngestionError, DomainValidationError
+from portfolio_manager.infrastructure.data_access.exceptions import DataAccessError
 from .base_service import ExceptionBasedService
 
 
@@ -79,7 +80,7 @@ class DataIngestionService(ExceptionBasedService):
                 try:
                     await self.asset_repository.save_snapshot(snapshot)
                     snapshots_saved += 1
-                except Exception as e:
+                except (DataAccessError, DomainValidationError) as e:
                     # Individual snapshot validation errors
                     return IngestionResult(
                         symbol=symbol,
@@ -87,15 +88,26 @@ class DataIngestionService(ExceptionBasedService):
                         snapshots_count=0,
                         error=f"Snapshot validation error: {str(e)}"
                     )
+                except Exception as e:
+                    # Catch-all for unexpected errors
+                    return IngestionResult(
+                        symbol=symbol,
+                        success=False,
+                        snapshots_count=0,
+                        error=f"Unexpected error during snapshot processing: {str(e)}"
+                    )
 
             # Get and save fundamental data
             try:
                 fundamentals = await self.data_provider.get_fundamental_data(symbol)
                 if fundamentals:
                     await self.asset_repository.save_fundamental_metrics(symbol, fundamentals)
-            except Exception:
-                # Fundamental data is optional, don't fail the whole ingestion
-                pass
+            except (DataAccessError, DataIngestionError) as e:
+                # Log but don't fail - fundamental data is optional
+                self._logger.warning(f"Failed to save fundamental data for {symbol}: {e}")
+            except Exception as e:
+                # Unexpected errors in fundamental data processing
+                self._logger.warning(f"Unexpected error saving fundamental data for {symbol}: {e}")
 
             return IngestionResult(
                 symbol=symbol,
@@ -103,12 +115,27 @@ class DataIngestionService(ExceptionBasedService):
                 snapshots_count=snapshots_saved,
             )
 
-        except Exception as e:
+        except DataIngestionError as e:
             return IngestionResult(
                 symbol=symbol,
                 success=False,
                 snapshots_count=0,
                 error=str(e),
+            )
+        except (DataAccessError, DomainValidationError) as e:
+            return IngestionResult(
+                symbol=symbol,
+                success=False,
+                snapshots_count=0,
+                error=f"Data access error: {str(e)}",
+            )
+        except Exception as e:
+            # Catch-all for truly unexpected errors
+            return IngestionResult(
+                symbol=symbol,
+                success=False,
+                snapshots_count=0,
+                error=f"Unexpected ingestion error: {str(e)}",
             )
 
     async def ingest_multiple_symbols(

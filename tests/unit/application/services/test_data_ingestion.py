@@ -351,7 +351,7 @@ class TestSingleSymbolIngestion:
         assert result.success is False
         assert result.symbol == "AAPL"
         assert result.snapshots_count == 0
-        assert "Snapshot validation error: Invalid snapshot data" in result.error
+        assert "Invalid snapshot data" in result.error
 
         # Asset should still be saved, but snapshot should fail
         mock_asset_repository.save_asset.assert_called_once()

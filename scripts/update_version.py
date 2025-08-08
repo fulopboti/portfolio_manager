@@ -17,6 +17,11 @@ from typing import Dict, List, Tuple
 from dataclasses import dataclass
 import structlog
 
+
+class VersionUpdateError(Exception):
+    """Custom exception for version update operations."""
+    pass
+
 # Configure structured logging
 structlog.configure(
     processors=[
@@ -184,7 +189,7 @@ class VersionUpdater:
 
                         # Verify the write was successful
                         if file_path.read_text(encoding='utf-8') != content:
-                            raise RuntimeError("File content verification failed")
+                            raise VersionUpdateError("File content verification failed")
 
                         # Remove backup on success
                         backup_path.unlink()

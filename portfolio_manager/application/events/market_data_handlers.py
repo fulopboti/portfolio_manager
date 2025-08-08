@@ -311,9 +311,9 @@ class MarketDataCachingEventHandler(BaseEventHandler):
             await self.distribution_service.distribute_market_data(
                 symbol=event.symbol,
                 data={
-                    'price': float(event.price),
+                    'price': str(event.price),
                     'volume': event.volume,
-                    'market_cap': float(event.market_cap) if event.market_cap else None,
+                    'market_cap': str(event.market_cap) if event.market_cap else None,
                     'timestamp': event.timestamp.isoformat()
                 }
             )

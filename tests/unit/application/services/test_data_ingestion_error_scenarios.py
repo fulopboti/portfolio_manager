@@ -282,7 +282,7 @@ class TestDatabaseErrors(TestDataIngestionServiceErrorScenarios):
         )
 
         assert result.success is False
-        assert "Snapshot validation error" in result.error
+        assert "Snapshot save failed" in result.error
 
     @pytest.mark.asyncio
     async def test_database_constraint_violation(

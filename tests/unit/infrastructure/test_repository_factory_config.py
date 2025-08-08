@@ -7,6 +7,7 @@ from pathlib import Path
 from portfolio_manager.infrastructure.duckdb.repository_factory import DuckDBRepositoryFactory
 from portfolio_manager.infrastructure.duckdb.connection import DuckDBConnection, DuckDBConfig
 from portfolio_manager.config.schema import DatabaseConfig, DatabaseConnectionConfig, DatabasePoolConfig
+from portfolio_manager.infrastructure.data_access.exceptions import ConnectionError
 
 
 class TestDuckDBRepositoryFactoryConfigurationIntegration:
@@ -198,7 +199,7 @@ class TestDuckDBRepositoryFactoryConfigurationIntegration:
         with patch('portfolio_manager.infrastructure.duckdb.repository_factory.DuckDBConnection') as mock_conn:
             mock_conn.side_effect = Exception("Connection failed")
 
-            with pytest.raises(RuntimeError, match="Failed to initialize repository factory"):
+            with pytest.raises(ConnectionError, match="Failed to initialize repository factory"):
                 await factory.initialize()
 
     def test_factory_config_property_access(self):

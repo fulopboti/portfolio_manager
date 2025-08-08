@@ -559,7 +559,7 @@ class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilde
                     SET value = ?, metric_type = 'FUNDAMENTAL'
                     WHERE symbol = ? AND metric_name = ? AND as_of_date = ?
                     """
-                    parameters = [float(value), symbol, metric_name, target_date]
+                    parameters = [str(value), symbol, metric_name, target_date]
                 else:
                     # Insert new metric
                     query = """
@@ -567,7 +567,7 @@ class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilde
                     (symbol, metric_name, metric_type, value, as_of_date)
                     VALUES (?, ?, 'FUNDAMENTAL', ?, ?)
                     """
-                    parameters = [symbol, metric_name, float(value), target_date]
+                    parameters = [symbol, metric_name, str(value), target_date]
 
                 await self.query_executor.execute_query(query, parameters)
 
@@ -783,7 +783,7 @@ class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilde
                 report['total_snapshots'] = snapshot_result[0]
                 report['first_snapshot'] = snapshot_result[1]
                 report['last_snapshot'] = snapshot_result[2]
-                report['avg_volume'] = float(snapshot_result[3]) if snapshot_result[3] else 0
+                report['avg_volume'] = Decimal(str(snapshot_result[3])) if snapshot_result[3] else Decimal('0')
                 report['zero_volume_count'] = snapshot_result[4]
 
                 # Data quality score (0-100)

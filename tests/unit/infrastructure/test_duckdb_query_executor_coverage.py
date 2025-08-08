@@ -395,8 +395,8 @@ class TestDuckDBQueryExecutorCoverage:
     def test_convert_parameter_value_decimal_coverage(self, query_executor):
         """Test _convert_parameter_value with Decimal (lines 252-253)."""
         result = query_executor._convert_parameter_value(Decimal("123.45"))
-        assert result == 123.45
-        assert isinstance(result, float)
+        assert result == "123.45"
+        assert isinstance(result, str)
 
     def test_convert_parameter_value_datetime_coverage(self, query_executor):
         """Test _convert_parameter_value with datetime (lines 254-255)."""
@@ -412,7 +412,7 @@ class TestDuckDBQueryExecutorCoverage:
         assert isinstance(result, list)
         assert result[0] == 1
         assert result[1] == "test"
-        assert result[2] == 45.67
+        assert result[2] == "45.67"
 
     def test_convert_parameter_value_other_coverage(self, query_executor):
         """Test _convert_parameter_value with other types (lines 259-264)."""

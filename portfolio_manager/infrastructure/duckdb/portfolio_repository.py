@@ -61,7 +61,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             str(portfolio.portfolio_id),
             portfolio.name,
             portfolio.base_ccy,
-            float(portfolio.cash_balance),
+            str(portfolio.cash_balance),
             portfolio.created
         ]
 
@@ -148,7 +148,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             parameters = [
                 portfolio.name,
                 portfolio.base_ccy,
-                float(portfolio.cash_balance),
+                str(portfolio.cash_balance),
                 str(portfolio.portfolio_id)
             ]
 
@@ -251,7 +251,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             SET cash_balance = ?, updated_at = CURRENT_TIMESTAMP
             WHERE portfolio_id = ?
             """
-            parameters = [float(new_balance), str(portfolio_id)]
+            parameters = [str(new_balance), str(portfolio_id)]
 
             await self.query_executor.execute_query(query, parameters)
             self.logger.debug(f"Updated cash balance for portfolio {portfolio_id}: {new_balance}")
@@ -300,11 +300,11 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
                 trade.symbol,
                 trade.timestamp,
                 trade.side.value,
-                float(trade.qty),
-                float(trade.price),
-                float(trade.pip_pct),
-                float(trade.fee_flat),
-                float(trade.fee_pct),
+                str(trade.qty),
+                str(trade.price),
+                str(trade.pip_pct),
+                str(trade.fee_flat),
+                str(trade.fee_pct),
                 trade.unit,
                 trade.price_ccy,
                 trade.comment
@@ -642,8 +642,8 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             parameters = [
                 str(position.portfolio_id),
                 position.symbol,
-                float(position.qty),
-                float(position.avg_cost),
+                str(position.qty),
+                str(position.avg_cost),
                 position.unit,
                 position.price_ccy,
                 position.last_updated
@@ -799,8 +799,8 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             WHERE portfolio_id = ? AND symbol = ?
             """
             parameters = [
-                float(position.qty),
-                float(position.avg_cost),
+                str(position.qty),
+                str(position.avg_cost),
                 position.unit,
                 position.price_ccy,
                 position.last_updated,
@@ -1071,7 +1071,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             return [
                 {
                     'date': row[0],
-                    'net_flow': float(row[1]) if row[1] else 0.0,
+                    'net_flow': Decimal(str(row[1])) if row[1] else Decimal('0.0'),
                     'trade_count': row[2]
                 }
                 for row in results
