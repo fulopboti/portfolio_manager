@@ -33,14 +33,19 @@ class TestDataIngestionCLI:
         }
 
     @patch('portfolio_manager.cli.data_ingestion.ConfiguredServiceBuilder')
-    @patch('portfolio_manager.cli.data_ingestion.MockDataProvider')
-    def test_ingest_symbol_command_success(self, mock_provider_class, mock_builder_class):
+    @patch('portfolio_manager.cli.data_ingestion.create_data_provider_factory')
+    def test_ingest_symbol_command_success(self, mock_factory_creator, mock_builder_class):
         """Test successful symbol ingestion via CLI."""
         # Setup mocks
         mock_provider = Mock()
-        mock_provider_class.return_value = mock_provider
+        mock_provider.get_provider_name.return_value = "Test Provider"
+        
+        mock_provider_factory = Mock()
+        mock_provider_factory.get_primary_provider.return_value = mock_provider
+        mock_factory_creator.return_value = mock_provider_factory
 
         mock_builder = Mock()
+        mock_builder.config = Mock()
         mock_builder.build_complete_service_stack.return_value = self.mock_stack
         mock_builder_class.return_value = mock_builder
 
@@ -67,6 +72,7 @@ class TestDataIngestionCLI:
         assert result.exit_code == 0
         assert "✓ Successfully ingested 30 snapshots for AAPL" in result.output
         assert "AAPL (STOCK) from NASDAQ" in result.output
+        assert "Test Provider" in result.output
 
         # Verify mocks were called
         mock_service.ingest_symbol.assert_called_once()
@@ -77,14 +83,19 @@ class TestDataIngestionCLI:
         assert call_args['name'] == 'Apple Inc.'
 
     @patch('portfolio_manager.cli.data_ingestion.ConfiguredServiceBuilder')
-    @patch('portfolio_manager.cli.data_ingestion.MockDataProvider')
-    def test_ingest_symbol_command_failure(self, mock_provider_class, mock_builder_class):
+    @patch('portfolio_manager.cli.data_ingestion.create_data_provider_factory')
+    def test_ingest_symbol_command_failure(self, mock_factory_creator, mock_builder_class):
         """Test failed symbol ingestion via CLI."""
         # Setup mocks for failure
         mock_provider = Mock()
-        mock_provider_class.return_value = mock_provider
+        mock_provider.get_provider_name.return_value = "Test Provider"
+        
+        mock_provider_factory = Mock()
+        mock_provider_factory.get_primary_provider.return_value = mock_provider
+        mock_factory_creator.return_value = mock_provider_factory
 
         mock_builder = Mock()
+        mock_builder.config = Mock()
         mock_builder.build_complete_service_stack.return_value = self.mock_stack
         mock_builder_class.return_value = mock_builder
 
@@ -109,14 +120,19 @@ class TestDataIngestionCLI:
         assert "✗ Failed to ingest FAIL: Provider error" in result.output
 
     @patch('portfolio_manager.cli.data_ingestion.ConfiguredServiceBuilder')
-    @patch('portfolio_manager.cli.data_ingestion.MockDataProvider')
-    def test_ingest_multiple_command_success(self, mock_provider_class, mock_builder_class):
+    @patch('portfolio_manager.cli.data_ingestion.create_data_provider_factory')
+    def test_ingest_multiple_command_success(self, mock_factory_creator, mock_builder_class):
         """Test successful multiple symbol ingestion via CLI."""
         # Setup mocks
         mock_provider = Mock()
-        mock_provider_class.return_value = mock_provider
+        mock_provider.get_provider_name.return_value = "Test Provider"
+        
+        mock_provider_factory = Mock()
+        mock_provider_factory.get_primary_provider.return_value = mock_provider
+        mock_factory_creator.return_value = mock_provider_factory
 
         mock_builder = Mock()
+        mock_builder.config = Mock()
         mock_builder.build_complete_service_stack.return_value = self.mock_stack
         mock_builder_class.return_value = mock_builder
 
@@ -145,14 +161,19 @@ class TestDataIngestionCLI:
         assert "✗ FAIL: Network error" in result.output
 
     @patch('portfolio_manager.cli.data_ingestion.ConfiguredServiceBuilder')
-    @patch('portfolio_manager.cli.data_ingestion.MockDataProvider')
-    def test_refresh_all_command_success(self, mock_provider_class, mock_builder_class):
+    @patch('portfolio_manager.cli.data_ingestion.create_data_provider_factory')
+    def test_refresh_all_command_success(self, mock_factory_creator, mock_builder_class):
         """Test successful refresh all assets via CLI."""
         # Setup mocks
         mock_provider = Mock()
-        mock_provider_class.return_value = mock_provider
+        mock_provider.get_provider_name.return_value = "Test Provider"
+        
+        mock_provider_factory = Mock()
+        mock_provider_factory.get_primary_provider.return_value = mock_provider
+        mock_factory_creator.return_value = mock_provider_factory
 
         mock_builder = Mock()
+        mock_builder.config = Mock()
         mock_builder.build_complete_service_stack.return_value = self.mock_stack
         mock_builder_class.return_value = mock_builder
 
@@ -174,14 +195,19 @@ class TestDataIngestionCLI:
         assert "📊 Total snapshots: 8" in result.output
 
     @patch('portfolio_manager.cli.data_ingestion.ConfiguredServiceBuilder')
-    @patch('portfolio_manager.cli.data_ingestion.MockDataProvider')
-    def test_refresh_all_command_no_assets(self, mock_provider_class, mock_builder_class):
+    @patch('portfolio_manager.cli.data_ingestion.create_data_provider_factory')
+    def test_refresh_all_command_no_assets(self, mock_factory_creator, mock_builder_class):
         """Test refresh all command when no assets exist."""
         # Setup mocks
         mock_provider = Mock()
-        mock_provider_class.return_value = mock_provider
+        mock_provider.get_provider_name.return_value = "Test Provider"
+        
+        mock_provider_factory = Mock()
+        mock_provider_factory.get_primary_provider.return_value = mock_provider
+        mock_factory_creator.return_value = mock_provider_factory
 
         mock_builder = Mock()
+        mock_builder.config = Mock()
         mock_builder.build_complete_service_stack.return_value = self.mock_stack
         mock_builder_class.return_value = mock_builder
 
@@ -300,14 +326,19 @@ class TestDataIngestionCLI:
         assert "--days" in result.output
 
     @patch('portfolio_manager.cli.data_ingestion.ConfiguredServiceBuilder')
-    @patch('portfolio_manager.cli.data_ingestion.MockDataProvider')
-    def test_default_parameter_values(self, mock_provider_class, mock_builder_class):
+    @patch('portfolio_manager.cli.data_ingestion.create_data_provider_factory')
+    def test_default_parameter_values(self, mock_factory_creator, mock_builder_class):
         """Test that default parameter values are used correctly."""
         # Setup mocks
         mock_provider = Mock()
-        mock_provider_class.return_value = mock_provider
+        mock_provider.get_provider_name.return_value = "Test Provider"
+        
+        mock_provider_factory = Mock()
+        mock_provider_factory.get_primary_provider.return_value = mock_provider
+        mock_factory_creator.return_value = mock_provider_factory
 
         mock_builder = Mock()
+        mock_builder.config = Mock()
         mock_builder.build_complete_service_stack.return_value = self.mock_stack
         mock_builder_class.return_value = mock_builder
 
@@ -328,14 +359,19 @@ class TestDataIngestionCLI:
         assert call_args['name'] == 'TEST'  # symbol used as name default
 
     @patch('portfolio_manager.cli.data_ingestion.ConfiguredServiceBuilder')
-    @patch('portfolio_manager.cli.data_ingestion.MockDataProvider')
-    def test_date_range_calculation(self, mock_provider_class, mock_builder_class):
+    @patch('portfolio_manager.cli.data_ingestion.create_data_provider_factory')
+    def test_date_range_calculation(self, mock_factory_creator, mock_builder_class):
         """Test that date ranges are calculated correctly."""
         # Setup mocks
         mock_provider = Mock()
-        mock_provider_class.return_value = mock_provider
+        mock_provider.get_provider_name.return_value = "Test Provider"
+        
+        mock_provider_factory = Mock()
+        mock_provider_factory.get_primary_provider.return_value = mock_provider
+        mock_factory_creator.return_value = mock_provider_factory
 
         mock_builder = Mock()
+        mock_builder.config = Mock()
         mock_builder.build_complete_service_stack.return_value = self.mock_stack
         mock_builder_class.return_value = mock_builder
 
@@ -439,17 +475,22 @@ class TestDataIngestionCLIPerformance:
         self.runner = CliRunner()
 
     @patch('portfolio_manager.cli.data_ingestion.ConfiguredServiceBuilder')
-    @patch('portfolio_manager.cli.data_ingestion.MockDataProvider')
-    def test_large_symbol_batch_performance(self, mock_provider_class, mock_builder_class):
+    @patch('portfolio_manager.cli.data_ingestion.create_data_provider_factory')
+    def test_large_symbol_batch_performance(self, mock_factory_creator, mock_builder_class):
         """Test performance with large number of symbols."""
         # Setup mocks for large batch
         mock_provider = Mock()
-        mock_provider_class.return_value = mock_provider
+        mock_provider.get_provider_name.return_value = "Test Provider"
+        
+        mock_provider_factory = Mock()
+        mock_provider_factory.get_primary_provider.return_value = mock_provider
+        mock_factory_creator.return_value = mock_provider_factory
 
         mock_asset_repo = Mock()
         mock_stack = {'repositories': {'asset': mock_asset_repo}}
 
         mock_builder = Mock()
+        mock_builder.config = Mock()
         mock_builder.build_complete_service_stack.return_value = mock_stack
         mock_builder_class.return_value = mock_builder
 

@@ -31,18 +31,23 @@ event_system:
 data_providers:
   batch_size: 100  # Default batch size for data ingestion
   market_data:
-    primary: "yahoo_finance"
+    primary: "yfinance"
     fallback: ["alpha_vantage", "iex_cloud"]
     cache_ttl: 300
     rate_limits:
-      yahoo_finance: 2000  # requests per hour
+      yfinance: 2000  # requests per hour
       alpha_vantage: 500
       iex_cloud: 1000
+    yfinance:
+      enabled: true
+      request_delay: 0.1  # seconds between requests
+      max_retries: 3
+      timeout: 30
   
   apis:
-    yahoo_finance:
-      base_url: "https://query1.finance.yahoo.com"
-      timeout: 10
+    yfinance:
+      base_url: "https://finance.yahoo.com"  # Not directly used by yfinance library
+      timeout: 30
     alpha_vantage:
       base_url: "https://www.alphavantage.co"
       api_key: null  # Set via env var

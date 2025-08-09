@@ -66,12 +66,21 @@ class APIConfig(BaseModel):
         return v
 
 
+class YFinanceConfig(BaseModel):
+    """Yahoo Finance provider configuration."""
+    enabled: bool = Field(True, description="Enable Yahoo Finance provider")
+    request_delay: float = Field(0.1, ge=0, description="Delay between requests in seconds")
+    max_retries: int = Field(3, ge=0, description="Maximum retry attempts")
+    timeout: int = Field(30, ge=1, description="Request timeout in seconds")
+
+
 class MarketDataConfig(BaseModel):
     """Market data provider configuration."""
     primary: str = Field(..., description="Primary data provider")
     fallback: List[str] = Field(default_factory=list, description="Fallback providers")
     cache_ttl: int = Field(300, ge=0, description="Cache TTL in seconds")
     rate_limits: Dict[str, int] = Field(default_factory=dict, description="Rate limits per provider")
+    yfinance: YFinanceConfig = Field(default_factory=YFinanceConfig)
 
 
 class DataProvidersConfig(BaseModel):
