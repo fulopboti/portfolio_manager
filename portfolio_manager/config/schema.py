@@ -2,7 +2,7 @@
 
 from typing import Dict, List, Optional, Union
 from decimal import Decimal
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from pathlib import Path
 
 
@@ -13,7 +13,8 @@ class DatabaseConnectionConfig(BaseModel):
     read_only: bool = Field(False, description="Open database in read-only mode")
     pragmas: Dict[str, Union[str, int]] = Field(default_factory=dict, description="DuckDB pragma settings")
 
-    @validator('database_path')
+    @field_validator('database_path')
+    @classmethod
     def validate_database_path(cls, v):
         if v != ":memory:" and not v:
             raise ValueError("database_path cannot be empty")
@@ -59,7 +60,8 @@ class APIConfig(BaseModel):
     api_key: Optional[str] = Field(None, description="API key")
     timeout: int = Field(10, ge=1, description="Request timeout in seconds")
 
-    @validator('base_url')
+    @field_validator('base_url')
+    @classmethod
     def validate_base_url(cls, v):
         if not v.startswith(('http://', 'https://')):
             raise ValueError("base_url must start with http:// or https://")
@@ -162,7 +164,8 @@ class LoggingConfig(BaseModel):
     format: str = Field("%(asctime)s - %(name)s - %(levelname)s - %(message)s", description="Log format")
     handlers: Dict[str, LogHandlerConfig]
 
-    @validator('level')
+    @field_validator('level')
+    @classmethod
     def validate_log_level(cls, v):
         valid_levels = {'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'}
         if v.upper() not in valid_levels:

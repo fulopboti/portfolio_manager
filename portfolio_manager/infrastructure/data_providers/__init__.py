@@ -6,7 +6,7 @@ from .provider_factory import DataProviderFactory, create_data_provider_factory
 
 __all__ = [
     "MockDataProvider",
-    "YFinanceProvider", 
+    "YFinanceProvider",
     "DataProviderFactory",
     "create_data_provider_factory"
 ]
