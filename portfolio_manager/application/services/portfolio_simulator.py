@@ -71,19 +71,23 @@ class PortfolioSimulatorService(ResultBasedService):
 
         async def _execute():
             # Validate required parameters
-            self._validate_required_params({
-                'portfolio_id': portfolio_id,
-                'symbol': symbol,
-                'side': side,
-                'quantity': quantity,
-                'broker_profile': broker_profile
-            })
+            self._validate_required_params(
+                {
+                    "portfolio_id": portfolio_id,
+                    "symbol": symbol,
+                    "side": side,
+                    "quantity": quantity,
+                    "broker_profile": broker_profile,
+                }
+            )
 
             # Validate business rules
-            self._validate_business_rules([
-                (quantity > 0, "Quantity must be positive"),
-                (symbol.strip(), "Symbol cannot be empty"),
-            ])
+            self._validate_business_rules(
+                [
+                    (quantity > 0, "Quantity must be positive"),
+                    (symbol.strip(), "Symbol cannot be empty"),
+                ]
+            )
 
             # Get portfolio
             portfolio = await self.portfolio_repository.get_portfolio(portfolio_id)
@@ -126,8 +130,14 @@ class PortfolioSimulatorService(ResultBasedService):
         # Execute with base service error handling and convert to TradeResult
         try:
             result = await self._execute_operation(
-                "execute_trade", _execute, context,
-                expected_exceptions=[InvalidTradeError, InsufficientFundsError, InvalidPositionError]
+                "execute_trade",
+                _execute,
+                context,
+                expected_exceptions=[
+                    InvalidTradeError,
+                    InsufficientFundsError,
+                    InvalidPositionError,
+                ],
             )
             # If the result is already a TradeResult, return it directly
             if isinstance(result, TradeResult):
@@ -139,9 +149,14 @@ class PortfolioSimulatorService(ResultBasedService):
         except Exception as e:
             # Log unexpected errors and wrap them in domain error
             self._logger.error(f"Unexpected error during trade execution: {e}")
-            return TradeResult(success=False, error=InvalidTradeError(f"Unexpected trade execution error: {e}"))
+            return TradeResult(
+                success=False,
+                error=InvalidTradeError(f"Unexpected trade execution error: {e}"),
+            )
 
-    async def _execute_buy_trade(self, trade: Trade, portfolio: Portfolio) -> TradeResult:
+    async def _execute_buy_trade(
+        self, trade: Trade, portfolio: Portfolio
+    ) -> TradeResult:
         """Execute a buy trade."""
         try:
             # Check if portfolio has sufficient funds
@@ -151,7 +166,7 @@ class PortfolioSimulatorService(ResultBasedService):
                     success=False,
                     error=InsufficientFundsError(
                         f"Insufficient funds: need {total_cost}, have {portfolio.cash_balance}"
-                    )
+                    ),
                 )
 
             # Deduct cash from portfolio
@@ -186,9 +201,13 @@ class PortfolioSimulatorService(ResultBasedService):
 
         except Exception as e:
             self._logger.error(f"Unexpected error in buy trade for {trade.symbol}: {e}")
-            return TradeResult(success=False, error=InvalidTradeError(f"Buy trade failed: {e}"))
+            return TradeResult(
+                success=False, error=InvalidTradeError(f"Buy trade failed: {e}")
+            )
 
-    async def _execute_sell_trade(self, trade: Trade, portfolio: Portfolio) -> TradeResult:
+    async def _execute_sell_trade(
+        self, trade: Trade, portfolio: Portfolio
+    ) -> TradeResult:
         """Execute a sell trade."""
         try:
             # Get existing position
@@ -199,7 +218,7 @@ class PortfolioSimulatorService(ResultBasedService):
             if not existing_position:
                 return TradeResult(
                     success=False,
-                    error=InvalidTradeError(f"No position found for {trade.symbol}")
+                    error=InvalidTradeError(f"No position found for {trade.symbol}"),
                 )
 
             # Check if we have enough shares to sell
@@ -208,7 +227,7 @@ class PortfolioSimulatorService(ResultBasedService):
                     success=False,
                     error=InvalidPositionError(
                         f"Insufficient position: have {existing_position.qty} shares, trying to sell {trade.qty}"
-                    )
+                    ),
                 )
 
             # Add proceeds to portfolio
@@ -219,7 +238,7 @@ class PortfolioSimulatorService(ResultBasedService):
             existing_position.reduce_shares(trade.qty)
             existing_position.last_updated = trade.timestamp
 
-            if existing_position.qty == Decimal('0'):
+            if existing_position.qty == Decimal("0"):
                 # Position is fully closed, remove it
                 await self.portfolio_repository.delete_position(
                     trade.portfolio_id, trade.symbol
@@ -234,8 +253,12 @@ class PortfolioSimulatorService(ResultBasedService):
             return TradeResult(success=True, trade=trade)
 
         except Exception as e:
-            self._logger.error(f"Unexpected error in sell trade for {trade.symbol}: {e}")
-            return TradeResult(success=False, error=InvalidTradeError(f"Sell trade failed: {e}"))
+            self._logger.error(
+                f"Unexpected error in sell trade for {trade.symbol}: {e}"
+            )
+            return TradeResult(
+                success=False, error=InvalidTradeError(f"Sell trade failed: {e}")
+            )
 
     async def calculate_portfolio_metrics(self, portfolio_id: UUID) -> PortfolioMetrics:
         """Calculate comprehensive portfolio metrics."""
@@ -243,14 +266,18 @@ class PortfolioSimulatorService(ResultBasedService):
         if not portfolio:
             raise InvalidTradeError(f"Portfolio {portfolio_id} not found")
 
-        positions = await self.portfolio_repository.get_positions_for_portfolio(portfolio_id)
+        positions = await self.portfolio_repository.get_positions_for_portfolio(
+            portfolio_id
+        )
 
-        total_market_value = Decimal('0')
-        total_cost_basis = Decimal('0')
+        total_market_value = Decimal("0")
+        total_cost_basis = Decimal("0")
 
         for position in positions:
             # Get current market price
-            latest_snapshot = await self.asset_repository.get_latest_snapshot(position.symbol)
+            latest_snapshot = await self.asset_repository.get_latest_snapshot(
+                position.symbol
+            )
             if latest_snapshot:
                 current_price = latest_snapshot.close
                 total_market_value += position.market_value(current_price)

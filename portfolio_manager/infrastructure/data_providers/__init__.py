@@ -8,5 +8,5 @@ __all__ = [
     "MockDataProvider",
     "YFinanceProvider",
     "DataProviderFactory",
-    "create_data_provider_factory"
+    "create_data_provider_factory",
 ]

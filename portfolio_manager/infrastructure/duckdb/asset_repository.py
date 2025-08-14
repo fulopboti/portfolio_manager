@@ -17,14 +17,18 @@ from .connection import DuckDBConnection
 from .query_executor import DuckDBQueryExecutor
 
 
-class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilderMixin, AssetDataAccess):
+class DuckDBAssetRepository(
+    BaseDuckDBRepository, EntityMapperMixin, QueryBuilderMixin, AssetDataAccess
+):
     """DuckDB concrete implementation of AssetDataAccess interface.
 
     Provides full implementation of asset and market data persistence
     using DuckDB's columnar storage optimized for analytical workloads.
     """
 
-    def __init__(self, connection: DuckDBConnection, query_executor: DuckDBQueryExecutor):
+    def __init__(
+        self, connection: DuckDBConnection, query_executor: DuckDBQueryExecutor
+    ):
         """Initialize the DuckDB asset repository.
 
         Args:
@@ -55,12 +59,7 @@ class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilde
             name = EXCLUDED.name,
             updated_at = NOW()
         """
-        parameters = [
-            asset.symbol,
-            asset.exchange,
-            asset.asset_type.value,
-            asset.name
-        ]
+        parameters = [asset.symbol, asset.exchange, asset.asset_type.value, asset.name]
 
         await self._execute_query(query, parameters, f"save_asset({asset.symbol})")
         self._log_operation_success("save_asset", asset.symbol)
@@ -88,7 +87,7 @@ class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilde
             symbol=result[0],
             exchange=result[1],
             asset_type=self._safe_enum_convert(result[2], AssetType),
-            name=result[3]
+            name=result[3],
         )
 
     async def get_assets_by_type(self, asset_type: AssetType) -> list[Asset]:
@@ -114,7 +113,7 @@ class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilde
                     symbol=row[0],
                     exchange=row[1],
                     asset_type=AssetType(row[2]),
-                    name=row[3]
+                    name=row[3],
                 )
                 for row in results
             ]
@@ -143,7 +142,7 @@ class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilde
                     symbol=row[0],
                     exchange=row[1],
                     asset_type=AssetType(row[2]),
-                    name=row[3]
+                    name=row[3],
                 )
                 for row in results
             ]
@@ -177,7 +176,7 @@ class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilde
                 asset.exchange,
                 asset.asset_type.value,
                 asset.name,
-                asset.symbol
+                asset.symbol,
             ]
 
             await self.query_executor.execute_query(query, parameters)
@@ -205,7 +204,7 @@ class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilde
                 "DELETE FROM asset_metrics WHERE symbol = ?",
                 "DELETE FROM asset_snapshots WHERE symbol = ?",
                 "DELETE FROM strategy_scores WHERE symbol = ?",
-                "DELETE FROM assets WHERE symbol = ?"
+                "DELETE FROM assets WHERE symbol = ?",
             ]
 
             for query in delete_queries:
@@ -272,7 +271,7 @@ class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilde
                 snapshot.high,
                 snapshot.low,
                 snapshot.close,
-                snapshot.volume
+                snapshot.volume,
             ]
 
             # The table has compound primary key (symbol, timestamp), so we need custom upsert logic
@@ -288,8 +287,12 @@ class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilde
                 volume = EXCLUDED.volume
             """
             parameters = self.param_builder.build_parameters(values)
-            await self._execute_query(query, parameters, f"save_snapshot({snapshot.symbol})")
-            self.logger.debug(f"Saved snapshot for {snapshot.symbol} at {snapshot.timestamp}")
+            await self._execute_query(
+                query, parameters, f"save_snapshot({snapshot.symbol})"
+            )
+            self.logger.debug(
+                f"Saved snapshot for {snapshot.symbol} at {snapshot.timestamp}"
+            )
 
         except Exception as e:
             error_msg = f"Failed to save snapshot for {snapshot.symbol}: {str(e)}"
@@ -325,7 +328,7 @@ class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilde
                 high=Decimal(str(result[3])),
                 low=Decimal(str(result[4])),
                 close=Decimal(str(result[5])),
-                volume=result[6]
+                volume=result[6],
             )
 
         except Exception as e:
@@ -334,9 +337,7 @@ class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilde
             raise DataAccessError(error_msg) from e
 
     async def get_snapshot_at_date(
-        self,
-        symbol: str,
-        date: datetime
+        self, symbol: str, date: datetime
     ) -> AssetSnapshot | None:
         """Get price snapshot closest to a specific date.
 
@@ -367,7 +368,7 @@ class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilde
                 high=Decimal(str(result[3])),
                 low=Decimal(str(result[4])),
                 close=Decimal(str(result[5])),
-                volume=result[6]
+                volume=result[6],
             )
 
         except Exception as e:
@@ -376,10 +377,7 @@ class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilde
             raise DataAccessError(error_msg) from e
 
     async def get_historical_snapshots(
-        self,
-        symbol: str,
-        start_date: datetime,
-        end_date: datetime
+        self, symbol: str, start_date: datetime, end_date: datetime
     ) -> list[AssetSnapshot]:
         """Get historical price snapshots for a date range.
 
@@ -398,7 +396,9 @@ class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilde
             WHERE symbol = ? AND timestamp >= ? AND timestamp <= ?
             ORDER BY timestamp
             """
-            results = await self.query_executor.fetch_all(query, [symbol, start_date, end_date])
+            results = await self.query_executor.fetch_all(
+                query, [symbol, start_date, end_date]
+            )
 
             return [
                 AssetSnapshot(
@@ -408,7 +408,7 @@ class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilde
                     high=Decimal(str(row[3])),
                     low=Decimal(str(row[4])),
                     close=Decimal(str(row[5])),
-                    volume=row[6]
+                    volume=row[6],
                 )
                 for row in results
             ]
@@ -419,9 +419,7 @@ class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilde
             raise DataAccessError(error_msg) from e
 
     async def get_snapshots_bulk(
-        self,
-        symbols: list[str],
-        date: datetime
+        self, symbols: list[str], date: datetime
     ) -> dict[str, AssetSnapshot | None]:
         """Get snapshots for multiple assets at a specific date.
 
@@ -437,7 +435,7 @@ class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilde
                 return {}
 
             # Use a window function to get the closest snapshot for each symbol
-            placeholders = ','.join(['?'] * len(symbols))
+            placeholders = ",".join(["?"] * len(symbols))
             query = f"""
             WITH ranked_snapshots AS (
                 SELECT
@@ -464,7 +462,7 @@ class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilde
                     high=Decimal(str(row[3])),
                     low=Decimal(str(row[4])),
                     close=Decimal(str(row[5])),
-                    volume=row[6]
+                    volume=row[6],
                 )
 
             return result_dict
@@ -492,7 +490,9 @@ class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilde
             cursor = await self.query_executor.execute_query(query, [symbol, date])
             deleted_count = cursor.rowcount if cursor else 0
 
-            self.logger.debug(f"Deleted {deleted_count} snapshots for {symbol} before {date}")
+            self.logger.debug(
+                f"Deleted {deleted_count} snapshots for {symbol} before {date}"
+            )
             return deleted_count
 
         except Exception as e:
@@ -524,7 +524,7 @@ class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilde
         self,
         symbol: str,
         metrics: dict[str, Decimal],
-        as_of_date: datetime | None = None
+        as_of_date: datetime | None = None,
     ) -> None:
         """Save fundamental metrics for an asset.
 
@@ -549,7 +549,9 @@ class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilde
                 SELECT 1 FROM asset_metrics
                 WHERE symbol = ? AND metric_name = ? AND as_of_date = ?
                 """
-                exists = await self.query_executor.fetch_one(exists_query, [symbol, metric_name, target_date])
+                exists = await self.query_executor.fetch_one(
+                    exists_query, [symbol, metric_name, target_date]
+                )
 
                 if exists:
                     # Update existing metric
@@ -578,9 +580,7 @@ class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilde
             raise DataAccessError(error_msg) from e
 
     async def get_fundamental_metrics(
-        self,
-        symbol: str,
-        as_of_date: datetime | None = None
+        self, symbol: str, as_of_date: datetime | None = None
     ) -> dict[str, Decimal] | None:
         """Get fundamental metrics for an asset.
 
@@ -600,7 +600,9 @@ class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilde
                 WHERE symbol = ? AND metric_type = 'FUNDAMENTAL' AND as_of_date <= ?
                 ORDER BY as_of_date DESC
                 """
-                results = await self.query_executor.fetch_all(query, [symbol, as_of_date])
+                results = await self.query_executor.fetch_all(
+                    query, [symbol, as_of_date]
+                )
             else:
                 # Get latest metrics
                 query = """
@@ -635,9 +637,7 @@ class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilde
             raise DataAccessError(error_msg) from e
 
     async def get_fundamental_metrics_bulk(
-        self,
-        symbols: list[str],
-        as_of_date: datetime | None = None
+        self, symbols: list[str], as_of_date: datetime | None = None
     ) -> dict[str, dict[str, Decimal] | None]:
         """Get fundamental metrics for multiple assets.
 
@@ -667,11 +667,7 @@ class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilde
             raise DataAccessError(error_msg) from e
 
     async def get_metric_history(
-        self,
-        symbol: str,
-        metric_name: str,
-        start_date: datetime,
-        end_date: datetime
+        self, symbol: str, metric_name: str, start_date: datetime, end_date: datetime
     ) -> list[tuple[datetime, Decimal]]:
         """Get historical values for a specific fundamental metric.
 
@@ -699,14 +695,14 @@ class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilde
             return [(row[0], Decimal(str(row[1]))) for row in results]
 
         except Exception as e:
-            error_msg = f"Failed to get metric history for {symbol}.{metric_name}: {str(e)}"
+            error_msg = (
+                f"Failed to get metric history for {symbol}.{metric_name}: {str(e)}"
+            )
             self.logger.error(error_msg)
             raise DataAccessError(error_msg) from e
 
     async def delete_fundamental_metrics(
-        self,
-        symbol: str,
-        before_date: datetime | None = None
+        self, symbol: str, before_date: datetime | None = None
     ) -> int:
         """Delete fundamental metrics for an asset.
 
@@ -723,7 +719,9 @@ class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilde
                 DELETE FROM asset_metrics
                 WHERE symbol = ? AND metric_type = 'FUNDAMENTAL' AND as_of_date < ?
                 """
-                cursor = await self.query_executor.execute_query(query, [symbol, before_date])
+                cursor = await self.query_executor.execute_query(
+                    query, [symbol, before_date]
+                )
             else:
                 query = """
                 DELETE FROM asset_metrics
@@ -732,7 +730,9 @@ class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilde
                 cursor = await self.query_executor.execute_query(query, [symbol])
 
             deleted_count = cursor.rowcount if cursor else 0
-            self.logger.debug(f"Deleted {deleted_count} fundamental metrics for {symbol}")
+            self.logger.debug(
+                f"Deleted {deleted_count} fundamental metrics for {symbol}"
+            )
             return deleted_count
 
         except Exception as e:
@@ -757,12 +757,12 @@ class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilde
             # Basic asset info
             asset = await self.get_asset(symbol)
             if asset:
-                report['asset_exists'] = True
-                report['asset_name'] = asset.name
-                report['asset_type'] = asset.asset_type.value
-                report['exchange'] = asset.exchange
+                report["asset_exists"] = True
+                report["asset_name"] = asset.name
+                report["asset_type"] = asset.asset_type.value
+                report["exchange"] = asset.exchange
             else:
-                report['asset_exists'] = False
+                report["asset_exists"] = False
                 return report
 
             # Snapshot statistics
@@ -776,23 +776,31 @@ class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilde
             FROM asset_snapshots
             WHERE symbol = ?
             """
-            snapshot_result = await self.query_executor.fetch_one(snapshot_query, [symbol])
+            snapshot_result = await self.query_executor.fetch_one(
+                snapshot_query, [symbol]
+            )
 
             if snapshot_result:
-                report['total_snapshots'] = snapshot_result[0]
-                report['first_snapshot'] = snapshot_result[1]
-                report['last_snapshot'] = snapshot_result[2]
-                report['avg_volume'] = Decimal(str(snapshot_result[3])) if snapshot_result[3] else Decimal('0')
-                report['zero_volume_count'] = snapshot_result[4]
+                report["total_snapshots"] = snapshot_result[0]
+                report["first_snapshot"] = snapshot_result[1]
+                report["last_snapshot"] = snapshot_result[2]
+                report["avg_volume"] = (
+                    Decimal(str(snapshot_result[3]))
+                    if snapshot_result[3]
+                    else Decimal("0")
+                )
+                report["zero_volume_count"] = snapshot_result[4]
 
                 # Data quality score (0-100)
                 quality_score = 100
                 if snapshot_result[0] == 0:
                     quality_score = 0
-                elif snapshot_result[4] > snapshot_result[0] * 0.1:  # More than 10% zero volume
+                elif (
+                    snapshot_result[4] > snapshot_result[0] * 0.1
+                ):  # More than 10% zero volume
                     quality_score -= 20
 
-                report['quality_score'] = quality_score
+                report["quality_score"] = quality_score
 
             # Fundamental metrics count
             metrics_query = """
@@ -800,9 +808,11 @@ class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilde
             FROM asset_metrics
             WHERE symbol = ? AND metric_type = 'FUNDAMENTAL'
             """
-            metrics_result = await self.query_executor.fetch_one(metrics_query, [symbol])
+            metrics_result = await self.query_executor.fetch_one(
+                metrics_query, [symbol]
+            )
             if metrics_result:
-                report['fundamental_metric_count'] = metrics_result[0]
+                report["fundamental_metric_count"] = metrics_result[0]
 
             return report
 
@@ -820,9 +830,15 @@ class DuckDBAssetRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilde
         try:
             # DuckDB doesn't have explicit VACUUM, but we can run ANALYZE
             if symbol:
-                await self.query_executor.execute_query("ANALYZE assets WHERE symbol = ?", [symbol])
-                await self.query_executor.execute_query("ANALYZE asset_snapshots WHERE symbol = ?", [symbol])
-                await self.query_executor.execute_query("ANALYZE asset_metrics WHERE symbol = ?", [symbol])
+                await self.query_executor.execute_query(
+                    "ANALYZE assets WHERE symbol = ?", [symbol]
+                )
+                await self.query_executor.execute_query(
+                    "ANALYZE asset_snapshots WHERE symbol = ?", [symbol]
+                )
+                await self.query_executor.execute_query(
+                    "ANALYZE asset_metrics WHERE symbol = ?", [symbol]
+                )
             else:
                 await self.query_executor.execute_query("ANALYZE assets")
                 await self.query_executor.execute_query("ANALYZE asset_snapshots")

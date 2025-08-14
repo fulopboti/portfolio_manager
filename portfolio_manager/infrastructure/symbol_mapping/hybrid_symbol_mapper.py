@@ -1,6 +1,5 @@
 """Hybrid symbol mapping implementation combining database and external sources."""
 
-
 from portfolio_manager.domain.services.symbol_mapping import (
     SymbolMapping,
     SymbolMappingService,
@@ -10,8 +9,13 @@ from portfolio_manager.domain.services.symbol_mapping import (
 class HybridSymbolMapper(SymbolMappingService):
     """Hybrid symbol mapper combining database cache and external API."""
 
-    def __init__(self, database_mapper, external_mapper,
-                 cache_duration_hours: int = 24, fallback_to_external: bool = True):
+    def __init__(
+        self,
+        database_mapper,
+        external_mapper,
+        cache_duration_hours: int = 24,
+        fallback_to_external: bool = True,
+    ):
         """Initialize with database and external mappers."""
         if cache_duration_hours < 0:
             raise ValueError("Cache duration must be non-negative")
@@ -37,7 +41,9 @@ class HybridSymbolMapper(SymbolMappingService):
         # If not in database and fallback is enabled, try external API
         if self._fallback_to_external:
             try:
-                external_results = await self._external_mapper.get_equivalent_symbols(symbol)
+                external_results = await self._external_mapper.get_equivalent_symbols(
+                    symbol
+                )
                 if external_results:
                     # Cache the results for future use
                     await self._cache_mappings(external_results)
@@ -49,12 +55,19 @@ class HybridSymbolMapper(SymbolMappingService):
 
     async def get_provider_symbol(self, symbol: str, provider: str) -> str | None:
         """Get provider symbol using hybrid approach."""
-        if not symbol or not provider or not isinstance(symbol, str) or not isinstance(provider, str):
+        if (
+            not symbol
+            or not provider
+            or not isinstance(symbol, str)
+            or not isinstance(provider, str)
+        ):
             return None
 
         # Try database first
         try:
-            db_result = await self._database_mapper.get_provider_symbol(symbol, provider)
+            db_result = await self._database_mapper.get_provider_symbol(
+                symbol, provider
+            )
             if db_result:
                 return db_result
         except Exception:
@@ -63,11 +76,15 @@ class HybridSymbolMapper(SymbolMappingService):
         # If not in database and fallback is enabled, try external API
         if self._fallback_to_external:
             try:
-                external_result = await self._external_mapper.get_provider_symbol(symbol, provider)
+                external_result = await self._external_mapper.get_provider_symbol(
+                    symbol, provider
+                )
                 if external_result:
                     # Try to cache the full mapping if we can get it
                     try:
-                        full_mappings = await self._external_mapper.get_equivalent_symbols(symbol)
+                        full_mappings = (
+                            await self._external_mapper.get_equivalent_symbols(symbol)
+                        )
                         if full_mappings:
                             await self._cache_mappings(full_mappings)
                     except Exception:
@@ -95,7 +112,9 @@ class HybridSymbolMapper(SymbolMappingService):
         # If not in database and fallback is enabled, try external API
         if self._fallback_to_external:
             try:
-                external_results = await self._external_mapper.search_by_company(company_name)
+                external_results = await self._external_mapper.search_by_company(
+                    company_name
+                )
                 if external_results:
                     # Cache the results for future use
                     await self._cache_mappings(external_results)
@@ -112,7 +131,9 @@ class HybridSymbolMapper(SymbolMappingService):
 
         try:
             # Get fresh data from external API
-            external_results = await self._external_mapper.get_equivalent_symbols(symbol)
+            external_results = await self._external_mapper.get_equivalent_symbols(
+                symbol
+            )
             if external_results:
                 # Update database cache
                 for mapping in external_results:
@@ -140,7 +161,7 @@ class HybridSymbolMapper(SymbolMappingService):
     async def get_cache_stats(self) -> dict:
         """Get cache statistics."""
         try:
-            if hasattr(self._database_mapper, 'get_cache_stats'):
+            if hasattr(self._database_mapper, "get_cache_stats"):
                 return await self._database_mapper.get_cache_stats()
             else:
                 return {"error": "Cache stats not available"}

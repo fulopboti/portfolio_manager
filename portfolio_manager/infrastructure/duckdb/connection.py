@@ -46,8 +46,7 @@ class DuckDBConnection(DatabaseConnection):
 
             # Create DuckDB connection
             self._connection = duckdb.connect(
-                database=self.database_path,
-                read_only=self.config.read_only
+                database=self.database_path, read_only=self.config.read_only
             )
 
             # Configure connection settings
@@ -109,8 +108,10 @@ class DuckDBConnection(DatabaseConnection):
                 "read_only": self.config.read_only,
                 "duckdb_version": version,
                 "database_size_bytes": db_size,
-                "connection_type": "file" if self.database_path != ":memory:" else "memory",
-                "configuration": str(self.config)
+                "connection_type": (
+                    "file" if self.database_path != ":memory:" else "memory"
+                ),
+                "configuration": str(self.config),
             }
         except Exception as e:
             logger.error(f"Failed to get connection info: {str(e)}")
@@ -128,7 +129,9 @@ class DuckDBConnection(DatabaseConnection):
                     self._connection.execute(setting)
                 except Exception as setting_error:
                     # Log individual setting failures but continue with others
-                    logger.warning(f"Configuration setting failed: {setting} - {str(setting_error)}")
+                    logger.warning(
+                        f"Configuration setting failed: {setting} - {str(setting_error)}"
+                    )
 
             logger.debug(f"DuckDB connection configured: {self.config}")
 
@@ -201,7 +204,9 @@ class DuckDBTransactionManager(TransactionManager):
                 # DuckDB doesn't support savepoints, so we'll use transaction semantics
                 # This means nested transactions will share the same transaction scope
                 savepoint_supported = False
-                logger.debug(f"Savepoints not supported, using transaction semantics: {sp_error}")
+                logger.debug(
+                    f"Savepoints not supported, using transaction semantics: {sp_error}"
+                )
 
             yield
 
@@ -217,13 +222,17 @@ class DuckDBTransactionManager(TransactionManager):
                     raw_conn.execute(f"ROLLBACK TO SAVEPOINT {name}")
                     logger.debug(f"Rolled back to savepoint: {name}")
                 except Exception as rollback_error:
-                    logger.error(f"Failed to rollback to savepoint {name}: {rollback_error}")
+                    logger.error(
+                        f"Failed to rollback to savepoint {name}: {rollback_error}"
+                    )
                 raise TransactionError(f"Savepoint {name} failed: {str(e)}") from e
             else:
                 # Without savepoint support, we can't do partial rollbacks
                 # The entire transaction will need to be rolled back
                 # But we should let the original exception propagate
-                logger.warning(f"Savepoint rollback not supported - nested transaction failed: {e}")
+                logger.warning(
+                    f"Savepoint rollback not supported - nested transaction failed: {e}"
+                )
                 raise  # Re-raise the original exception
 
     async def begin_transaction(self) -> None:

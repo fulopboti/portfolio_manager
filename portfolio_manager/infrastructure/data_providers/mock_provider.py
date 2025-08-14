@@ -33,7 +33,9 @@ class MockDataProvider(DataProvider):
         day_count = 0
         while current_date <= end_date:
             # Add some variation to price
-            daily_change = price_increment * Decimal(str((day_count % 10) - 5)) * Decimal("0.1")
+            daily_change = (
+                price_increment * Decimal(str((day_count % 10) - 5)) * Decimal("0.1")
+            )
             current_price = price + daily_change
 
             # Ensure positive price
@@ -42,13 +44,15 @@ class MockDataProvider(DataProvider):
 
             # Ensure positive prices for domain validation
             if current_price <= 0:
-                current_price = self.base_price if self.base_price > 0 else Decimal("100.00")
+                current_price = (
+                    self.base_price if self.base_price > 0 else Decimal("100.00")
+                )
 
             # Generate OHLCV
             open_price = current_price
             high_price = current_price * Decimal("1.02")  # 2% higher
-            low_price = current_price * Decimal("0.98")   # 2% lower
-            close_price = current_price * Decimal("1.005") # 0.5% up from open
+            low_price = current_price * Decimal("0.98")  # 2% lower
+            close_price = current_price * Decimal("1.005")  # 0.5% up from open
             volume = volume_base + (day_count * 50000)
 
             snapshot = AssetSnapshot(
@@ -58,17 +62,21 @@ class MockDataProvider(DataProvider):
                 high=high_price,
                 low=low_price,
                 close=close_price,
-                volume=volume
+                volume=volume,
             )
             snapshots.append(snapshot)
 
             # Move to next day
-            current_date = current_date.replace(
-                day=current_date.day + 1
-            ) if current_date.day < 28 else current_date.replace(
-                month=current_date.month + 1, day=1
-            ) if current_date.month < 12 else current_date.replace(
-                year=current_date.year + 1, month=1, day=1
+            current_date = (
+                current_date.replace(day=current_date.day + 1)
+                if current_date.day < 28
+                else (
+                    current_date.replace(month=current_date.month + 1, day=1)
+                    if current_date.month < 12
+                    else current_date.replace(
+                        year=current_date.year + 1, month=1, day=1
+                    )
+                )
             )
 
             day_count += 1
@@ -93,7 +101,7 @@ class MockDataProvider(DataProvider):
             "debt_to_equity": Decimal("0.4"),
             "current_ratio": Decimal("1.8"),
             "roe": Decimal("0.18"),
-            "roa": Decimal("0.12")
+            "roa": Decimal("0.12"),
         }
 
     def supports_symbol(self, symbol: str) -> bool:
@@ -111,5 +119,5 @@ class MockDataProvider(DataProvider):
             "requests_per_minute": 1000,
             "requests_per_hour": 60000,
             "requests_per_day": 1000000,
-            "current_usage": 0
+            "current_usage": 0,
         }

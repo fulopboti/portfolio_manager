@@ -46,10 +46,10 @@ class DataProviderFactory:
     def _create_provider(self, provider_name: str) -> DataProvider:
         """Create a specific provider instance."""
         provider_creators = {
-            'yfinance': self._create_yfinance_provider,
-            'yahoo_finance': self._create_yfinance_provider,  # Alias
-            'mock': self._create_mock_provider,
-            'test': self._create_mock_provider,  # Alias for testing
+            "yfinance": self._create_yfinance_provider,
+            "yahoo_finance": self._create_yfinance_provider,  # Alias
+            "mock": self._create_mock_provider,
+            "test": self._create_mock_provider,  # Alias for testing
         }
 
         creator = provider_creators.get(provider_name.lower())
@@ -67,8 +67,7 @@ class DataProviderFactory:
         yf_config = self.config.data_providers.market_data.yfinance
 
         return YFinanceProvider(
-            request_delay=yf_config.request_delay,
-            max_retries=yf_config.max_retries
+            request_delay=yf_config.request_delay, max_retries=yf_config.max_retries
         )
 
     def _create_mock_provider(self) -> MockDataProvider:
@@ -77,7 +76,7 @@ class DataProviderFactory:
 
     def list_available_providers(self) -> list[str]:
         """List all available provider names."""
-        return ['yfinance', 'yahoo_finance', 'mock', 'test']
+        return ["yfinance", "yahoo_finance", "mock", "test"]
 
     def clear_cache(self) -> None:
         """Clear cached provider instances."""

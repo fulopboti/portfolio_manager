@@ -63,7 +63,9 @@ class RiskThresholdBreachedEventHandler(BaseEventHandler):
         # Send risk alerts
         await self._send_risk_alerts(event)
 
-    async def _handle_critical_breach(self, event: RiskThresholdBreachedEvent, portfolio) -> None:
+    async def _handle_critical_breach(
+        self, event: RiskThresholdBreachedEvent, portfolio
+    ) -> None:
         """
         Handle critical risk threshold breaches.
 
@@ -80,7 +82,7 @@ class RiskThresholdBreachedEventHandler(BaseEventHandler):
         await self.risk_service.trigger_emergency_risk_mitigation(
             portfolio_id=event.portfolio_id,
             breach_type=event.threshold_type,
-            severity=event.severity
+            severity=event.severity,
         )
 
         # Mark portfolio for urgent review
@@ -90,7 +92,9 @@ class RiskThresholdBreachedEventHandler(BaseEventHandler):
 
         await self.portfolio_repository.save_portfolio(portfolio)
 
-    async def _handle_standard_breach(self, event: RiskThresholdBreachedEvent, portfolio) -> None:
+    async def _handle_standard_breach(
+        self, event: RiskThresholdBreachedEvent, portfolio
+    ) -> None:
         """
         Handle standard risk threshold breaches.
 
@@ -103,7 +107,7 @@ class RiskThresholdBreachedEventHandler(BaseEventHandler):
             portfolio_id=event.portfolio_id,
             breach_type=event.threshold_type,
             severity=event.severity,
-            review_priority=event.severity.upper()
+            review_priority=event.severity.upper(),
         )
 
         # Update portfolio risk status
@@ -112,7 +116,9 @@ class RiskThresholdBreachedEventHandler(BaseEventHandler):
             portfolio.last_updated = event.timestamp
             await self.portfolio_repository.save_portfolio(portfolio)
 
-    async def _update_portfolio_risk_status(self, event: RiskThresholdBreachedEvent, portfolio) -> None:
+    async def _update_portfolio_risk_status(
+        self, event: RiskThresholdBreachedEvent, portfolio
+    ) -> None:
         """
         Update the portfolio's risk tracking information.
 
@@ -122,16 +128,16 @@ class RiskThresholdBreachedEventHandler(BaseEventHandler):
         """
         # Add breach to portfolio risk history
         risk_breach_record = {
-            'timestamp': event.timestamp,
-            'threshold_type': event.threshold_type,
-            'threshold_value': event.threshold_value,
-            'current_value': event.current_value,
-            'severity': event.severity,
-            'breach_amount': event.breach_amount()
+            "timestamp": event.timestamp,
+            "threshold_type": event.threshold_type,
+            "threshold_value": event.threshold_value,
+            "current_value": event.current_value,
+            "severity": event.severity,
+            "breach_amount": event.breach_amount(),
         }
 
         # Store breach history (would be implemented in portfolio entity)
-        if not hasattr(portfolio, 'risk_breaches'):
+        if not hasattr(portfolio, "risk_breaches"):
             portfolio.risk_breaches = []
 
         portfolio.risk_breaches.append(risk_breach_record)
@@ -153,7 +159,7 @@ class RiskThresholdBreachedEventHandler(BaseEventHandler):
                 current_value=event.current_value,
                 threshold_value=event.threshold_value,
                 severity=event.severity,
-                timestamp=event.timestamp
+                timestamp=event.timestamp,
             )
 
         except Exception as e:
@@ -201,7 +207,9 @@ class RiskMitigationEventHandler(BaseEventHandler):
         # Notify stakeholders
         await self._notify_mitigation_actions(event, mitigation_actions)
 
-    async def _determine_mitigation_actions(self, event: RiskThresholdBreachedEvent) -> list:
+    async def _determine_mitigation_actions(
+        self, event: RiskThresholdBreachedEvent
+    ) -> list:
         """
         Determine appropriate mitigation actions for the risk breach.
 
@@ -214,20 +222,31 @@ class RiskMitigationEventHandler(BaseEventHandler):
         actions = []
 
         if event.threshold_type == "MAX_POSITION_SIZE":
-            actions.append({
-                'type': 'REDUCE_POSITION',
-                'target_reduction': min(event.breach_amount() * Decimal("1.1"), event.current_value * Decimal("0.5"))
-            })
+            actions.append(
+                {
+                    "type": "REDUCE_POSITION",
+                    "target_reduction": min(
+                        event.breach_amount() * Decimal("1.1"),
+                        event.current_value * Decimal("0.5"),
+                    ),
+                }
+            )
         elif event.threshold_type == "MAX_PORTFOLIO_VOLATILITY":
-            actions.append({
-                'type': 'HEDGE_PORTFOLIO',
-                'hedge_ratio': min(Decimal("0.5"), event.breach_amount() / event.threshold_value)
-            })
+            actions.append(
+                {
+                    "type": "HEDGE_PORTFOLIO",
+                    "hedge_ratio": min(
+                        Decimal("0.5"), event.breach_amount() / event.threshold_value
+                    ),
+                }
+            )
         elif event.threshold_type == "MAX_DRAWDOWN":
-            actions.append({
-                'type': 'STOP_LOSS_ACTIVATION',
-                'stop_level': event.current_value * Decimal("0.95")
-            })
+            actions.append(
+                {
+                    "type": "STOP_LOSS_ACTIVATION",
+                    "stop_level": event.current_value * Decimal("0.95"),
+                }
+            )
 
         return actions
 
@@ -239,22 +258,24 @@ class RiskMitigationEventHandler(BaseEventHandler):
             portfolio_id: The portfolio ID
             action: The mitigation action to execute
         """
-        action_type = action['type']
+        action_type = action["type"]
 
-        if action_type == 'REDUCE_POSITION':
+        if action_type == "REDUCE_POSITION":
             await self.position_service.reduce_largest_positions(
-                portfolio_id, action['target_reduction']
+                portfolio_id, action["target_reduction"]
             )
-        elif action_type == 'HEDGE_PORTFOLIO':
+        elif action_type == "HEDGE_PORTFOLIO":
             await self.trading_service.create_hedge_positions(
-                portfolio_id, action['hedge_ratio']
+                portfolio_id, action["hedge_ratio"]
             )
-        elif action_type == 'STOP_LOSS_ACTIVATION':
+        elif action_type == "STOP_LOSS_ACTIVATION":
             await self.trading_service.activate_stop_losses(
-                portfolio_id, action['stop_level']
+                portfolio_id, action["stop_level"]
             )
 
-    async def _notify_mitigation_actions(self, event: RiskThresholdBreachedEvent, actions: list) -> None:
+    async def _notify_mitigation_actions(
+        self, event: RiskThresholdBreachedEvent, actions: list
+    ) -> None:
         """
         Notify stakeholders about executed mitigation actions.
 
@@ -268,7 +289,7 @@ class RiskMitigationEventHandler(BaseEventHandler):
                 breach_type=event.threshold_type,
                 severity=event.severity,
                 actions_taken=actions,
-                timestamp=event.timestamp
+                timestamp=event.timestamp,
             )
 
         except Exception as e:

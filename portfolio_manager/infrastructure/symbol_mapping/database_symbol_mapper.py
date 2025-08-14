@@ -1,6 +1,5 @@
 """Database-based symbol mapping implementation."""
 
-
 from portfolio_manager.domain.services.symbol_mapping import (
     CurrencyCode,
     SymbolMapping,
@@ -27,7 +26,12 @@ class DatabaseSymbolMapper(SymbolMappingService):
 
     async def get_provider_symbol(self, symbol: str, provider: str) -> str | None:
         """Get provider-specific symbol from database."""
-        if not symbol or not provider or not isinstance(symbol, str) or not isinstance(provider, str):
+        if (
+            not symbol
+            or not provider
+            or not isinstance(symbol, str)
+            or not isinstance(provider, str)
+        ):
             return None
 
         try:
@@ -100,7 +104,9 @@ class DatabaseSymbolMapper(SymbolMappingService):
         except Exception:
             return False
 
-    async def get_mappings_by_currency(self, currency: CurrencyCode) -> list[SymbolMapping]:
+    async def get_mappings_by_currency(
+        self, currency: CurrencyCode
+    ) -> list[SymbolMapping]:
         """Get all mappings that trade in a specific currency."""
         if not currency:
             return []

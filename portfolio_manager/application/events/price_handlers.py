@@ -54,9 +54,7 @@ class AssetPriceUpdatedEventHandler(BaseEventHandler):
 
         # Store the price update in market data
         await self.market_data_service.store_price_update(
-            symbol=event.symbol,
-            price=event.new_price,
-            timestamp=event.timestamp
+            symbol=event.symbol, price=event.new_price, timestamp=event.timestamp
         )
 
     async def _update_positions_for_symbol(self, event: AssetPriceUpdatedEvent) -> None:
@@ -66,7 +64,9 @@ class AssetPriceUpdatedEventHandler(BaseEventHandler):
         Args:
             event: The price update event
         """
-        positions = await self.position_repository.find_positions_by_symbol(event.symbol)
+        positions = await self.position_repository.find_positions_by_symbol(
+            event.symbol
+        )
 
         for position in positions:
             # Update position market value
@@ -84,7 +84,9 @@ class AssetPriceUpdatedEventHandler(BaseEventHandler):
                 f"market value change: ${market_value_change:.2f}"
             )
 
-    async def _update_portfolios_for_symbol(self, event: AssetPriceUpdatedEvent) -> None:
+    async def _update_portfolios_for_symbol(
+        self, event: AssetPriceUpdatedEvent
+    ) -> None:
         """
         Update portfolio values for all portfolios holding the symbol.
 
@@ -92,7 +94,9 @@ class AssetPriceUpdatedEventHandler(BaseEventHandler):
             event: The price update event
         """
         # Get portfolios that hold positions in this symbol
-        portfolios = await self.portfolio_repository.find_portfolios_by_symbol(event.symbol)
+        portfolios = await self.portfolio_repository.find_portfolios_by_symbol(
+            event.symbol
+        )
 
         for portfolio in portfolios:
             old_total_value = portfolio.total_value
@@ -166,7 +170,9 @@ class PortfolioRevaluationEventHandler(BaseEventHandler):
             symbol: The symbol that had a price update
         """
         try:
-            portfolios = await self.portfolio_repository.find_portfolios_by_symbol(symbol)
+            portfolios = await self.portfolio_repository.find_portfolios_by_symbol(
+                symbol
+            )
 
             for portfolio in portfolios:
                 await self.risk_service.update_portfolio_risk(portfolio.portfolio_id)
@@ -186,13 +192,17 @@ class PortfolioRevaluationEventHandler(BaseEventHandler):
                 symbol=event.symbol,
                 old_price=event.old_price,
                 new_price=event.new_price,
-                timestamp=event.timestamp
+                timestamp=event.timestamp,
             )
 
         except Exception as e:
-            self._logger.warning(f"Failed to check risk thresholds for {event.symbol}: {e}")
+            self._logger.warning(
+                f"Failed to check risk thresholds for {event.symbol}: {e}"
+            )
 
-    async def _send_price_change_notifications(self, event: AssetPriceUpdatedEvent) -> None:
+    async def _send_price_change_notifications(
+        self, event: AssetPriceUpdatedEvent
+    ) -> None:
         """
         Send notifications for significant price changes.
 
@@ -205,8 +215,10 @@ class PortfolioRevaluationEventHandler(BaseEventHandler):
                 old_price=event.old_price,
                 new_price=event.new_price,
                 change_percent=event.price_change_percent(),
-                timestamp=event.timestamp
+                timestamp=event.timestamp,
             )
 
         except Exception as e:
-            self._logger.warning(f"Failed to send price change notification for {event.symbol}: {e}")
+            self._logger.warning(
+                f"Failed to send price change notification for {event.symbol}: {e}"
+            )

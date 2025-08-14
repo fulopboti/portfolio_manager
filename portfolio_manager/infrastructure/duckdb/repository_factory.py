@@ -64,7 +64,9 @@ class AssetRepositoryAdapter(RepositoryAdapterBase, AssetRepository):
         return await self.data_access.get_latest_snapshot(symbol)
 
     async def get_historical_snapshots(self, symbol: str, start_date, end_date):
-        return await self.data_access.get_historical_snapshots(symbol, start_date, end_date)
+        return await self.data_access.get_historical_snapshots(
+            symbol, start_date, end_date
+        )
 
     async def get_fundamental_metrics(self, symbol: str):
         metrics = await self.data_access.get_fundamental_metrics(symbol)
@@ -145,7 +147,7 @@ class DuckDBRepositoryFactory:
         self,
         database_path: str,
         auto_initialize: bool = True,
-        config: DatabaseConfig | None = None
+        config: DatabaseConfig | None = None,
     ):
         """Initialize the repository factory.
 
@@ -177,28 +179,32 @@ class DuckDBRepositoryFactory:
             duckdb_config = None
             if self.config:
                 # Map configuration pragmas to DuckDBConfig fields
-                config_overrides = {
-                    'read_only': self.config.connection.read_only
-                }
+                config_overrides = {"read_only": self.config.connection.read_only}
 
                 # Map common pragma settings to DuckDBConfig fields
                 pragmas = self.config.connection.pragmas or {}
-                if 'threads' in pragmas:
-                    config_overrides['threads'] = int(pragmas['threads'])
-                if 'memory_limit' in pragmas:
-                    config_overrides['memory_limit'] = str(pragmas['memory_limit'])
-                if 'timezone' in pragmas:
-                    config_overrides['timezone'] = str(pragmas['timezone'])
-                if 'enable_optimizer' in pragmas:
-                    config_overrides['enable_optimizer'] = bool(pragmas['enable_optimizer'])
-                if 'enable_profiling' in pragmas:
-                    config_overrides['enable_profiling'] = bool(pragmas['enable_profiling'])
+                if "threads" in pragmas:
+                    config_overrides["threads"] = int(pragmas["threads"])
+                if "memory_limit" in pragmas:
+                    config_overrides["memory_limit"] = str(pragmas["memory_limit"])
+                if "timezone" in pragmas:
+                    config_overrides["timezone"] = str(pragmas["timezone"])
+                if "enable_optimizer" in pragmas:
+                    config_overrides["enable_optimizer"] = bool(
+                        pragmas["enable_optimizer"]
+                    )
+                if "enable_profiling" in pragmas:
+                    config_overrides["enable_profiling"] = bool(
+                        pragmas["enable_profiling"]
+                    )
 
                 # Pass the full pragmas dictionary as well
-                config_overrides['pragmas'] = pragmas
+                config_overrides["pragmas"] = pragmas
 
                 duckdb_config = DuckDBConfig.from_environment(**config_overrides)
-                self._logger.info(f"Using configuration: read_only={self.config.connection.read_only}, pragmas={self.config.connection.pragmas}")
+                self._logger.info(
+                    f"Using configuration: read_only={self.config.connection.read_only}, pragmas={self.config.connection.pragmas}"
+                )
 
             # Initialize connection with configuration
             self._connection = DuckDBConnection(self.database_path, duckdb_config)
@@ -215,7 +221,9 @@ class DuckDBRepositoryFactory:
                 await self._schema_manager.create_schema()
                 self._logger.info("Database schema initialized successfully")
 
-            self._logger.info(f"Repository factory initialized with database: {self.database_path}")
+            self._logger.info(
+                f"Repository factory initialized with database: {self.database_path}"
+            )
 
         except Exception as e:
             error_msg = f"Failed to initialize repository factory: {str(e)}"
@@ -274,7 +282,9 @@ class DuckDBRepositoryFactory:
 
         if self._portfolio_repository is None:
             # Create concrete DuckDB implementation
-            duckdb_repo = DuckDBPortfolioRepository(self._connection, self._query_executor)
+            duckdb_repo = DuckDBPortfolioRepository(
+                self._connection, self._query_executor
+            )
 
             # Wrap with adapter to match application interface
             self._portfolio_repository = PortfolioRepositoryAdapter(duckdb_repo)
@@ -334,15 +344,12 @@ class DuckDBRepositoryFactory:
                 "connection_info": conn_info,
                 "repositories": {
                     "asset_repository": self._asset_repository is not None,
-                    "portfolio_repository": self._portfolio_repository is not None
-                }
+                    "portfolio_repository": self._portfolio_repository is not None,
+                },
             }
 
         except Exception as e:
-            return {
-                "status": "unhealthy",
-                "reason": f"Health check failed: {str(e)}"
-            }
+            return {"status": "unhealthy", "reason": f"Health check failed: {str(e)}"}
 
     async def reset_database(self) -> None:
         """Reset the database by dropping and recreating all tables.
@@ -367,7 +374,9 @@ class DuckDBRepositoryFactory:
 
 
 # Convenience function for quick setup
-async def create_repository_factory(database_path: str, auto_initialize: bool = True) -> DuckDBRepositoryFactory:
+async def create_repository_factory(
+    database_path: str, auto_initialize: bool = True
+) -> DuckDBRepositoryFactory:
     """Create and initialize a repository factory.
 
     Args:

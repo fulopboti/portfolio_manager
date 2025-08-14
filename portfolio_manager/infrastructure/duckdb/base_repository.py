@@ -30,7 +30,9 @@ class BaseDuckDBRepository:
     - Transaction management utilities
     """
 
-    def __init__(self, connection: DuckDBConnection, query_executor: DuckDBQueryExecutor):
+    def __init__(
+        self, connection: DuckDBConnection, query_executor: DuckDBQueryExecutor
+    ):
         """
         Initialize base DuckDB repository.
 
@@ -53,7 +55,7 @@ class BaseDuckDBRepository:
         self,
         query: str,
         parameters: list[Any] | None = None,
-        operation_name: str = "query"
+        operation_name: str = "query",
     ) -> None:
         """
         Execute a query with standardized error handling and logging.
@@ -69,7 +71,9 @@ class BaseDuckDBRepository:
         try:
             self.logger.debug(f"{self._log_prefix} Executing {operation_name}")
             await self.query_executor.execute_query(query, parameters or [])
-            self.logger.debug(f"{self._log_prefix} Successfully completed {operation_name}")
+            self.logger.debug(
+                f"{self._log_prefix} Successfully completed {operation_name}"
+            )
 
         except Exception as e:
             error_msg = f"Failed to execute {operation_name}: {str(e)}"
@@ -80,7 +84,7 @@ class BaseDuckDBRepository:
         self,
         query: str,
         parameters: list[Any] | None = None,
-        operation_name: str = "fetch_one"
+        operation_name: str = "fetch_one",
     ) -> Any | None:
         """
         Fetch a single result with standardized error handling.
@@ -99,7 +103,9 @@ class BaseDuckDBRepository:
         try:
             self.logger.debug(f"{self._log_prefix} Executing {operation_name}")
             result = await self.query_executor.fetch_one(query, parameters or [])
-            self.logger.debug(f"{self._log_prefix} Successfully completed {operation_name}")
+            self.logger.debug(
+                f"{self._log_prefix} Successfully completed {operation_name}"
+            )
             return result
 
         except Exception as e:
@@ -111,7 +117,7 @@ class BaseDuckDBRepository:
         self,
         query: str,
         parameters: list[Any] | None = None,
-        operation_name: str = "fetch_all"
+        operation_name: str = "fetch_all",
     ) -> list[Any]:
         """
         Fetch all results with standardized error handling.
@@ -130,7 +136,9 @@ class BaseDuckDBRepository:
         try:
             self.logger.debug(f"{self._log_prefix} Executing {operation_name}")
             results = await self.query_executor.fetch_all(query, parameters or [])
-            self.logger.debug(f"{self._log_prefix} Successfully completed {operation_name} - {len(results)} rows")
+            self.logger.debug(
+                f"{self._log_prefix} Successfully completed {operation_name} - {len(results)} rows"
+            )
             return results
 
         except Exception as e:
@@ -142,7 +150,7 @@ class BaseDuckDBRepository:
         self,
         query: str,
         parameters: list[Any] | None = None,
-        operation_name: str = "execute_with_result"
+        operation_name: str = "execute_with_result",
     ) -> Any:
         """
         Execute a query and return the result with standardized error handling.
@@ -160,8 +168,12 @@ class BaseDuckDBRepository:
         """
         try:
             self.logger.debug(f"{self._log_prefix} Executing {operation_name}")
-            result = await self.query_executor.execute_with_result(query, parameters or [])
-            self.logger.debug(f"{self._log_prefix} Successfully completed {operation_name}")
+            result = await self.query_executor.execute_with_result(
+                query, parameters or []
+            )
+            self.logger.debug(
+                f"{self._log_prefix} Successfully completed {operation_name}"
+            )
             return result
 
         except Exception as e:
@@ -188,7 +200,9 @@ class BaseDuckDBRepository:
             await self.connection.begin_transaction()
             yield
             await self.connection.commit_transaction()
-            self.logger.debug(f"{self._log_prefix} Successfully committed {operation_name}")
+            self.logger.debug(
+                f"{self._log_prefix} Successfully committed {operation_name}"
+            )
 
         except Exception as e:
             await self.connection.rollback_transaction()
@@ -196,7 +210,9 @@ class BaseDuckDBRepository:
             self.logger.error(f"{self._log_prefix} {error_msg}")
             raise DataAccessError(error_msg) from e
 
-    def _build_error_context(self, operation: str, entity_info: str, error: Exception) -> dict[str, Any]:
+    def _build_error_context(
+        self, operation: str, entity_info: str, error: Exception
+    ) -> dict[str, Any]:
         """
         Build error context for structured logging.
 
@@ -209,10 +225,10 @@ class BaseDuckDBRepository:
             Dictionary with error context information
         """
         return {
-            'operation': operation,
-            'entity_info': entity_info,
-            'error_type': error.__class__.__name__,
-            'repository_class': self.__class__.__name__,
+            "operation": operation,
+            "entity_info": entity_info,
+            "error_type": error.__class__.__name__,
+            "repository_class": self.__class__.__name__,
         }
 
     def _log_operation_start(self, operation: str, entity_info: str) -> None:
@@ -221,14 +237,18 @@ class BaseDuckDBRepository:
 
     def _log_operation_success(self, operation: str, entity_info: str) -> None:
         """Log the successful completion of a repository operation."""
-        self.logger.debug(f"{self._log_prefix} Successfully completed {operation} for {entity_info}")
+        self.logger.debug(
+            f"{self._log_prefix} Successfully completed {operation} for {entity_info}"
+        )
 
-    def _log_operation_error(self, operation: str, entity_info: str, error: Exception) -> None:
+    def _log_operation_error(
+        self, operation: str, entity_info: str, error: Exception
+    ) -> None:
         """Log an error during a repository operation."""
         error_context = self._build_error_context(operation, entity_info, error)
         self.logger.error(
             f"{self._log_prefix} Failed {operation} for {entity_info}: {error}",
-            extra=error_context
+            extra=error_context,
         )
 
 
@@ -297,7 +317,9 @@ class EntityMapperMixin:
         try:
             return enum_class(value)
         except (ValueError, TypeError) as e:
-            raise DataAccessError(f"Invalid enum value '{value}' for {enum_class.__name__}") from e
+            raise DataAccessError(
+                f"Invalid enum value '{value}' for {enum_class.__name__}"
+            ) from e
 
 
 class QueryBuilderMixin:
@@ -308,10 +330,7 @@ class QueryBuilderMixin:
     """
 
     def _build_insert_query(
-        self,
-        table: str,
-        columns: list[str],
-        on_conflict_update: bool = True
+        self, table: str, columns: list[str], on_conflict_update: bool = True
     ) -> str:
         """
         Build an INSERT query with optional ON CONFLICT clause.
@@ -325,13 +344,17 @@ class QueryBuilderMixin:
             SQL INSERT query string
         """
         placeholders = ", ".join(["?" for _ in columns])
-        base_query = f"INSERT INTO {table} ({', '.join(columns)}) VALUES ({placeholders})"
+        base_query = (
+            f"INSERT INTO {table} ({', '.join(columns)}) VALUES ({placeholders})"
+        )
 
         if on_conflict_update:
             # Exclude primary key columns from update (assume first column is PK)
             update_columns = columns[1:] if len(columns) > 1 else []
             if update_columns:
-                updates = ", ".join([f"{col} = EXCLUDED.{col}" for col in update_columns])
+                updates = ", ".join(
+                    [f"{col} = EXCLUDED.{col}" for col in update_columns]
+                )
                 base_query += f" ON CONFLICT ({columns[0]}) DO UPDATE SET {updates}"
 
         return base_query
@@ -342,7 +365,7 @@ class QueryBuilderMixin:
         columns: list[str],
         where_conditions: list[str] | None = None,
         order_by: list[str] | None = None,
-        limit: int | None = None
+        limit: int | None = None,
     ) -> str:
         """
         Build a SELECT query with optional WHERE, ORDER BY, and LIMIT clauses.
@@ -370,11 +393,7 @@ class QueryBuilderMixin:
 
         return query
 
-    def _build_delete_query(
-        self,
-        table: str,
-        where_conditions: list[str]
-    ) -> str:
+    def _build_delete_query(self, table: str, where_conditions: list[str]) -> str:
         """
         Build a DELETE query with WHERE clause.
 
@@ -392,8 +411,9 @@ class QueryBuilderMixin:
 
     # Advanced query pattern methods using DuckDBQueryBuilder
 
-    async def _find_by_id_pattern(self, table: str, columns: list[str],
-                                  id_value: Any, id_column: str = "id") -> list[Any] | None:
+    async def _find_by_id_pattern(
+        self, table: str, columns: list[str], id_value: Any, id_column: str = "id"
+    ) -> list[Any] | None:
         """
         Find single record by ID using common pattern.
 
@@ -410,8 +430,9 @@ class QueryBuilderMixin:
         parameters = self.param_builder.build_parameters([id_value])
         return await self._fetch_one(query, parameters)
 
-    async def _find_all_pattern(self, table: str, columns: list[str],
-                               order_by: str | None = None) -> list[list[Any]]:
+    async def _find_all_pattern(
+        self, table: str, columns: list[str], order_by: str | None = None
+    ) -> list[list[Any]]:
         """
         Find all records using common pattern.
 
@@ -426,10 +447,14 @@ class QueryBuilderMixin:
         query = self.query_builder.select_all(table, columns, order_by)
         return await self._fetch_all(query)
 
-    async def _find_by_criteria_pattern(self, table: str, columns: list[str],
-                                       criteria: dict[str, Any],
-                                       order_by: str | None = None,
-                                       limit: int | None = None) -> list[list[Any]]:
+    async def _find_by_criteria_pattern(
+        self,
+        table: str,
+        columns: list[str],
+        criteria: dict[str, Any],
+        order_by: str | None = None,
+        limit: int | None = None,
+    ) -> list[list[Any]]:
         """
         Find records by criteria using common pattern.
 
@@ -449,7 +474,9 @@ class QueryBuilderMixin:
         parameters = self.param_builder.build_parameters(raw_parameters)
         return await self._fetch_all(query, parameters)
 
-    async def _count_pattern(self, table: str, criteria: dict[str, Any] | None = None) -> int:
+    async def _count_pattern(
+        self, table: str, criteria: dict[str, Any] | None = None
+    ) -> int:
         """
         Count records using common pattern.
 
@@ -481,8 +508,14 @@ class QueryBuilderMixin:
         result = await self._fetch_one(query, parameters)
         return result is not None
 
-    async def _upsert_pattern(self, table: str, columns: list[str], values: list[Any],
-                             conflict_column: str, update_columns: list[str] | None = None) -> None:
+    async def _upsert_pattern(
+        self,
+        table: str,
+        columns: list[str],
+        values: list[Any],
+        conflict_column: str,
+        update_columns: list[str] | None = None,
+    ) -> None:
         """
         Upsert record using common pattern.
 
@@ -493,14 +526,24 @@ class QueryBuilderMixin:
             conflict_column: Column that triggers conflict resolution
             update_columns: Columns to update on conflict
         """
-        query = self.query_builder.upsert(table, columns, conflict_column, update_columns)
+        query = self.query_builder.upsert(
+            table, columns, conflict_column, update_columns
+        )
         parameters = self.param_builder.build_parameters(values)
         await self._execute_query(query, parameters, f"upsert_{table}")
 
-    async def _time_series_pattern(self, table: str, symbol_column: str, timestamp_column: str,
-                                  data_columns: list[str], symbol: str,
-                                  start_date=None, end_date=None,
-                                  order_desc: bool = False, limit: int | None = None) -> list[list[Any]]:
+    async def _time_series_pattern(
+        self,
+        table: str,
+        symbol_column: str,
+        timestamp_column: str,
+        data_columns: list[str],
+        symbol: str,
+        start_date=None,
+        end_date=None,
+        order_desc: bool = False,
+        limit: int | None = None,
+    ) -> list[list[Any]]:
         """
         Get time series data using common pattern.
 
@@ -519,14 +562,27 @@ class QueryBuilderMixin:
             List of time series row data
         """
         query, raw_parameters = self.query_builder.time_series_query(
-            table, symbol_column, timestamp_column, data_columns, symbol,
-            start_date, end_date, order_desc, limit
+            table,
+            symbol_column,
+            timestamp_column,
+            data_columns,
+            symbol,
+            start_date,
+            end_date,
+            order_desc,
+            limit,
         )
         parameters = self.param_builder.build_parameters(raw_parameters)
         return await self._fetch_all(query, parameters)
 
-    async def _latest_record_pattern(self, table: str, partition_column: str, timestamp_column: str,
-                                    data_columns: list[str], partition_value: str | None = None) -> list[Any] | None:
+    async def _latest_record_pattern(
+        self,
+        table: str,
+        partition_column: str,
+        timestamp_column: str,
+        data_columns: list[str],
+        partition_value: str | None = None,
+    ) -> list[Any] | None:
         """
         Get latest record per partition using common pattern.
 
@@ -551,7 +607,9 @@ class QueryBuilderMixin:
             results = await self._fetch_all(query, parameters)
             return results[0] if results else None
 
-    async def _delete_by_criteria_pattern(self, table: str, criteria: dict[str, Any]) -> int:
+    async def _delete_by_criteria_pattern(
+        self, table: str, criteria: dict[str, Any]
+    ) -> int:
         """
         Delete records by criteria using common pattern.
 

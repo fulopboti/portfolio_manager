@@ -36,7 +36,9 @@ class DuckDBTableBuilder:
         # Add primary key constraint (only if not already specified in column definition)
         if table_def.primary_key:
             # Check if any column already has PRIMARY KEY in its definition
-            has_inline_pk = any("PRIMARY KEY" in col_def for col_def in table_def.columns.values())
+            has_inline_pk = any(
+                "PRIMARY KEY" in col_def for col_def in table_def.columns.values()
+            )
 
             if not has_inline_pk:
                 if len(table_def.primary_key) == 1:
@@ -67,7 +69,9 @@ class DuckDBTableBuilder:
         """
         unique_clause = "UNIQUE " if index_def.unique else ""
         columns_clause = ", ".join(index_def.columns)
-        where_clause = f" WHERE {index_def.where_clause}" if index_def.where_clause else ""
+        where_clause = (
+            f" WHERE {index_def.where_clause}" if index_def.where_clause else ""
+        )
 
         return (
             f"CREATE {unique_clause}INDEX {index_def.name} "
@@ -98,7 +102,9 @@ class DuckDBTableBuilder:
         """
         return f"DROP INDEX IF EXISTS {index_name};"
 
-    def build_add_foreign_key_sql(self, table_name: str, column: str, reference: str) -> str:
+    def build_add_foreign_key_sql(
+        self, table_name: str, column: str, reference: str
+    ) -> str:
         """Generate ALTER TABLE ADD FOREIGN KEY SQL.
 
         Args:
@@ -116,7 +122,9 @@ class DuckDBTableBuilder:
             f"FOREIGN KEY ({column}) REFERENCES {reference};"
         )
 
-    def build_add_check_constraint_sql(self, table_name: str, constraint_name: str, condition: str) -> str:
+    def build_add_check_constraint_sql(
+        self, table_name: str, constraint_name: str, condition: str
+    ) -> str:
         """Generate ALTER TABLE ADD CHECK constraint SQL.
 
         Args:
@@ -213,7 +221,9 @@ class DuckDBTableBuilder:
         creation_order = self.get_table_creation_order(tables)
         return list(reversed(creation_order))
 
-    def build_complete_schema_sql(self, tables: dict[str, TableDefinition], indexes: list[IndexDefinition]) -> str:
+    def build_complete_schema_sql(
+        self, tables: dict[str, TableDefinition], indexes: list[IndexDefinition]
+    ) -> str:
         """Generate complete schema creation SQL.
 
         Args:
@@ -245,7 +255,9 @@ class DuckDBTableBuilder:
             if table_name in tables:
                 table_def = tables[table_name]
                 for column, reference in table_def.foreign_keys.items():
-                    sql_parts.append(self.build_add_foreign_key_sql(table_name, column, reference))
+                    sql_parts.append(
+                        self.build_add_foreign_key_sql(table_name, column, reference)
+                    )
 
         if any(table_def.foreign_keys for table_def in tables.values()):
             sql_parts.append("")
@@ -260,7 +272,9 @@ class DuckDBTableBuilder:
 
         return "\n".join(sql_parts)
 
-    def build_complete_drop_schema_sql(self, tables: dict[str, TableDefinition], indexes: list[IndexDefinition]) -> str:
+    def build_complete_drop_schema_sql(
+        self, tables: dict[str, TableDefinition], indexes: list[IndexDefinition]
+    ) -> str:
         """Generate complete schema drop SQL.
 
         Args:

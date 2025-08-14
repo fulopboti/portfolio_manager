@@ -16,9 +16,9 @@ from ...infrastructure.events.handlers import EventHandler
 class ErrorHandlingStrategy(Enum):
     """Strategy for handling errors in event handlers."""
 
-    CRITICAL = "critical"      # Re-raise all errors - failure breaks the system
-    RESILIENT = "resilient"    # Log errors but don't re-raise - system continues
-    SELECTIVE = "selective"    # Re-raise critical errors, suppress non-critical ones
+    CRITICAL = "critical"  # Re-raise all errors - failure breaks the system
+    RESILIENT = "resilient"  # Log errors but don't re-raise - system continues
+    SELECTIVE = "selective"  # Re-raise critical errors, suppress non-critical ones
 
 
 class BaseEventHandler(EventHandler):
@@ -35,7 +35,7 @@ class BaseEventHandler(EventHandler):
     def __init__(
         self,
         error_strategy: ErrorHandlingStrategy = ErrorHandlingStrategy.CRITICAL,
-        logger_name: str | None = None
+        logger_name: str | None = None,
     ):
         """
         Initialize base event handler.
@@ -104,7 +104,9 @@ class BaseEventHandler(EventHandler):
         except Exception as e:
             await self._handle_error(event, e, event_info)
 
-    async def _handle_error(self, event: Any, error: Exception, event_info: str) -> None:
+    async def _handle_error(
+        self, event: Any, error: Exception, event_info: str
+    ) -> None:
         """
         Handle errors according to the configured strategy.
 
@@ -121,14 +123,14 @@ class BaseEventHandler(EventHandler):
         if self.error_strategy == ErrorHandlingStrategy.CRITICAL:
             self._logger.error(
                 f"{self._log_prefix} Failed to process {event_info}: {error}",
-                extra=error_context
+                extra=error_context,
             )
             raise
 
         elif self.error_strategy == ErrorHandlingStrategy.RESILIENT:
             self._logger.warning(
                 f"{self._log_prefix} Error processing {event_info} (continuing): {error}",
-                extra=error_context
+                extra=error_context,
             )
             # Don't re-raise - system continues
 
@@ -136,13 +138,13 @@ class BaseEventHandler(EventHandler):
             if self._is_critical_error(error):
                 self._logger.error(
                     f"{self._log_prefix} Critical error processing {event_info}: {error}",
-                    extra=error_context
+                    extra=error_context,
                 )
                 raise
             else:
                 self._logger.warning(
                     f"{self._log_prefix} Non-critical error processing {event_info}: {error}",
-                    extra=error_context
+                    extra=error_context,
                 )
 
     def _get_event_info(self, event: Any) -> str:
@@ -160,7 +162,7 @@ class BaseEventHandler(EventHandler):
         # Try to get meaningful identifiers from common event attributes
         identifiers = []
 
-        for attr in ['event_id', 'portfolio_id', 'symbol', 'trade_id']:
+        for attr in ["event_id", "portfolio_id", "symbol", "trade_id"]:
             if hasattr(event, attr):
                 value = getattr(event, attr)
                 identifiers.append(f"{attr}={value}")
@@ -182,10 +184,10 @@ class BaseEventHandler(EventHandler):
             Dictionary with error context information
         """
         return {
-            'event_type': event.__class__.__name__,
-            'event_id': getattr(event, 'event_id', None),
-            'error_type': error.__class__.__name__,
-            'handler_class': self.__class__.__name__,
+            "event_type": event.__class__.__name__,
+            "event_id": getattr(event, "event_id", None),
+            "error_type": error.__class__.__name__,
+            "handler_class": self.__class__.__name__,
         }
 
     def _is_critical_error(self, error: Exception) -> bool:
@@ -203,9 +205,9 @@ class BaseEventHandler(EventHandler):
         """
         # Default: consider validation and domain errors as critical
         critical_types = (
-            'DomainValidationError',
-            'ConfigurationError',
-            'RepositoryError'
+            "DomainValidationError",
+            "ConfigurationError",
+            "RepositoryError",
         )
         return error.__class__.__name__ in critical_types
 
@@ -215,8 +217,7 @@ class CriticalEventHandler(BaseEventHandler):
 
     def __init__(self, logger_name: str | None = None):
         super().__init__(
-            error_strategy=ErrorHandlingStrategy.CRITICAL,
-            logger_name=logger_name
+            error_strategy=ErrorHandlingStrategy.CRITICAL, logger_name=logger_name
         )
 
 
@@ -225,8 +226,7 @@ class ResilientEventHandler(BaseEventHandler):
 
     def __init__(self, logger_name: str | None = None):
         super().__init__(
-            error_strategy=ErrorHandlingStrategy.RESILIENT,
-            logger_name=logger_name
+            error_strategy=ErrorHandlingStrategy.RESILIENT, logger_name=logger_name
         )
 
 
@@ -235,8 +235,7 @@ class SelectiveEventHandler(BaseEventHandler):
 
     def __init__(self, logger_name: str | None = None):
         super().__init__(
-            error_strategy=ErrorHandlingStrategy.SELECTIVE,
-            logger_name=logger_name
+            error_strategy=ErrorHandlingStrategy.SELECTIVE, logger_name=logger_name
         )
 
     @abstractmethod

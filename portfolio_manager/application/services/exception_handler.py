@@ -24,22 +24,22 @@ logger = logging.getLogger(__name__)
 class ExceptionSeverity(Enum):
     """Exception severity levels for different handling strategies."""
 
-    CRITICAL = "critical"      # System-level errors that require immediate attention
-    HIGH = "high"             # Business-critical errors that block operations
-    MEDIUM = "medium"         # Recoverable errors that may impact functionality
-    LOW = "low"              # Minor errors or expected failures
-    INFO = "info"            # Informational exceptions (e.g., validation failures)
+    CRITICAL = "critical"  # System-level errors that require immediate attention
+    HIGH = "high"  # Business-critical errors that block operations
+    MEDIUM = "medium"  # Recoverable errors that may impact functionality
+    LOW = "low"  # Minor errors or expected failures
+    INFO = "info"  # Informational exceptions (e.g., validation failures)
 
 
 class ExceptionCategory(Enum):
     """Categories of exceptions for consistent handling."""
 
-    DOMAIN = "domain"                # Business logic errors
-    DATA_ACCESS = "data_access"      # Database/repository errors
-    VALIDATION = "validation"        # Input validation errors
-    EXTERNAL = "external"           # Third-party service errors
-    SYSTEM = "system"               # System-level errors
-    CONFIGURATION = "configuration" # Configuration-related errors
+    DOMAIN = "domain"  # Business logic errors
+    DATA_ACCESS = "data_access"  # Database/repository errors
+    VALIDATION = "validation"  # Input validation errors
+    EXTERNAL = "external"  # Third-party service errors
+    SYSTEM = "system"  # System-level errors
+    CONFIGURATION = "configuration"  # Configuration-related errors
 
 
 class ServiceExceptionRegistry:
@@ -58,7 +58,7 @@ class ServiceExceptionRegistry:
             category=ExceptionCategory.VALIDATION,
             severity=ExceptionSeverity.MEDIUM,
             retry_strategy="no_retry",
-            log_stack_trace=False
+            log_stack_trace=False,
         )
 
         self.register(
@@ -66,7 +66,7 @@ class ServiceExceptionRegistry:
             category=ExceptionCategory.DOMAIN,
             severity=ExceptionSeverity.HIGH,
             retry_strategy="no_retry",
-            log_stack_trace=True
+            log_stack_trace=True,
         )
 
         self.register(
@@ -74,7 +74,7 @@ class ServiceExceptionRegistry:
             category=ExceptionCategory.DOMAIN,
             severity=ExceptionSeverity.MEDIUM,
             retry_strategy="no_retry",
-            log_stack_trace=False
+            log_stack_trace=False,
         )
 
         self.register(
@@ -82,7 +82,7 @@ class ServiceExceptionRegistry:
             category=ExceptionCategory.EXTERNAL,
             severity=ExceptionSeverity.MEDIUM,
             retry_strategy="exponential_backoff",
-            log_stack_trace=True
+            log_stack_trace=True,
         )
 
         self.register(
@@ -90,7 +90,7 @@ class ServiceExceptionRegistry:
             category=ExceptionCategory.DOMAIN,
             severity=ExceptionSeverity.MEDIUM,
             retry_strategy="no_retry",
-            log_stack_trace=True
+            log_stack_trace=True,
         )
 
         # Data access exceptions
@@ -99,7 +99,7 @@ class ServiceExceptionRegistry:
             category=ExceptionCategory.DATA_ACCESS,
             severity=ExceptionSeverity.HIGH,
             retry_strategy="exponential_backoff",
-            log_stack_trace=True
+            log_stack_trace=True,
         )
 
         self.register(
@@ -107,7 +107,7 @@ class ServiceExceptionRegistry:
             category=ExceptionCategory.DATA_ACCESS,
             severity=ExceptionSeverity.LOW,
             retry_strategy="no_retry",
-            log_stack_trace=False
+            log_stack_trace=False,
         )
 
         # System exceptions
@@ -116,7 +116,7 @@ class ServiceExceptionRegistry:
             category=ExceptionCategory.SYSTEM,
             severity=ExceptionSeverity.CRITICAL,
             retry_strategy="exponential_backoff",
-            log_stack_trace=True
+            log_stack_trace=True,
         )
 
         self.register(
@@ -124,7 +124,7 @@ class ServiceExceptionRegistry:
             category=ExceptionCategory.EXTERNAL,
             severity=ExceptionSeverity.MEDIUM,
             retry_strategy="exponential_backoff",
-            log_stack_trace=False
+            log_stack_trace=False,
         )
 
         # Generic exception (catch-all)
@@ -133,7 +133,7 @@ class ServiceExceptionRegistry:
             category=ExceptionCategory.SYSTEM,
             severity=ExceptionSeverity.CRITICAL,
             retry_strategy="no_retry",
-            log_stack_trace=True
+            log_stack_trace=True,
         )
 
     def register(
@@ -143,7 +143,7 @@ class ServiceExceptionRegistry:
         severity: ExceptionSeverity,
         retry_strategy: str = "no_retry",
         log_stack_trace: bool = True,
-        custom_handler: Callable | None = None
+        custom_handler: Callable | None = None,
     ) -> None:
         """
         Register an exception type with handling strategy.
@@ -161,7 +161,7 @@ class ServiceExceptionRegistry:
             "severity": severity,
             "retry_strategy": retry_strategy,
             "log_stack_trace": log_stack_trace,
-            "custom_handler": custom_handler
+            "custom_handler": custom_handler,
         }
 
     def get_handling_strategy(self, exception: Exception) -> dict[str, Any]:
@@ -185,13 +185,16 @@ class ServiceExceptionRegistry:
                 return strategy
 
         # Fall back to generic Exception handling
-        return self._mappings.get(Exception, {
-            "category": ExceptionCategory.SYSTEM,
-            "severity": ExceptionSeverity.CRITICAL,
-            "retry_strategy": "no_retry",
-            "log_stack_trace": True,
-            "custom_handler": None
-        })
+        return self._mappings.get(
+            Exception,
+            {
+                "category": ExceptionCategory.SYSTEM,
+                "severity": ExceptionSeverity.CRITICAL,
+                "retry_strategy": "no_retry",
+                "log_stack_trace": True,
+                "custom_handler": None,
+            },
+        )
 
 
 class StandardExceptionHandler:
@@ -224,7 +227,7 @@ class StandardExceptionHandler:
         operation_name: str,
         entity_context: str | None = None,
         reraise: bool = True,
-        return_default: Any = None
+        return_default: Any = None,
     ) -> Any:
         """
         Handle an exception according to registered strategy.
@@ -250,7 +253,7 @@ class StandardExceptionHandler:
             "exception_message": str(exception),
             "category": strategy["category"].value,
             "severity": strategy["severity"].value,
-            **self._operation_context
+            **self._operation_context,
         }
 
         # Log the exception according to severity and strategy
@@ -275,14 +278,16 @@ class StandardExceptionHandler:
         self,
         exception: Exception,
         strategy: dict[str, Any],
-        error_context: dict[str, Any]
+        error_context: dict[str, Any],
     ) -> None:
         """Log exception according to strategy."""
         severity = strategy["severity"]
         log_stack = strategy["log_stack_trace"]
 
         # Create base log message
-        base_msg = f"[{self.service_name}] {error_context['operation']} failed: {exception}"
+        base_msg = (
+            f"[{self.service_name}] {error_context['operation']} failed: {exception}"
+        )
         if error_context.get("entity_context"):
             base_msg += f" (Entity: {error_context['entity_context']})"
 
@@ -311,7 +316,7 @@ class StandardExceptionHandler:
         self,
         exception: Exception,
         strategy: dict[str, Any],
-        error_context: dict[str, Any]
+        error_context: dict[str, Any],
     ) -> Exception:
         """Transform exception if needed before re-raising."""
         # For now, return the original exception
@@ -324,7 +329,7 @@ def service_exception_handler(
     entity_context: str | None = None,
     reraise: bool = True,
     return_default: Any = None,
-    expected_exceptions: list[type[Exception]] | None = None
+    expected_exceptions: list[type[Exception]] | None = None,
 ):
     """
     Decorator for standardized exception handling in service methods.
@@ -336,18 +341,23 @@ def service_exception_handler(
         return_default: Default return value if not re-raising
         expected_exceptions: List of expected exception types
     """
+
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         async def async_wrapper(self, *args, **kwargs):
-            if not hasattr(self, '_exception_handler'):
-                handler_name = getattr(self, '__class__', {}).get('__name__', 'UnknownService')
+            if not hasattr(self, "_exception_handler"):
+                handler_name = getattr(self, "__class__", {}).get(
+                    "__name__", "UnknownService"
+                )
                 self._exception_handler = StandardExceptionHandler(handler_name)
 
             try:
                 return await func(self, *args, **kwargs)
             except Exception as e:
                 # Check if this is an expected exception
-                if expected_exceptions and any(isinstance(e, exc_type) for exc_type in expected_exceptions):
+                if expected_exceptions and any(
+                    isinstance(e, exc_type) for exc_type in expected_exceptions
+                ):
                     # Handle expected exceptions with lower severity
                     return self._exception_handler.handle_exception(
                         e, operation_name, entity_context, reraise, return_default
@@ -360,8 +370,10 @@ def service_exception_handler(
 
         @wraps(func)
         def sync_wrapper(self, *args, **kwargs):
-            if not hasattr(self, '_exception_handler'):
-                handler_name = getattr(self, '__class__', {}).get('__name__', 'UnknownService')
+            if not hasattr(self, "_exception_handler"):
+                handler_name = getattr(self, "__class__", {}).get(
+                    "__name__", "UnknownService"
+                )
                 self._exception_handler = StandardExceptionHandler(handler_name)
 
             try:
@@ -373,6 +385,7 @@ def service_exception_handler(
 
         # Return appropriate wrapper based on whether the function is async
         import inspect
+
         if inspect.iscoroutinefunction(func):
             return async_wrapper
         else:

@@ -8,6 +8,7 @@ from portfolio_manager.infrastructure.data_access.schema_manager import TableDef
 @dataclass(frozen=True)
 class IndexDefinition:
     """Represents a database index definition."""
+
     name: str
     table: str
     columns: list[str]
@@ -18,6 +19,7 @@ class IndexDefinition:
 @dataclass(frozen=True)
 class ViewDefinition:
     """Represents a database view definition."""
+
     name: str
     sql: str
     description: str
@@ -56,44 +58,56 @@ class PortfolioManagerSchema:
             # Asset indexes
             IndexDefinition("idx_assets_type", "assets", ["asset_type"]),
             IndexDefinition("idx_assets_exchange", "assets", ["exchange"]),
-
             # Asset snapshot indexes (time-series optimized)
-            IndexDefinition("idx_snapshots_symbol_time", "asset_snapshots", ["symbol", "timestamp"]),
-            IndexDefinition("idx_snapshots_timestamp", "asset_snapshots", ["timestamp"]),
-
+            IndexDefinition(
+                "idx_snapshots_symbol_time", "asset_snapshots", ["symbol", "timestamp"]
+            ),
+            IndexDefinition(
+                "idx_snapshots_timestamp", "asset_snapshots", ["timestamp"]
+            ),
             # Asset metrics indexes
-            IndexDefinition("idx_metrics_symbol_type", "asset_metrics", ["symbol", "metric_type"]),
+            IndexDefinition(
+                "idx_metrics_symbol_type", "asset_metrics", ["symbol", "metric_type"]
+            ),
             IndexDefinition("idx_metrics_date", "asset_metrics", ["as_of_date"]),
-
             # Portfolio indexes
             IndexDefinition("idx_portfolios_currency", "portfolios", ["base_ccy"]),
-
             # Trades indexes (optimized for portfolio queries)
-            IndexDefinition("idx_trades_portfolio_time", "trades", ["portfolio_id", "timestamp"]),
+            IndexDefinition(
+                "idx_trades_portfolio_time", "trades", ["portfolio_id", "timestamp"]
+            ),
             IndexDefinition("idx_trades_symbol", "trades", ["symbol"]),
             IndexDefinition("idx_trades_timestamp", "trades", ["timestamp"]),
-
             # Position indexes
             IndexDefinition("idx_positions_portfolio", "positions", ["portfolio_id"]),
             IndexDefinition("idx_positions_symbol", "positions", ["symbol"]),
-
             # Strategy scores indexes
-            IndexDefinition("idx_scores_strategy_date", "strategy_scores", ["strategy_name", "as_of_date"]),
+            IndexDefinition(
+                "idx_scores_strategy_date",
+                "strategy_scores",
+                ["strategy_name", "as_of_date"],
+            ),
             IndexDefinition("idx_scores_symbol", "strategy_scores", ["symbol"]),
-
             # Portfolio metrics indexes
-            IndexDefinition("idx_portfolio_metrics_id_date", "portfolio_metrics", ["portfolio_id", "as_of_date"]),
-
+            IndexDefinition(
+                "idx_portfolio_metrics_id_date",
+                "portfolio_metrics",
+                ["portfolio_id", "as_of_date"],
+            ),
             # Risk metrics indexes
-            IndexDefinition("idx_risk_metrics_entity", "risk_metrics", ["entity_id", "entity_type"]),
-
+            IndexDefinition(
+                "idx_risk_metrics_entity", "risk_metrics", ["entity_id", "entity_type"]
+            ),
             # Audit event indexes
             IndexDefinition("idx_audit_timestamp", "audit_events", ["timestamp"]),
             IndexDefinition("idx_audit_entity", "audit_events", ["entity_id"]),
-            IndexDefinition("idx_audit_type_severity", "audit_events", ["event_type", "severity"]),
-
+            IndexDefinition(
+                "idx_audit_type_severity", "audit_events", ["event_type", "severity"]
+            ),
             # Migration tracking
-            IndexDefinition("idx_migrations_version", "schema_migrations", ["version"], unique=True),
+            IndexDefinition(
+                "idx_migrations_version", "schema_migrations", ["version"], unique=True
+            ),
         ]
 
     @classmethod
@@ -116,9 +130,8 @@ class PortfolioManagerSchema:
                 WHERE pos.qty > 0 OR pos.qty IS NULL
                 GROUP BY p.portfolio_id, p.name, p.base_ccy, p.cash_balance
                 """,
-                description="Summary view of all portfolios with position counts and values"
+                description="Summary view of all portfolios with position counts and values",
             ),
-
             ViewDefinition(
                 name="latest_asset_prices",
                 sql="""
@@ -128,9 +141,8 @@ class PortfolioManagerSchema:
                     LAST_VALUE(timestamp) OVER (PARTITION BY symbol ORDER BY timestamp) as price_timestamp
                 FROM asset_snapshots
                 """,
-                description="Latest price for each asset"
+                description="Latest price for each asset",
             ),
-
             ViewDefinition(
                 name="daily_portfolio_performance",
                 sql="""
@@ -143,7 +155,7 @@ class PortfolioManagerSchema:
                 GROUP BY portfolio_id, DATE(timestamp)
                 ORDER BY portfolio_id, date
                 """,
-                description="Daily trading activity and cash flows by portfolio"
+                description="Daily trading activity and cash flows by portfolio",
             ),
         ]
 
@@ -158,7 +170,7 @@ class PortfolioManagerSchema:
                 "asset_type": "VARCHAR NOT NULL CHECK (asset_type IN ('STOCK', 'ETF', 'CRYPTO', 'COMMODITY'))",
                 "name": "VARCHAR NOT NULL",
                 "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
-                "updated_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+                "updated_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
             },
             primary_key=["symbol"],
             foreign_keys={},
@@ -166,8 +178,8 @@ class PortfolioManagerSchema:
             constraints=[
                 "CHECK (length(symbol) > 0)",
                 "CHECK (length(exchange) > 0)",
-                "CHECK (length(name) > 0)"
-            ]
+                "CHECK (length(name) > 0)",
+            ],
         )
 
     @classmethod
@@ -183,20 +195,18 @@ class PortfolioManagerSchema:
                 "low": "DECIMAL(18,6) NOT NULL CHECK (low > 0)",
                 "close": "DECIMAL(18,6) NOT NULL CHECK (close > 0)",
                 "volume": "BIGINT NOT NULL CHECK (volume >= 0)",
-                "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+                "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
             },
             primary_key=["symbol", "timestamp"],
-            foreign_keys={
-                "symbol": "assets.symbol"
-            },
+            foreign_keys={"symbol": "assets.symbol"},
             indexes=[],
             constraints=[
                 "CHECK (high >= low)",
                 "CHECK (high >= open)",
                 "CHECK (high >= close)",
                 "CHECK (low <= open)",
-                "CHECK (low <= close)"
-            ]
+                "CHECK (low <= close)",
+            ],
         )
 
     @classmethod
@@ -211,16 +221,12 @@ class PortfolioManagerSchema:
                 "value": "DECIMAL(18,6) NOT NULL",
                 "as_of_date": "TIMESTAMP NOT NULL",
                 "metadata": "JSON",
-                "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+                "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
             },
             primary_key=["symbol", "metric_name", "as_of_date"],
-            foreign_keys={
-                "symbol": "assets.symbol"
-            },
+            foreign_keys={"symbol": "assets.symbol"},
             indexes=[],
-            constraints=[
-                "CHECK (length(metric_name) > 0)"
-            ]
+            constraints=["CHECK (length(metric_name) > 0)"],
         )
 
     @classmethod
@@ -234,15 +240,12 @@ class PortfolioManagerSchema:
                 "base_ccy": "VARCHAR NOT NULL CHECK (base_ccy IN ('USD', 'EUR', 'RON'))",
                 "cash_balance": "DECIMAL(18,2) NOT NULL CHECK (cash_balance >= 0)",
                 "created_at": "TIMESTAMP NOT NULL",
-                "updated_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+                "updated_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
             },
             primary_key=["portfolio_id"],
             foreign_keys={},
             indexes=[],
-            constraints=[
-                "CHECK (length(name) > 0)",
-                "UNIQUE (name)"
-            ]
+            constraints=["CHECK (length(name) > 0)", "UNIQUE (name)"],
         )
 
     @classmethod
@@ -264,18 +267,15 @@ class PortfolioManagerSchema:
                 "unit": "VARCHAR NOT NULL DEFAULT 'share'",
                 "price_ccy": "VARCHAR NOT NULL",
                 "comment": "TEXT",
-                "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+                "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
             },
             primary_key=["trade_id"],
             foreign_keys={
                 "portfolio_id": "portfolios.portfolio_id",
-                "symbol": "assets.symbol"
+                "symbol": "assets.symbol",
             },
             indexes=[],
-            constraints=[
-                "CHECK (length(unit) > 0)",
-                "CHECK (length(price_ccy) > 0)"
-            ]
+            constraints=["CHECK (length(unit) > 0)", "CHECK (length(price_ccy) > 0)"],
         )
 
     @classmethod
@@ -291,18 +291,15 @@ class PortfolioManagerSchema:
                 "unit": "VARCHAR NOT NULL DEFAULT 'share'",
                 "price_ccy": "VARCHAR NOT NULL",
                 "last_updated": "TIMESTAMP NOT NULL",
-                "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+                "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
             },
             primary_key=["portfolio_id", "symbol"],
             foreign_keys={
                 "portfolio_id": "portfolios.portfolio_id",
-                "symbol": "assets.symbol"
+                "symbol": "assets.symbol",
             },
             indexes=[],
-            constraints=[
-                "CHECK (length(unit) > 0)",
-                "CHECK (length(price_ccy) > 0)"
-            ]
+            constraints=["CHECK (length(unit) > 0)", "CHECK (length(price_ccy) > 0)"],
         )
 
     @classmethod
@@ -316,16 +313,12 @@ class PortfolioManagerSchema:
                 "score": "DECIMAL(8,2) NOT NULL CHECK (score >= 0 AND score <= 100)",
                 "as_of_date": "TIMESTAMP NOT NULL",
                 "metadata": "JSON",
-                "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+                "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
             },
             primary_key=["strategy_name", "symbol", "as_of_date"],
-            foreign_keys={
-                "symbol": "assets.symbol"
-            },
+            foreign_keys={"symbol": "assets.symbol"},
             indexes=[],
-            constraints=[
-                "CHECK (length(strategy_name) > 0)"
-            ]
+            constraints=["CHECK (length(strategy_name) > 0)"],
         )
 
     @classmethod
@@ -339,16 +332,12 @@ class PortfolioManagerSchema:
                 "value": "DECIMAL(18,6) NOT NULL",
                 "as_of_date": "TIMESTAMP NOT NULL",
                 "metadata": "JSON",
-                "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+                "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
             },
             primary_key=["portfolio_id", "metric_name", "as_of_date"],
-            foreign_keys={
-                "portfolio_id": "portfolios.portfolio_id"
-            },
+            foreign_keys={"portfolio_id": "portfolios.portfolio_id"},
             indexes=[],
-            constraints=[
-                "CHECK (length(metric_name) > 0)"
-            ]
+            constraints=["CHECK (length(metric_name) > 0)"],
         )
 
     @classmethod
@@ -363,15 +352,15 @@ class PortfolioManagerSchema:
                 "value": "DECIMAL(18,6) NOT NULL",
                 "as_of_date": "TIMESTAMP NOT NULL",
                 "metadata": "JSON",
-                "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+                "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
             },
             primary_key=["entity_id", "entity_type", "metric_name", "as_of_date"],
             foreign_keys={},
             indexes=[],
             constraints=[
                 "CHECK (length(entity_id) > 0)",
-                "CHECK (length(metric_name) > 0)"
-            ]
+                "CHECK (length(metric_name) > 0)",
+            ],
         )
 
     @classmethod
@@ -389,15 +378,15 @@ class PortfolioManagerSchema:
                 "session_id": "VARCHAR",
                 "timestamp": "TIMESTAMP NOT NULL",
                 "details": "JSON",
-                "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+                "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
             },
             primary_key=["event_id"],
             foreign_keys={},
             indexes=[],
             constraints=[
                 "CHECK (length(event_type) > 0)",
-                "CHECK (length(message) > 0)"
-            ]
+                "CHECK (length(message) > 0)",
+            ],
         )
 
     @classmethod
@@ -412,7 +401,7 @@ class PortfolioManagerSchema:
                 "applied_at": "TIMESTAMP NOT NULL",
                 "checksum": "VARCHAR NOT NULL",
                 "execution_time_ms": "INTEGER",
-                "success": "BOOLEAN NOT NULL DEFAULT TRUE"
+                "success": "BOOLEAN NOT NULL DEFAULT TRUE",
             },
             primary_key=["version"],
             foreign_keys={},
@@ -420,6 +409,6 @@ class PortfolioManagerSchema:
             constraints=[
                 "CHECK (length(name) > 0)",
                 "CHECK (length(checksum) > 0)",
-                "CHECK (execution_time_ms >= 0)"
-            ]
+                "CHECK (execution_time_ms >= 0)",
+            ],
         )

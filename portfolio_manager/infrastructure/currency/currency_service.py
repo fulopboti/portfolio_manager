@@ -11,15 +11,22 @@ from portfolio_manager.domain.services.symbol_mapping import CurrencyCode
 class CurrencyService:
     """Service for currency conversion and exchange rate management."""
 
-    def __init__(self, exchange_rate_provider, cache_repository,
-                 cache_duration_minutes: int = 60, fallback_rates_file: str | None = None):
+    def __init__(
+        self,
+        exchange_rate_provider,
+        cache_repository,
+        cache_duration_minutes: int = 60,
+        fallback_rates_file: str | None = None,
+    ):
         """Initialize currency service with providers."""
         self._exchange_rate_provider = exchange_rate_provider
         self._cache_repository = cache_repository
         self._cache_duration_minutes = cache_duration_minutes
         self._fallback_rates_file = fallback_rates_file
 
-    async def get_exchange_rate(self, from_currency: CurrencyCode, to_currency: CurrencyCode) -> Decimal | None:
+    async def get_exchange_rate(
+        self, from_currency: CurrencyCode, to_currency: CurrencyCode
+    ) -> Decimal | None:
         """Get exchange rate between two currencies."""
         if not from_currency or not to_currency:
             return None
@@ -30,7 +37,9 @@ class CurrencyService:
 
         # Check cache first
         try:
-            cached_rate = await self._cache_repository.get_cached_rate(from_currency, to_currency)
+            cached_rate = await self._cache_repository.get_cached_rate(
+                from_currency, to_currency
+            )
             if cached_rate is not None:
                 return cached_rate
         except Exception:
@@ -38,7 +47,9 @@ class CurrencyService:
 
         # Check reverse rate in cache
         try:
-            reverse_rate = await self._cache_repository.get_cached_rate(to_currency, from_currency)
+            reverse_rate = await self._cache_repository.get_cached_rate(
+                to_currency, from_currency
+            )
             if reverse_rate is not None and reverse_rate != Decimal("0"):
                 forward_rate = Decimal("1.0000") / reverse_rate
                 return forward_rate
@@ -47,11 +58,15 @@ class CurrencyService:
 
         # Get from provider
         try:
-            provider_rate = await self._exchange_rate_provider.get_exchange_rate(from_currency, to_currency)
+            provider_rate = await self._exchange_rate_provider.get_exchange_rate(
+                from_currency, to_currency
+            )
             if provider_rate is not None:
                 # Cache the result
                 try:
-                    await self._cache_repository.cache_rate(from_currency, to_currency, provider_rate)
+                    await self._cache_repository.cache_rate(
+                        from_currency, to_currency, provider_rate
+                    )
                 except Exception:
                     pass  # Don't fail if caching fails
 
@@ -66,8 +81,12 @@ class CurrencyService:
 
         return None
 
-    async def convert_amount(self, amount: Decimal | None, from_currency: CurrencyCode | None,
-                           to_currency: CurrencyCode | None) -> Decimal | None:
+    async def convert_amount(
+        self,
+        amount: Decimal | None,
+        from_currency: CurrencyCode | None,
+        to_currency: CurrencyCode | None,
+    ) -> Decimal | None:
         """Convert amount between currencies."""
         if amount is None or from_currency is None or to_currency is None:
             return None
@@ -84,8 +103,13 @@ class CurrencyService:
 
         return None
 
-    async def get_historical_rates(self, from_currency: CurrencyCode, to_currency: CurrencyCode,
-                                 start_date: datetime | None, end_date: datetime | None) -> list[dict]:
+    async def get_historical_rates(
+        self,
+        from_currency: CurrencyCode,
+        to_currency: CurrencyCode,
+        start_date: datetime | None,
+        end_date: datetime | None,
+    ) -> list[dict]:
         """Get historical exchange rates."""
         if not from_currency or not to_currency or not start_date or not end_date:
             return []
@@ -98,10 +122,12 @@ class CurrencyService:
             rates = []
             current_date = start_date
             while current_date <= end_date:
-                rates.append({
-                    "date": current_date.strftime("%Y-%m-%d"),
-                    "rate": Decimal("1.0000")
-                })
+                rates.append(
+                    {
+                        "date": current_date.strftime("%Y-%m-%d"),
+                        "rate": Decimal("1.0000"),
+                    }
+                )
                 current_date += timedelta(days=1)
             return rates
 
@@ -115,10 +141,12 @@ class CurrencyService:
             processed_rates = []
             for rate_data in historical_rates:
                 try:
-                    processed_rates.append({
-                        "date": rate_data["date"],
-                        "rate": Decimal(str(rate_data["rate"]))
-                    })
+                    processed_rates.append(
+                        {
+                            "date": rate_data["date"],
+                            "rate": Decimal(str(rate_data["rate"])),
+                        }
+                    )
                 except (KeyError, InvalidOperation):
                     continue
 
@@ -130,7 +158,9 @@ class CurrencyService:
     async def get_supported_currencies(self) -> list[CurrencyCode]:
         """Get list of supported currencies."""
         try:
-            currency_strings = await self._exchange_rate_provider.get_supported_currencies()
+            currency_strings = (
+                await self._exchange_rate_provider.get_supported_currencies()
+            )
             currencies = []
             for curr_str in currency_strings:
                 try:
@@ -141,12 +171,21 @@ class CurrencyService:
         except Exception:
             # Return default major currencies
             return [
-                CurrencyCode.USD, CurrencyCode.EUR, CurrencyCode.GBP, CurrencyCode.JPY,
-                CurrencyCode.CAD, CurrencyCode.AUD, CurrencyCode.CHF, CurrencyCode.CNY,
-                CurrencyCode.HKD, CurrencyCode.SGD
+                CurrencyCode.USD,
+                CurrencyCode.EUR,
+                CurrencyCode.GBP,
+                CurrencyCode.JPY,
+                CurrencyCode.CAD,
+                CurrencyCode.AUD,
+                CurrencyCode.CHF,
+                CurrencyCode.CNY,
+                CurrencyCode.HKD,
+                CurrencyCode.SGD,
             ]
 
-    async def batch_convert_amounts(self, conversion_requests: list[tuple[Decimal, CurrencyCode, CurrencyCode]]) -> list[Decimal | None]:
+    async def batch_convert_amounts(
+        self, conversion_requests: list[tuple[Decimal, CurrencyCode, CurrencyCode]]
+    ) -> list[Decimal | None]:
         """Convert multiple amounts in batch."""
         results = []
         for amount, from_currency, to_currency in conversion_requests:
@@ -177,7 +216,9 @@ class CurrencyService:
 
     def _load_fallback_rates(self) -> dict[str, str]:
         """Load fallback exchange rates from file."""
-        if not self._fallback_rates_file or not os.path.exists(self._fallback_rates_file):
+        if not self._fallback_rates_file or not os.path.exists(
+            self._fallback_rates_file
+        ):
             return {}
 
         try:
@@ -186,7 +227,9 @@ class CurrencyService:
         except (OSError, json.JSONDecodeError):
             return {}
 
-    def _get_fallback_rate(self, from_currency: CurrencyCode, to_currency: CurrencyCode) -> Decimal | None:
+    def _get_fallback_rate(
+        self, from_currency: CurrencyCode, to_currency: CurrencyCode
+    ) -> Decimal | None:
         """Get fallback exchange rate."""
         fallback_rates = self._load_fallback_rates()
 

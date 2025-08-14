@@ -40,7 +40,9 @@ def get_database_url() -> str:
     Returns:
         Database connection URL
     """
-    db_path = config.get("database.connection.database_path", "./data/portfolio_manager.db")
+    db_path = config.get(
+        "database.connection.database_path", "./data/portfolio_manager.db"
+    )
     if db_path == ":memory:":
         return "duckdb:///:memory:"
     return f"duckdb:///{db_path}"
@@ -57,19 +59,14 @@ def get_log_config() -> dict:
 
     # Convert our config format to Python logging dictConfig format
     handlers = {}
-    loggers = {
-        "root": {
-            "level": log_config.get("level", "INFO"),
-            "handlers": []
-        }
-    }
+    loggers = {"root": {"level": log_config.get("level", "INFO"), "handlers": []}}
 
     # Console handler
     if log_config.get("handlers", {}).get("console", {}).get("enabled", True):
         handlers["console"] = {
             "class": "logging.StreamHandler",
             "level": log_config.get("level", "INFO"),
-            "formatter": "default"
+            "formatter": "default",
         }
         loggers["root"]["handlers"].append("console")
 
@@ -82,7 +79,7 @@ def get_log_config() -> dict:
             "formatter": "default",
             "filename": file_config.get("path", "./logs/portfolio_manager.log"),
             "maxBytes": _parse_size(file_config.get("max_size", "10MB")),
-            "backupCount": file_config.get("backup_count", 5)
+            "backupCount": file_config.get("backup_count", 5),
         }
         loggers["root"]["handlers"].append("file")
 
@@ -91,11 +88,13 @@ def get_log_config() -> dict:
         "disable_existing_loggers": False,
         "formatters": {
             "default": {
-                "format": log_config.get("format", "%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+                "format": log_config.get(
+                    "format", "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+                )
             }
         },
         "handlers": handlers,
-        "loggers": loggers
+        "loggers": loggers,
     }
 
 
@@ -110,16 +109,11 @@ def _parse_size(size_str: str) -> int:
         Size in bytes
     """
     size_str = size_str.upper()
-    multipliers = {
-        'B': 1,
-        'KB': 1024,
-        'MB': 1024 * 1024,
-        'GB': 1024 * 1024 * 1024
-    }
+    multipliers = {"B": 1, "KB": 1024, "MB": 1024 * 1024, "GB": 1024 * 1024 * 1024}
 
     for suffix, multiplier in multipliers.items():
         if size_str.endswith(suffix):
-            return int(float(size_str[:-len(suffix)]) * multiplier)
+            return int(float(size_str[: -len(suffix)]) * multiplier)
 
     # Default to bytes if no suffix
     return int(size_str)

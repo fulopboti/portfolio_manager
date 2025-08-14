@@ -81,27 +81,35 @@ class StrategyScoreService(ExceptionBasedService):
                     continue
 
                 # Get fundamental metrics
-                fundamentals = await self.asset_repository.get_fundamental_metrics(asset.symbol)
+                fundamentals = await self.asset_repository.get_fundamental_metrics(
+                    asset.symbol
+                )
                 if not fundamentals or not calculator.validate_metrics(fundamentals):
                     continue
 
                 # Calculate score
                 score = calculator.calculate_score(asset, snapshot, fundamentals)
 
-                results.append(StrategyScore(
-                    symbol=asset.symbol,
-                    strategy_id=strategy_id,
-                    score=score,
-                    timestamp=calculation_time,
-                ))
+                results.append(
+                    StrategyScore(
+                        symbol=asset.symbol,
+                        strategy_id=strategy_id,
+                        score=score,
+                        timestamp=calculation_time,
+                    )
+                )
 
             except (StrategyCalculationError, DataAccessError) as e:
                 # Skip assets that fail calculation, but log the error
-                self._logger.warning(f"Failed to calculate strategy score for {asset.symbol}: {e}")
+                self._logger.warning(
+                    f"Failed to calculate strategy score for {asset.symbol}: {e}"
+                )
                 continue
             except Exception as e:
                 # Unexpected errors - log and wrap in domain exception
-                self._logger.error(f"Unexpected error calculating score for {asset.symbol}: {e}")
+                self._logger.error(
+                    f"Unexpected error calculating score for {asset.symbol}: {e}"
+                )
                 # Continue processing other assets but log the unexpected error
                 continue
 
@@ -144,15 +152,15 @@ class StrategyScoreService(ExceptionBasedService):
         trades = []  # Placeholder for backtest trades
 
         # Calculate simple performance metrics
-        final_value = initial_capital * Decimal('1.05')  # Placeholder 5% return
+        final_value = initial_capital * Decimal("1.05")  # Placeholder 5% return
         total_return = (final_value - initial_capital) / initial_capital
 
         performance_metrics = {
             "total_return": total_return,
-            "annualized_return": total_return * Decimal('12'),  # Simplified
-            "volatility": Decimal('0.15'),  # Placeholder
-            "sharpe_ratio": Decimal('1.2'),  # Placeholder
-            "max_drawdown": Decimal('-0.08'),  # Placeholder
+            "annualized_return": total_return * Decimal("12"),  # Simplified
+            "volatility": Decimal("0.15"),  # Placeholder
+            "sharpe_ratio": Decimal("1.2"),  # Placeholder
+            "max_drawdown": Decimal("-0.08"),  # Placeholder
         }
 
         return BacktestResult(

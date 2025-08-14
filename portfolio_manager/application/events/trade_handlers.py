@@ -56,7 +56,9 @@ class TradeExecutedEventHandler(EventHandler):
         """
         try:
             # Get portfolio
-            portfolio = await self.portfolio_repository.get_portfolio(event.portfolio_id)
+            portfolio = await self.portfolio_repository.get_portfolio(
+                event.portfolio_id
+            )
             if not portfolio:
                 raise ValueError(f"Portfolio {event.portfolio_id} not found")
 
@@ -81,7 +83,9 @@ class TradeExecutedEventHandler(EventHandler):
             self._logger.error(f"Failed to process trade {event.trade_id}: {e}")
             raise
 
-    async def _handle_buy_trade(self, event: TradeExecutedEvent, portfolio: Portfolio) -> None:
+    async def _handle_buy_trade(
+        self, event: TradeExecutedEvent, portfolio: Portfolio
+    ) -> None:
         """
         Handle a buy trade by creating or updating positions.
 
@@ -118,11 +122,13 @@ class TradeExecutedEventHandler(EventHandler):
                 avg_cost=event.price,
                 unit="share",
                 price_ccy="USD",
-                last_updated=event.timestamp
+                last_updated=event.timestamp,
             )
             await self.position_repository.save_position(new_position)
 
-    async def _handle_sell_trade(self, event: TradeExecutedEvent, portfolio: Portfolio) -> None:
+    async def _handle_sell_trade(
+        self, event: TradeExecutedEvent, portfolio: Portfolio
+    ) -> None:
         """
         Handle a sell trade by reducing or closing positions.
 
@@ -149,14 +155,18 @@ class TradeExecutedEventHandler(EventHandler):
         # Reduce or close position
         if existing_position.qty == event.quantity:
             # Close position completely
-            await self.position_repository.delete_position(event.portfolio_id, event.symbol)
+            await self.position_repository.delete_position(
+                event.portfolio_id, event.symbol
+            )
         else:
             # Reduce position
             existing_position.reduce_shares(event.quantity)
             existing_position.last_updated = event.timestamp
             await self.position_repository.save_position(existing_position)
 
-    async def _update_portfolio_cash(self, event: TradeExecutedEvent, portfolio: Portfolio) -> None:
+    async def _update_portfolio_cash(
+        self, event: TradeExecutedEvent, portfolio: Portfolio
+    ) -> None:
         """
         Update portfolio cash based on the trade.
 
@@ -211,5 +221,7 @@ class PortfolioMetricsEventHandler(EventHandler):
             self._logger.info(f"Updated metrics for portfolio {event.portfolio_id}")
 
         except Exception as e:
-            self._logger.error(f"Failed to update metrics for portfolio {event.portfolio_id}: {e}")
+            self._logger.error(
+                f"Failed to update metrics for portfolio {event.portfolio_id}: {e}"
+            )
             # Don't re-raise - metrics failures should not break trade processing

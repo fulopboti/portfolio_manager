@@ -9,6 +9,7 @@ from uuid import UUID
 
 class AuditEventType(Enum):
     """Types of audit events that can be logged."""
+
     USER_LOGIN = "user_login"
     USER_LOGOUT = "user_logout"
     DATA_INGESTION = "data_ingestion"
@@ -28,6 +29,7 @@ class AuditEventType(Enum):
 
 class AuditSeverity(Enum):
     """Severity levels for audit events."""
+
     DEBUG = "debug"
     INFO = "info"
     WARNING = "warning"
@@ -52,7 +54,7 @@ class AuditDataAccess(ABC):
         entity_id: str | None = None,
         user_id: str | None = None,
         session_id: str | None = None,
-        details: dict[str, Any] | None = None
+        details: dict[str, Any] | None = None,
     ) -> UUID:
         """Log an audit event.
 
@@ -74,10 +76,7 @@ class AuditDataAccess(ABC):
         pass
 
     @abstractmethod
-    async def log_events_batch(
-        self,
-        events: list[dict[str, Any]]
-    ) -> list[UUID]:
+    async def log_events_batch(self, events: list[dict[str, Any]]) -> list[UUID]:
         """Log multiple audit events in a single batch.
 
         Args:
@@ -114,7 +113,7 @@ class AuditDataAccess(ABC):
         entity_id: str | None = None,
         user_id: str | None = None,
         limit: int | None = None,
-        offset: int | None = None
+        offset: int | None = None,
     ) -> list[dict[str, Any]]:
         """Query audit events with various filters.
 
@@ -138,7 +137,7 @@ class AuditDataAccess(ABC):
         self,
         entity_id: str,
         event_types: list[AuditEventType] | None = None,
-        limit: int | None = None
+        limit: int | None = None,
     ) -> list[dict[str, Any]]:
         """Get all audit events for a specific entity.
 
@@ -154,9 +153,7 @@ class AuditDataAccess(ABC):
 
     @abstractmethod
     async def get_recent_events(
-        self,
-        hours: int = 24,
-        severity_levels: list[AuditSeverity] | None = None
+        self, hours: int = 24, severity_levels: list[AuditSeverity] | None = None
     ) -> list[dict[str, Any]]:
         """Get recent audit events within the specified time window.
 
@@ -178,7 +175,7 @@ class AuditDataAccess(ABC):
         stack_trace: str | None = None,
         entity_id: str | None = None,
         user_id: str | None = None,
-        context: dict[str, Any] | None = None
+        context: dict[str, Any] | None = None,
     ) -> UUID:
         """Log an error event with detailed information.
 
@@ -197,9 +194,7 @@ class AuditDataAccess(ABC):
 
     @abstractmethod
     async def get_error_summary(
-        self,
-        start_date: datetime,
-        end_date: datetime
+        self, start_date: datetime, end_date: datetime
     ) -> dict[str, Any]:
         """Get summary statistics for errors in a time period.
 
@@ -213,10 +208,7 @@ class AuditDataAccess(ABC):
         pass
 
     @abstractmethod
-    async def get_error_patterns(
-        self,
-        days: int = 7
-    ) -> list[dict[str, Any]]:
+    async def get_error_patterns(self, days: int = 7) -> list[dict[str, Any]]:
         """Analyze error patterns to identify recurring issues.
 
         Args:
@@ -234,7 +226,7 @@ class AuditDataAccess(ABC):
         operation_name: str,
         duration_ms: float,
         success: bool,
-        details: dict[str, Any] | None = None
+        details: dict[str, Any] | None = None,
     ) -> UUID:
         """Log a performance metric for an operation.
 
@@ -251,10 +243,7 @@ class AuditDataAccess(ABC):
 
     @abstractmethod
     async def get_performance_stats(
-        self,
-        operation_name: str,
-        start_date: datetime,
-        end_date: datetime
+        self, operation_name: str, start_date: datetime, end_date: datetime
     ) -> dict[str, Any]:
         """Get performance statistics for an operation.
 
@@ -270,9 +259,7 @@ class AuditDataAccess(ABC):
 
     @abstractmethod
     async def get_slow_operations(
-        self,
-        threshold_ms: float,
-        hours: int = 24
+        self, threshold_ms: float, hours: int = 24
     ) -> list[dict[str, Any]]:
         """Get operations that exceeded performance thresholds.
 
@@ -288,9 +275,7 @@ class AuditDataAccess(ABC):
     # Session Tracking
     @abstractmethod
     async def start_session(
-        self,
-        user_id: str | None = None,
-        client_info: dict[str, Any] | None = None
+        self, user_id: str | None = None, client_info: dict[str, Any] | None = None
     ) -> str:
         """Start a new user/system session.
 
@@ -323,9 +308,7 @@ class AuditDataAccess(ABC):
 
     @abstractmethod
     async def get_session_history(
-        self,
-        user_id: str | None = None,
-        days: int = 30
+        self, user_id: str | None = None, days: int = 30
     ) -> list[dict[str, Any]]:
         """Get session history for analysis.
 
@@ -353,9 +336,7 @@ class AuditDataAccess(ABC):
 
     @abstractmethod
     async def archive_events(
-        self,
-        before_date: datetime,
-        archive_path: str | None = None
+        self, before_date: datetime, archive_path: str | None = None
     ) -> int:
         """Archive old events to external storage.
 
@@ -380,10 +361,7 @@ class AuditDataAccess(ABC):
     # Reporting and Analytics
     @abstractmethod
     async def generate_activity_report(
-        self,
-        start_date: datetime,
-        end_date: datetime,
-        user_id: str | None = None
+        self, start_date: datetime, end_date: datetime, user_id: str | None = None
     ) -> dict[str, Any]:
         """Generate activity report for a time period.
 
@@ -398,10 +376,7 @@ class AuditDataAccess(ABC):
         pass
 
     @abstractmethod
-    async def get_usage_patterns(
-        self,
-        days: int = 30
-    ) -> dict[str, Any]:
+    async def get_usage_patterns(self, days: int = 30) -> dict[str, Any]:
         """Analyze usage patterns to identify trends.
 
         Args:
@@ -413,10 +388,7 @@ class AuditDataAccess(ABC):
         pass
 
     @abstractmethod
-    async def get_security_events(
-        self,
-        hours: int = 24
-    ) -> list[dict[str, Any]]:
+    async def get_security_events(self, hours: int = 24) -> list[dict[str, Any]]:
         """Get security-related events for monitoring.
 
         Args:

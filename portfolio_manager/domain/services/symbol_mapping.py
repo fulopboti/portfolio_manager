@@ -41,7 +41,7 @@ class ExchangeInfo:
     currency: CurrencyCode
     trading_hours: str = ""
     lot_size: int = 1
-    tick_size: Decimal = field(default_factory=lambda: Decimal('0.01'))
+    tick_size: Decimal = field(default_factory=lambda: Decimal("0.01"))
 
 
 @dataclass

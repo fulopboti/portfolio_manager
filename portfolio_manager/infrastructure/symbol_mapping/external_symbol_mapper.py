@@ -15,8 +15,14 @@ from portfolio_manager.domain.services.symbol_mapping import (
 class ExternalSymbolMapper(SymbolMappingService):
     """External API-backed symbol mapping service."""
 
-    def __init__(self, api_base_url: str, api_key: str, http_client,
-                 request_timeout: float = 10.0, max_retries: int = 2):
+    def __init__(
+        self,
+        api_base_url: str,
+        api_key: str,
+        http_client,
+        request_timeout: float = 10.0,
+        max_retries: int = 2,
+    ):
         """Initialize with API configuration."""
         self._api_base_url = api_base_url
         self._api_key = api_key
@@ -35,9 +41,7 @@ class ExternalSymbolMapper(SymbolMappingService):
         for attempt in range(self._max_retries + 1):
             try:
                 response = await self._http_client.get(
-                    url,
-                    headers=headers,
-                    timeout=self._request_timeout
+                    url, headers=headers, timeout=self._request_timeout
                 )
 
                 if response.status_code == 200:
@@ -63,7 +67,12 @@ class ExternalSymbolMapper(SymbolMappingService):
 
     async def get_provider_symbol(self, symbol: str, provider: str) -> str | None:
         """Get provider-specific symbol from external API."""
-        if not symbol or not provider or not isinstance(symbol, str) or not isinstance(provider, str):
+        if (
+            not symbol
+            or not provider
+            or not isinstance(symbol, str)
+            or not isinstance(provider, str)
+        ):
             return None
 
         url = f"{self._api_base_url}/symbols/{symbol}/providers/{provider}"
@@ -72,9 +81,7 @@ class ExternalSymbolMapper(SymbolMappingService):
         for attempt in range(self._max_retries + 1):
             try:
                 response = await self._http_client.get(
-                    url,
-                    headers=headers,
-                    timeout=self._request_timeout
+                    url, headers=headers, timeout=self._request_timeout
                 )
 
                 if response.status_code == 200:
@@ -96,7 +103,9 @@ class ExternalSymbolMapper(SymbolMappingService):
 
         return None
 
-    async def search_by_company(self, company_name: str, limit: int = 10) -> list[SymbolMapping]:
+    async def search_by_company(
+        self, company_name: str, limit: int = 10
+    ) -> list[SymbolMapping]:
         """Search symbols by company name via external API."""
         if not company_name or not isinstance(company_name, str):
             return []
@@ -111,10 +120,7 @@ class ExternalSymbolMapper(SymbolMappingService):
 
         try:
             response = await self._http_client.get(
-                url,
-                params=params,
-                headers=headers,
-                timeout=self._request_timeout
+                url, params=params, headers=headers, timeout=self._request_timeout
             )
 
             if response.status_code == 200:
@@ -166,7 +172,7 @@ class ExternalSymbolMapper(SymbolMappingService):
                 sector=data.get("sector"),
                 market_cap_usd=self._safe_decimal(data.get("market_cap")),
                 exchanges=exchanges,
-                providers=providers
+                providers=providers,
             )
 
         except Exception:
@@ -186,7 +192,8 @@ class ExternalSymbolMapper(SymbolMappingService):
                 currency=self._parse_currency_code(data["currency"]),
                 trading_hours=data.get("trading_hours", ""),
                 lot_size=data.get("lot_size", 1),
-                tick_size=self._safe_decimal(data.get("tick_size", "0.01")) or Decimal("0.01")
+                tick_size=self._safe_decimal(data.get("tick_size", "0.01"))
+                or Decimal("0.01"),
             )
 
         except Exception:
@@ -203,7 +210,7 @@ class ExternalSymbolMapper(SymbolMappingService):
                 symbol=data["symbol"],
                 provider=data["provider"],
                 supports_fundamentals=data.get("supports_fundamentals", True),
-                supports_realtime=data.get("supports_realtime", False)
+                supports_realtime=data.get("supports_realtime", False),
             )
 
         except Exception:

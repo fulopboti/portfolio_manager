@@ -54,8 +54,10 @@ class DuckDBConfig:
             memory_limit=os.getenv("DUCKDB_MEMORY_LIMIT", cls.memory_limit),
             threads=int(os.getenv("DUCKDB_THREADS", str(cls.threads))),
             timezone=os.getenv("DUCKDB_TIMEZONE", cls.timezone),
-            enable_optimizer=os.getenv("DUCKDB_ENABLE_OPTIMIZER", "true").lower() == "true",
-            enable_profiling=os.getenv("DUCKDB_ENABLE_PROFILING", "false").lower() == "true",
+            enable_optimizer=os.getenv("DUCKDB_ENABLE_OPTIMIZER", "true").lower()
+            == "true",
+            enable_profiling=os.getenv("DUCKDB_ENABLE_PROFILING", "false").lower()
+            == "true",
             read_only=os.getenv("DUCKDB_READ_ONLY", "false").lower() == "true",
             pragmas=json.loads(os.getenv("DUCKDB_PRAGMAS", "{}")) or None,
         )

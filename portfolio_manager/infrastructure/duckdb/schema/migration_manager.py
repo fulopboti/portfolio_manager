@@ -48,19 +48,23 @@ class DuckDBMigrationManager(MigrationManager):
 
         except Exception as e:
             logger.error(f"Failed to initialize migration tracking: {str(e)}")
-            raise MigrationError(f"Cannot initialize migration tracking: {str(e)}") from e
+            raise MigrationError(
+                f"Cannot initialize migration tracking: {str(e)}"
+            ) from e
 
     async def get_applied_migrations(self) -> list[str]:
         """Get list of migration versions that have been applied."""
         try:
             await self.initialize_migration_tracking()
 
-            result = await self.query_executor.execute_query("""
+            result = await self.query_executor.execute_query(
+                """
                 SELECT version
                 FROM schema_migrations
                 WHERE success = true
                 ORDER BY applied_at ASC
-            """)
+            """
+            )
 
             return [row["version"] for row in result.rows]
 
@@ -81,38 +85,48 @@ class DuckDBMigrationManager(MigrationManager):
             await self.query_executor.execute_command(migration.up_sql)
 
             # Record the migration as applied
-            await self.query_executor.execute_command("""
+            await self.query_executor.execute_command(
+                """
                 INSERT INTO schema_migrations
                 (version, name, migration_type, applied_at, checksum, success)
                 VALUES ($version, $name, $migration_type, CURRENT_TIMESTAMP, $checksum, true)
-            """, {
-                "version": migration.version,
-                "name": migration.name,
-                "migration_type": migration.migration_type.value,
-                "checksum": migration.checksum
-            })
+            """,
+                {
+                    "version": migration.version,
+                    "name": migration.name,
+                    "migration_type": migration.migration_type.value,
+                    "checksum": migration.checksum,
+                },
+            )
 
             logger.info(f"Applied migration: {migration.get_migration_id()}")
 
         except Exception as e:
-            logger.error(f"Failed to apply migration {migration.get_migration_id()}: {str(e)}")
+            logger.error(
+                f"Failed to apply migration {migration.get_migration_id()}: {str(e)}"
+            )
 
             # Try to record the failure
             try:
-                await self.query_executor.execute_command("""
+                await self.query_executor.execute_command(
+                    """
                     INSERT INTO schema_migrations
                     (version, name, migration_type, applied_at, checksum, success)
                     VALUES ($version, $name, $migration_type, CURRENT_TIMESTAMP, $checksum, false)
-                """, {
-                    "version": migration.version,
-                    "name": migration.name,
-                    "migration_type": migration.migration_type.value,
-                    "checksum": migration.checksum
-                })
+                """,
+                    {
+                        "version": migration.version,
+                        "name": migration.name,
+                        "migration_type": migration.migration_type.value,
+                        "checksum": migration.checksum,
+                    },
+                )
             except Exception:
                 pass  # Ignore failure to record failure
 
-            raise MigrationError(f"Failed to apply migration {migration.get_migration_id()}: {str(e)}") from e
+            raise MigrationError(
+                f"Failed to apply migration {migration.get_migration_id()}: {str(e)}"
+            ) from e
 
     async def rollback_migration(self, migration: Migration) -> None:
         """Rollback a single migration from the database."""
@@ -121,22 +135,31 @@ class DuckDBMigrationManager(MigrationManager):
             await self.query_executor.execute_command(migration.down_sql)
 
             # Remove the migration record
-            await self.query_executor.execute_command("""
+            await self.query_executor.execute_command(
+                """
                 DELETE FROM schema_migrations
                 WHERE version = $version
-            """, {"version": migration.version})
+            """,
+                {"version": migration.version},
+            )
 
             logger.info(f"Rolled back migration: {migration.get_migration_id()}")
 
         except Exception as e:
-            logger.error(f"Failed to rollback migration {migration.get_migration_id()}: {str(e)}")
-            raise MigrationError(f"Failed to rollback migration {migration.get_migration_id()}: {str(e)}") from e
+            logger.error(
+                f"Failed to rollback migration {migration.get_migration_id()}: {str(e)}"
+            )
+            raise MigrationError(
+                f"Failed to rollback migration {migration.get_migration_id()}: {str(e)}"
+            ) from e
 
     async def migrate_to_version(self, target_version: str | None = None) -> None:
         """Migrate database to a specific version."""
         # Basic implementation - just log the intent
         if target_version:
-            logger.info(f"Migration to version {target_version} requested (not implemented)")
+            logger.info(
+                f"Migration to version {target_version} requested (not implemented)"
+            )
         else:
             logger.info("Migration to latest version requested (not implemented)")
 
@@ -146,11 +169,13 @@ class DuckDBMigrationManager(MigrationManager):
             await self.initialize_migration_tracking()
 
             # Basic check - ensure all recorded migrations have success=true
-            result = await self.query_executor.execute_query("""
+            result = await self.query_executor.execute_query(
+                """
                 SELECT COUNT(*) as failed_count
                 FROM schema_migrations
                 WHERE success = false
-            """)
+            """
+            )
 
             failed_count = result.rows[0]["failed_count"] if result.rows else 0
             return failed_count == 0

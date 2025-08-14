@@ -47,12 +47,14 @@ class DuckDBSchemaManager(SchemaManager):
 
             # Apply DuckDB optimizations
             optimization_sql = self.table_builder.optimize_for_analytics()
-            for line in optimization_sql.split('\n'):
-                if line.strip() and not line.strip().startswith('--'):
+            for line in optimization_sql.split("\n"):
+                if line.strip() and not line.strip().startswith("--"):
                     try:
                         await self.query_executor.execute_command(line.strip())
                     except Exception as e:
-                        logger.warning(f"Optimization setting failed: {line.strip()} - {str(e)}")
+                        logger.warning(
+                            f"Optimization setting failed: {line.strip()} - {str(e)}"
+                        )
 
             # Create tables in dependency order
             table_creation_order = self.table_builder.get_table_creation_order(tables)
@@ -67,7 +69,9 @@ class DuckDBSchemaManager(SchemaManager):
 
             # Skip foreign key constraints - DuckDB has limited support
             # Foreign keys will be handled in future refactoring iterations
-            logger.debug("Skipping foreign key constraint creation - limited DuckDB support")
+            logger.debug(
+                "Skipping foreign key constraint creation - limited DuckDB support"
+            )
 
             # Create indexes
             for index_def in indexes:
@@ -81,7 +85,9 @@ class DuckDBSchemaManager(SchemaManager):
             # Create views
             for view_def in views:
                 try:
-                    view_sql = self.table_builder.build_create_view_sql(view_def.name, view_def.sql)
+                    view_sql = self.table_builder.build_create_view_sql(
+                        view_def.name, view_def.sql
+                    )
                     logger.debug(f"Creating view: {view_def.name}")
                     await self.query_executor.execute_command(view_sql)
                 except Exception as e:
@@ -127,7 +133,9 @@ class DuckDBSchemaManager(SchemaManager):
 
             for table_name in drop_order:
                 try:
-                    drop_sql = self.table_builder.build_drop_table_sql(table_name, cascade=True)
+                    drop_sql = self.table_builder.build_drop_table_sql(
+                        table_name, cascade=True
+                    )
                     await self.query_executor.execute_command(drop_sql)
                     logger.debug(f"Dropped table: {table_name}")
                 except Exception as e:
@@ -163,7 +171,7 @@ class DuckDBSchemaManager(SchemaManager):
                 "version": version,
                 "table_count": len(tables),
                 "tables": sorted(tables),
-                "schema_exists": len(tables) > 0
+                "schema_exists": len(tables) > 0,
             }
         except Exception as e:
             logger.error(f"Failed to get schema info: {str(e)}")
@@ -180,13 +188,15 @@ class DuckDBSchemaManager(SchemaManager):
                 return None
 
             # Get latest migration version
-            result = await self.query_executor.execute_query("""
+            result = await self.query_executor.execute_query(
+                """
                 SELECT version
                 FROM schema_migrations
                 WHERE success = true
                 ORDER BY applied_at DESC
                 LIMIT 1
-            """)
+            """
+            )
 
             if result.rows:
                 self._current_version = result.rows[0]["version"]
@@ -210,22 +220,28 @@ class DuckDBSchemaManager(SchemaManager):
             # Check if version already exists using parameterized query
             existing = await self.query_executor.execute_query(
                 "SELECT COUNT(*) as count FROM schema_migrations WHERE version = $version",
-                {"version": version}
+                {"version": version},
             )
 
             if existing.rows[0]["count"] == 0:
                 # Insert new version record
-                await self.query_executor.execute_command("""
+                await self.query_executor.execute_command(
+                    """
                     INSERT INTO schema_migrations (version, name, migration_type, applied_at, checksum, success)
                     VALUES ($version, 'schema_creation', 'SCHEMA_INIT', CURRENT_TIMESTAMP, 'initial', true)
-                """, {"version": version})
+                """,
+                    {"version": version},
+                )
             else:
                 # Update existing record
-                await self.query_executor.execute_command("""
+                await self.query_executor.execute_command(
+                    """
                     UPDATE schema_migrations
                     SET applied_at = CURRENT_TIMESTAMP, success = true
                     WHERE version = $version
-                """, {"version": version})
+                """,
+                    {"version": version},
+                )
 
             self._current_version = version
             logger.debug(f"Schema version set to: {version}")
@@ -265,7 +281,7 @@ class DuckDBSchemaManager(SchemaManager):
                 primary_key=[],  # Would need more complex logic to determine
                 foreign_keys={},  # Would need more complex logic to determine
                 indexes=index_names,
-                constraints=[]  # Would need more complex logic to determine
+                constraints=[],  # Would need more complex logic to determine
             )
 
         except Exception as e:
@@ -281,7 +297,9 @@ class DuckDBSchemaManager(SchemaManager):
             # Skip foreign keys for now as DuckDB has limited support
             # Foreign key constraints will be handled in future iterations
             if definition.foreign_keys:
-                logger.debug(f"Skipping foreign key creation for {definition.name} - not fully supported in DuckDB")
+                logger.debug(
+                    f"Skipping foreign key creation for {definition.name} - not fully supported in DuckDB"
+                )
 
             logger.info(f"Created table: {definition.name}")
 
@@ -307,7 +325,9 @@ class DuckDBSchemaManager(SchemaManager):
             sql_statements = {}
 
             for table_name, table_def in tables.items():
-                sql_statements[table_name] = self.table_builder.build_create_table_sql(table_def)
+                sql_statements[table_name] = self.table_builder.build_create_table_sql(
+                    table_def
+                )
 
             return sql_statements
 
@@ -323,7 +343,9 @@ class DuckDBSchemaManager(SchemaManager):
         """
         try:
             expected_tables = PortfolioManagerSchema.get_all_tables()
-            validation_results = await self.inspector.validate_schema_integrity(expected_tables)
+            validation_results = await self.inspector.validate_schema_integrity(
+                expected_tables
+            )
 
             # Add statistics
             stats = await self.inspector.get_database_statistics()
@@ -335,10 +357,10 @@ class DuckDBSchemaManager(SchemaManager):
 
             # Overall status
             has_issues = (
-                validation_results["missing_tables"] or
-                validation_results["extra_tables"] or
-                validation_results["column_mismatches"] or
-                integrity_violations
+                validation_results["missing_tables"]
+                or validation_results["extra_tables"]
+                or validation_results["column_mismatches"]
+                or integrity_violations
             )
 
             validation_results["status"] = "INVALID" if has_issues else "VALID"
@@ -355,5 +377,5 @@ class DuckDBSchemaManager(SchemaManager):
                 "extra_tables": [],
                 "column_mismatches": [],
                 "integrity_violations": [],
-                "statistics": {}
+                "statistics": {},
             }

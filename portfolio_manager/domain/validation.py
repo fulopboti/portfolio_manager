@@ -27,9 +27,7 @@ def validate_symbol(symbol: str, field_name: str = "Symbol") -> None:
 
 
 def validate_positive_decimal(
-    value: Decimal,
-    field_name: str,
-    allow_zero: bool = False
+    value: Decimal, field_name: str, allow_zero: bool = False
 ) -> None:
     """
     Validate that a decimal value is positive (and optionally allow zero).
@@ -64,8 +62,7 @@ def validate_non_empty_string(value: str, field_name: str) -> None:
 
 
 def validate_non_empty_collection(
-    collection: list | set | tuple,
-    field_name: str
+    collection: list | set | tuple, field_name: str
 ) -> None:
     """
     Validate that a collection is not empty.
@@ -81,7 +78,9 @@ def validate_non_empty_collection(
         raise DomainValidationError(f"{field_name} cannot be empty")
 
 
-def validate_currency_code(currency: str, valid_currencies: set[str] | None = None) -> None:
+def validate_currency_code(
+    currency: str, valid_currencies: set[str] | None = None
+) -> None:
     """
     Validate that a currency code is in the allowed set.
 
@@ -105,7 +104,7 @@ def validate_price_relationships(
     low: Decimal,
     high: Decimal,
     open_price: Decimal | None = None,
-    close: Decimal | None = None
+    close: Decimal | None = None,
 ) -> None:
     """
     Validate OHLC price relationships (High >= Low, Open/Close within range).
@@ -135,7 +134,9 @@ def validate_price_relationships(
             raise DomainValidationError("Close price must be <= high price")
 
 
-def validate_severity_level(severity: str, valid_levels: set[str] | None = None) -> None:
+def validate_severity_level(
+    severity: str, valid_levels: set[str] | None = None
+) -> None:
     """
     Validate that a severity level is in the allowed set.
 
@@ -156,7 +157,9 @@ def validate_severity_level(severity: str, valid_levels: set[str] | None = None)
         raise DomainValidationError(f"Severity must be one of: {valid_levels}")
 
 
-def validate_percentage(value: Decimal, field_name: str, allow_negative: bool = False) -> None:
+def validate_percentage(
+    value: Decimal, field_name: str, allow_negative: bool = False
+) -> None:
     """
     Validate that a value represents a valid percentage.
 
@@ -218,15 +221,21 @@ class ValidationBuilder:
         self.value = value
         self._validations: list[callable] = []
 
-    def not_empty(self, field_name: str) -> 'ValidationBuilder':
+    def not_empty(self, field_name: str) -> "ValidationBuilder":
         """Add not-empty validation."""
         if isinstance(self.value, str):
-            self._validations.append(lambda: validate_non_empty_string(self.value, field_name))
+            self._validations.append(
+                lambda: validate_non_empty_string(self.value, field_name)
+            )
         else:
-            self._validations.append(lambda: validate_non_empty_collection(self.value, field_name))
+            self._validations.append(
+                lambda: validate_non_empty_collection(self.value, field_name)
+            )
         return self
 
-    def positive(self, field_name: str, allow_zero: bool = False) -> 'ValidationBuilder':
+    def positive(
+        self, field_name: str, allow_zero: bool = False
+    ) -> "ValidationBuilder":
         """Add positive number validation."""
         if isinstance(self.value, Decimal):
             self._validations.append(
@@ -234,19 +243,23 @@ class ValidationBuilder:
             )
         return self
 
-    def symbol(self, field_name: str = "Symbol") -> 'ValidationBuilder':
+    def symbol(self, field_name: str = "Symbol") -> "ValidationBuilder":
         """Add symbol validation."""
         self._validations.append(lambda: validate_symbol(self.value, field_name))
         return self
 
-    def currency(self, valid_currencies: set[str] | None = None) -> 'ValidationBuilder':
+    def currency(self, valid_currencies: set[str] | None = None) -> "ValidationBuilder":
         """Add currency code validation."""
-        self._validations.append(lambda: validate_currency_code(self.value, valid_currencies))
+        self._validations.append(
+            lambda: validate_currency_code(self.value, valid_currencies)
+        )
         return self
 
-    def severity(self, valid_levels: set[str] | None = None) -> 'ValidationBuilder':
+    def severity(self, valid_levels: set[str] | None = None) -> "ValidationBuilder":
         """Add severity level validation."""
-        self._validations.append(lambda: validate_severity_level(self.value, valid_levels))
+        self._validations.append(
+            lambda: validate_severity_level(self.value, valid_levels)
+        )
         return self
 
     def build(self) -> None:

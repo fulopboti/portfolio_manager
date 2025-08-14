@@ -98,9 +98,7 @@ class PortfolioDataAccess(ABC):
 
     @abstractmethod
     async def update_portfolio_cash(
-        self,
-        portfolio_id: UUID,
-        new_balance: Decimal
+        self, portfolio_id: UUID, new_balance: Decimal
     ) -> None:
         """Update the cash balance of a portfolio.
 
@@ -141,10 +139,7 @@ class PortfolioDataAccess(ABC):
 
     @abstractmethod
     async def get_trades_for_portfolio(
-        self,
-        portfolio_id: UUID,
-        limit: int | None = None,
-        offset: int | None = None
+        self, portfolio_id: UUID, limit: int | None = None, offset: int | None = None
     ) -> list[Trade]:
         """Get all trades for a specific portfolio.
 
@@ -160,10 +155,7 @@ class PortfolioDataAccess(ABC):
 
     @abstractmethod
     async def get_trades_for_symbol(
-        self,
-        portfolio_id: UUID,
-        symbol: str,
-        limit: int | None = None
+        self, portfolio_id: UUID, symbol: str, limit: int | None = None
     ) -> list[Trade]:
         """Get all trades for a specific asset in a portfolio.
 
@@ -179,10 +171,7 @@ class PortfolioDataAccess(ABC):
 
     @abstractmethod
     async def get_trades_in_date_range(
-        self,
-        portfolio_id: UUID,
-        start_date: datetime,
-        end_date: datetime
+        self, portfolio_id: UUID, start_date: datetime, end_date: datetime
     ) -> list[Trade]:
         """Get trades within a specific date range.
 
@@ -213,7 +202,7 @@ class PortfolioDataAccess(ABC):
         self,
         portfolio_id: UUID,
         start_date: datetime | None = None,
-        end_date: datetime | None = None
+        end_date: datetime | None = None,
     ) -> dict[str, Decimal]:
         """Get trade volume statistics for a portfolio.
 
@@ -241,11 +230,7 @@ class PortfolioDataAccess(ABC):
         pass
 
     @abstractmethod
-    async def get_position(
-        self,
-        portfolio_id: UUID,
-        symbol: str
-    ) -> Position | None:
+    async def get_position(self, portfolio_id: UUID, symbol: str) -> Position | None:
         """Get a specific position.
 
         Args:
@@ -271,9 +256,7 @@ class PortfolioDataAccess(ABC):
 
     @abstractmethod
     async def get_positions_for_symbols(
-        self,
-        portfolio_id: UUID,
-        symbols: list[str]
+        self, portfolio_id: UUID, symbols: list[str]
     ) -> dict[str, Position | None]:
         """Get positions for multiple symbols.
 
@@ -326,9 +309,7 @@ class PortfolioDataAccess(ABC):
 
     @abstractmethod
     async def get_largest_positions(
-        self,
-        portfolio_id: UUID,
-        limit: int = 10
+        self, portfolio_id: UUID, limit: int = 10
     ) -> list[Position]:
         """Get the largest positions by market value.
 
@@ -344,9 +325,7 @@ class PortfolioDataAccess(ABC):
     # Portfolio Analytics
     @abstractmethod
     async def calculate_portfolio_value(
-        self,
-        portfolio_id: UUID,
-        as_of_date: datetime | None = None
+        self, portfolio_id: UUID, as_of_date: datetime | None = None
     ) -> dict[str, Decimal]:
         """Calculate total portfolio value and breakdown.
 
@@ -361,10 +340,7 @@ class PortfolioDataAccess(ABC):
 
     @abstractmethod
     async def calculate_portfolio_returns(
-        self,
-        portfolio_id: UUID,
-        start_date: datetime,
-        end_date: datetime
+        self, portfolio_id: UUID, start_date: datetime, end_date: datetime
     ) -> dict[str, Decimal]:
         """Calculate portfolio returns over a period.
 
@@ -392,10 +368,7 @@ class PortfolioDataAccess(ABC):
 
     @abstractmethod
     async def get_portfolio_performance_history(
-        self,
-        portfolio_id: UUID,
-        start_date: datetime,
-        end_date: datetime
+        self, portfolio_id: UUID, start_date: datetime, end_date: datetime
     ) -> list[dict[str, Any]]:
         """Get historical portfolio performance data.
 
@@ -424,9 +397,7 @@ class PortfolioDataAccess(ABC):
 
     @abstractmethod
     async def archive_old_trades(
-        self,
-        portfolio_id: UUID,
-        before_date: datetime
+        self, portfolio_id: UUID, before_date: datetime
     ) -> int:
         """Archive trades older than a specific date.
 

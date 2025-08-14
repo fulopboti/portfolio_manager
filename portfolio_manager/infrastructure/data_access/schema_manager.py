@@ -8,6 +8,7 @@ from enum import Enum
 
 class MigrationType(Enum):
     """Types of database migrations."""
+
     CREATE_TABLE = "create_table"
     ALTER_TABLE = "alter_table"
     DROP_TABLE = "drop_table"

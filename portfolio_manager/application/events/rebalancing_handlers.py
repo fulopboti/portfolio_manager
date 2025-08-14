@@ -52,7 +52,9 @@ class PortfolioRebalancedEventHandler(BaseEventHandler):
             )
 
             # Validate portfolio exists
-            portfolio = await self.portfolio_repository.get_portfolio(event.portfolio_id)
+            portfolio = await self.portfolio_repository.get_portfolio(
+                event.portfolio_id
+            )
             if not portfolio:
                 raise ValueError(f"Portfolio {event.portfolio_id} not found")
 
@@ -85,13 +87,12 @@ class PortfolioRebalancedEventHandler(BaseEventHandler):
             event: The rebalancing event containing position changes
         """
         for change in event.changes:
-            await self._process_single_position_change(event.portfolio_id, change, event.timestamp)
+            await self._process_single_position_change(
+                event.portfolio_id, change, event.timestamp
+            )
 
     async def _process_single_position_change(
-        self,
-        portfolio_id: str,
-        change: PositionChange,
-        timestamp
+        self, portfolio_id: str, change: PositionChange, timestamp
     ) -> None:
         """
         Process a single position change.
@@ -110,8 +111,12 @@ class PortfolioRebalancedEventHandler(BaseEventHandler):
             if change.new_quantity == 0:
                 # Close position completely
                 if existing_position:
-                    await self.position_repository.delete_position(portfolio_id, change.symbol)
-                    self._logger.debug(f"Closed position {portfolio_id}:{change.symbol}")
+                    await self.position_repository.delete_position(
+                        portfolio_id, change.symbol
+                    )
+                    self._logger.debug(
+                        f"Closed position {portfolio_id}:{change.symbol}"
+                    )
 
             elif existing_position:
                 # Update existing position
@@ -187,7 +192,9 @@ class RebalancingMetricsEventHandler(BaseEventHandler):
             # Update performance tracking
             await self.analytics_service.track_rebalancing_event(event)
 
-            self._logger.info(f"Updated metrics after rebalancing for portfolio {portfolio_id}")
+            self._logger.info(
+                f"Updated metrics after rebalancing for portfolio {portfolio_id}"
+            )
 
         except Exception as e:
             self._logger.error(
@@ -195,7 +202,9 @@ class RebalancingMetricsEventHandler(BaseEventHandler):
             )
             # Don't re-raise - metrics failures should not break rebalancing processing
 
-    async def _analyze_rebalancing_impact(self, event: PortfolioRebalancedEvent) -> None:
+    async def _analyze_rebalancing_impact(
+        self, event: PortfolioRebalancedEvent
+    ) -> None:
         """
         Analyze the impact of the rebalancing operation.
 
@@ -209,10 +218,10 @@ class RebalancingMetricsEventHandler(BaseEventHandler):
             for change in event.changes:
                 if change.quantity_change() != 0:
                     concentration_changes[change.symbol] = {
-                        'old_quantity': change.old_quantity,
-                        'new_quantity': change.new_quantity,
-                        'change': change.quantity_change(),
-                        'reason': change.reason
+                        "old_quantity": change.old_quantity,
+                        "new_quantity": change.new_quantity,
+                        "change": change.quantity_change(),
+                        "reason": change.reason,
                     }
 
             # Log analysis results
@@ -259,7 +268,9 @@ class RebalancingNotificationEventHandler(BaseEventHandler):
         """
         try:
             # Get portfolio owner for notifications
-            portfolio_owner = await self.user_service.get_portfolio_owner(event.portfolio_id)
+            portfolio_owner = await self.user_service.get_portfolio_owner(
+                event.portfolio_id
+            )
 
             if portfolio_owner and portfolio_owner.notifications_enabled:
                 # Send rebalancing notification
@@ -267,7 +278,7 @@ class RebalancingNotificationEventHandler(BaseEventHandler):
                     user_id=portfolio_owner.user_id,
                     portfolio_id=event.portfolio_id,
                     changes=event.changes,
-                    timestamp=event.timestamp
+                    timestamp=event.timestamp,
                 )
 
                 self._logger.info(

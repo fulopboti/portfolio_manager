@@ -13,15 +13,15 @@ from typing import Any, Generic, TypeVar
 
 from portfolio_manager.domain.exceptions import DomainError, DomainValidationError
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class ServiceErrorStrategy(Enum):
     """Strategy for handling errors in application services."""
 
-    RAISE_EXCEPTIONS = "raise_exceptions"     # Re-raise all errors as exceptions
-    RETURN_RESULTS = "return_results"        # Return result objects with success/error
-    MIXED = "mixed"                          # Use both strategies based on operation type
+    RAISE_EXCEPTIONS = "raise_exceptions"  # Re-raise all errors as exceptions
+    RETURN_RESULTS = "return_results"  # Return result objects with success/error
+    MIXED = "mixed"  # Use both strategies based on operation type
 
 
 @dataclass(frozen=True)
@@ -40,7 +40,9 @@ class ServiceResult(Generic[T]):
     metadata: dict[str, Any] | None = None
 
     @classmethod
-    def success_result(cls, data: T, metadata: dict[str, Any] | None = None) -> 'ServiceResult[T]':
+    def success_result(
+        cls, data: T, metadata: dict[str, Any] | None = None
+    ) -> "ServiceResult[T]":
         """Create a successful result."""
         return cls(success=True, data=data, metadata=metadata)
 
@@ -49,14 +51,14 @@ class ServiceResult(Generic[T]):
         cls,
         error: Exception,
         error_code: str | None = None,
-        metadata: dict[str, Any] | None = None
-    ) -> 'ServiceResult[T]':
+        metadata: dict[str, Any] | None = None,
+    ) -> "ServiceResult[T]":
         """Create an error result."""
         return cls(
             success=False,
             error=error,
             error_code=error_code or error.__class__.__name__,
-            metadata=metadata
+            metadata=metadata,
         )
 
     def unwrap(self) -> T:
@@ -92,7 +94,7 @@ class BaseApplicationService:
     def __init__(
         self,
         error_strategy: ServiceErrorStrategy = ServiceErrorStrategy.RAISE_EXCEPTIONS,
-        logger_name: str | None = None
+        logger_name: str | None = None,
     ):
         """
         Initialize base application service.
@@ -114,22 +116,30 @@ class BaseApplicationService:
         context_info = f" ({context})" if context else ""
         self._logger.debug(f"{self._log_prefix} Starting {operation}{context_info}")
 
-    def _log_operation_success(self, operation: str, context: str = "", metrics: dict | None = None) -> None:
+    def _log_operation_success(
+        self, operation: str, context: str = "", metrics: dict | None = None
+    ) -> None:
         """Log the successful completion of a service operation."""
         context_info = f" ({context})" if context else ""
         metrics_info = f" - {metrics}" if metrics else ""
-        self._logger.debug(f"{self._log_prefix} Successfully completed {operation}{context_info}{metrics_info}")
+        self._logger.debug(
+            f"{self._log_prefix} Successfully completed {operation}{context_info}{metrics_info}"
+        )
 
-    def _log_operation_error(self, operation: str, error: Exception, context: str = "") -> None:
+    def _log_operation_error(
+        self, operation: str, error: Exception, context: str = ""
+    ) -> None:
         """Log an error during a service operation."""
         context_info = f" ({context})" if context else ""
         error_context = self._build_error_context(operation, error, context)
         self._logger.error(
             f"{self._log_prefix} Failed {operation}{context_info}: {error}",
-            extra=error_context
+            extra=error_context,
         )
 
-    def _build_error_context(self, operation: str, error: Exception, context: str) -> dict[str, Any]:
+    def _build_error_context(
+        self, operation: str, error: Exception, context: str
+    ) -> dict[str, Any]:
         """
         Build error context for structured logging.
 
@@ -142,10 +152,10 @@ class BaseApplicationService:
             Dictionary with error context information
         """
         return {
-            'operation': operation,
-            'context': context,
-            'error_type': error.__class__.__name__,
-            'service_class': self.__class__.__name__,
+            "operation": operation,
+            "context": context,
+            "error_type": error.__class__.__name__,
+            "service_class": self.__class__.__name__,
         }
 
     async def _execute_operation(
@@ -153,7 +163,7 @@ class BaseApplicationService:
         operation_name: str,
         operation_func: Any,  # Callable coroutine
         context: str = "",
-        expected_exceptions: list[type[Exception]] | None = None
+        expected_exceptions: list[type[Exception]] | None = None,
     ) -> Any:
         """
         Execute a service operation with standardized logging and error handling.
@@ -181,7 +191,9 @@ class BaseApplicationService:
             self._log_operation_error(operation_name, e, context)
 
             # Handle expected exceptions differently
-            if expected_exceptions and any(isinstance(e, exc_type) for exc_type in expected_exceptions):
+            if expected_exceptions and any(
+                isinstance(e, exc_type) for exc_type in expected_exceptions
+            ):
                 # Expected exceptions are logged but may not be re-raised based on strategy
                 pass
 
@@ -208,7 +220,9 @@ class BaseApplicationService:
         """
         missing_params = [name for name, value in params.items() if value is None]
         if missing_params:
-            raise DomainValidationError(f"Required parameters missing: {', '.join(missing_params)}")
+            raise DomainValidationError(
+                f"Required parameters missing: {', '.join(missing_params)}"
+            )
 
     def _validate_business_rules(self, rules: list[tuple[bool, str]]) -> None:
         """
@@ -237,13 +251,16 @@ class BaseApplicationService:
                 # operation code here
         """
         import time
+
         start_time = time.time()
 
         try:
             yield
         finally:
             duration = time.time() - start_time
-            self._logger.debug(f"{self._log_prefix} {operation_name} completed in {duration:.3f}s")
+            self._logger.debug(
+                f"{self._log_prefix} {operation_name} completed in {duration:.3f}s"
+            )
 
 
 class ResultBasedService(BaseApplicationService):
@@ -257,8 +274,7 @@ class ResultBasedService(BaseApplicationService):
     def __init__(self, logger_name: str | None = None):
         """Initialize result-based service."""
         super().__init__(
-            error_strategy=ServiceErrorStrategy.RETURN_RESULTS,
-            logger_name=logger_name
+            error_strategy=ServiceErrorStrategy.RETURN_RESULTS, logger_name=logger_name
         )
 
     async def _execute_with_result(
@@ -266,7 +282,7 @@ class ResultBasedService(BaseApplicationService):
         operation_name: str,
         operation_func: Any,
         context: str = "",
-        expected_exceptions: list[type[Exception]] | None = None
+        expected_exceptions: list[type[Exception]] | None = None,
     ) -> ServiceResult[Any]:
         """
         Execute an operation and wrap the result in a ServiceResult.
@@ -302,7 +318,7 @@ class ExceptionBasedService(BaseApplicationService):
         """Initialize exception-based service."""
         super().__init__(
             error_strategy=ServiceErrorStrategy.RAISE_EXCEPTIONS,
-            logger_name=logger_name
+            logger_name=logger_name,
         )
 
 
@@ -319,11 +335,7 @@ class ServiceMetrics:
         self._metrics: dict[str, dict[str, Any]] = {}
 
     def record_operation(
-        self,
-        operation: str,
-        duration: float,
-        success: bool,
-        context: str | None = None
+        self, operation: str, duration: float, success: bool, context: str | None = None
     ) -> None:
         """
         Record metrics for a service operation.
@@ -338,21 +350,21 @@ class ServiceMetrics:
 
         if key not in self._metrics:
             self._metrics[key] = {
-                'count': 0,
-                'success_count': 0,
-                'total_duration': 0.0,
-                'min_duration': float('inf'),
-                'max_duration': 0.0
+                "count": 0,
+                "success_count": 0,
+                "total_duration": 0.0,
+                "min_duration": float("inf"),
+                "max_duration": 0.0,
             }
 
         metrics = self._metrics[key]
-        metrics['count'] += 1
+        metrics["count"] += 1
         if success:
-            metrics['success_count'] += 1
+            metrics["success_count"] += 1
 
-        metrics['total_duration'] += duration
-        metrics['min_duration'] = min(metrics['min_duration'], duration)
-        metrics['max_duration'] = max(metrics['max_duration'], duration)
+        metrics["total_duration"] += duration
+        metrics["min_duration"] = min(metrics["min_duration"], duration)
+        metrics["max_duration"] = max(metrics["max_duration"], duration)
 
     def get_operation_metrics(self, operation: str) -> dict[str, Any] | None:
         """Get metrics for a specific operation."""
@@ -360,14 +372,10 @@ class ServiceMetrics:
         if not metrics:
             return None
 
-        avg_duration = metrics['total_duration'] / metrics['count']
-        success_rate = metrics['success_count'] / metrics['count']
+        avg_duration = metrics["total_duration"] / metrics["count"]
+        success_rate = metrics["success_count"] / metrics["count"]
 
-        return {
-            **metrics,
-            'avg_duration': avg_duration,
-            'success_rate': success_rate
-        }
+        return {**metrics, "avg_duration": avg_duration, "success_rate": success_rate}
 
     def get_all_metrics(self) -> dict[str, dict[str, Any]]:
         """Get all collected metrics."""

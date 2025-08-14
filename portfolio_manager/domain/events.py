@@ -60,8 +60,10 @@ class TradeExecutedEvent(DomainEvent):
 
     def __str__(self) -> str:
         """Return string representation of the trade event."""
-        return (f"TradeExecutedEvent(symbol={self.symbol}, side={self.side.value}, "
-                f"qty={self.quantity}, price=${self.price})")
+        return (
+            f"TradeExecutedEvent(symbol={self.symbol}, side={self.side.value}, "
+            f"qty={self.quantity}, price=${self.price})"
+        )
 
 
 @dataclass(frozen=True)

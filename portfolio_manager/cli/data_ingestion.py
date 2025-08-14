@@ -19,15 +19,31 @@ def data():
 
 
 @data.command()
-@click.argument('symbol')
-@click.option('--asset-type', type=click.Choice(['STOCK', 'BOND', 'ETF', 'MUTUAL_FUND']),
-              default='STOCK', help='Type of asset')
-@click.option('--exchange', default='NASDAQ', help='Exchange where asset is traded')
-@click.option('--name', help='Asset name (defaults to symbol)')
-@click.option('--days', default=30, help='Number of days of historical data to fetch')
-@click.option('--provider', default=None, help='Data provider to use (defaults to configured primary)')
-def ingest_symbol(symbol: str, asset_type: str, exchange: str, name: str | None, days: int, provider: str | None):
+@click.argument("symbol")
+@click.option(
+    "--asset-type",
+    type=click.Choice(["STOCK", "BOND", "ETF", "MUTUAL_FUND"]),
+    default="STOCK",
+    help="Type of asset",
+)
+@click.option("--exchange", default="NASDAQ", help="Exchange where asset is traded")
+@click.option("--name", help="Asset name (defaults to symbol)")
+@click.option("--days", default=30, help="Number of days of historical data to fetch")
+@click.option(
+    "--provider",
+    default=None,
+    help="Data provider to use (defaults to configured primary)",
+)
+def ingest_symbol(
+    symbol: str,
+    asset_type: str,
+    exchange: str,
+    name: str | None,
+    days: int,
+    provider: str | None,
+):
     """Ingest data for a single symbol."""
+
     async def _ingest():
         # Build service stack
         builder = ConfiguredServiceBuilder()
@@ -44,7 +60,7 @@ def ingest_symbol(symbol: str, asset_type: str, exchange: str, name: str | None,
 
         # Create data ingestion service
         service = builder.factory.create_data_ingestion_service(
-            data_provider, stack['repositories']['asset']
+            data_provider, stack["repositories"]["asset"]
         )
 
         # Calculate date range
@@ -62,11 +78,13 @@ def ingest_symbol(symbol: str, asset_type: str, exchange: str, name: str | None,
             exchange=exchange,
             name=name or symbol,
             start_date=start_date,
-            end_date=end_date
+            end_date=end_date,
         )
 
         if result.success:
-            click.echo(f"✓ Successfully ingested {result.snapshots_count} snapshots for {symbol}")
+            click.echo(
+                f"✓ Successfully ingested {result.snapshots_count} snapshots for {symbol}"
+            )
         else:
             click.echo(f"✗ Failed to ingest {symbol}: {result.error}")
 
@@ -74,14 +92,25 @@ def ingest_symbol(symbol: str, asset_type: str, exchange: str, name: str | None,
 
 
 @data.command()
-@click.argument('symbols', nargs=-1, required=True)
-@click.option('--asset-type', type=click.Choice(['STOCK', 'BOND', 'ETF', 'MUTUAL_FUND']),
-              default='STOCK', help='Type of assets')
-@click.option('--exchange', default='NASDAQ', help='Exchange where assets are traded')
-@click.option('--days', default=30, help='Number of days of historical data to fetch')
-@click.option('--provider', default=None, help='Data provider to use (defaults to configured primary)')
-def ingest_multiple(symbols: tuple, asset_type: str, exchange: str, days: int, provider: str | None):
+@click.argument("symbols", nargs=-1, required=True)
+@click.option(
+    "--asset-type",
+    type=click.Choice(["STOCK", "BOND", "ETF", "MUTUAL_FUND"]),
+    default="STOCK",
+    help="Type of assets",
+)
+@click.option("--exchange", default="NASDAQ", help="Exchange where assets are traded")
+@click.option("--days", default=30, help="Number of days of historical data to fetch")
+@click.option(
+    "--provider",
+    default=None,
+    help="Data provider to use (defaults to configured primary)",
+)
+def ingest_multiple(
+    symbols: tuple, asset_type: str, exchange: str, days: int, provider: str | None
+):
     """Ingest data for multiple symbols."""
+
     async def _ingest():
         # Build service stack
         builder = ConfiguredServiceBuilder()
@@ -98,7 +127,7 @@ def ingest_multiple(symbols: tuple, asset_type: str, exchange: str, days: int, p
 
         # Create data ingestion service
         service = builder.factory.create_data_ingestion_service(
-            data_provider, stack['repositories']['asset']
+            data_provider, stack["repositories"]["asset"]
         )
 
         # Calculate date range
@@ -116,7 +145,7 @@ def ingest_multiple(symbols: tuple, asset_type: str, exchange: str, days: int, p
             asset_type=AssetType(asset_type),
             exchange=exchange,
             start_date=start_date,
-            end_date=end_date
+            end_date=end_date,
         )
 
         # Report results
@@ -138,9 +167,14 @@ def ingest_multiple(symbols: tuple, asset_type: str, exchange: str, days: int, p
 
 
 @data.command()
-@click.option('--provider', default=None, help='Data provider to use (defaults to configured primary)')
+@click.option(
+    "--provider",
+    default=None,
+    help="Data provider to use (defaults to configured primary)",
+)
 def refresh_all(provider: str | None):
     """Refresh data for all existing assets."""
+
     async def _refresh():
         # Build service stack
         builder = ConfiguredServiceBuilder()
@@ -157,7 +191,7 @@ def refresh_all(provider: str | None):
 
         # Create data ingestion service
         service = builder.factory.create_data_ingestion_service(
-            data_provider, stack['repositories']['asset']
+            data_provider, stack["repositories"]["asset"]
         )
 
         click.echo("Refreshing data for all existing assets...")
@@ -191,12 +225,13 @@ def refresh_all(provider: str | None):
 @data.command()
 def list_assets():
     """List all assets in the database."""
+
     async def _list():
         # Build service stack
         builder = ConfiguredServiceBuilder()
         stack = builder.build_complete_service_stack()
 
-        repo = stack['repositories']['asset']
+        repo = stack["repositories"]["asset"]
         assets = await repo.get_all_assets()
 
         if not assets:
@@ -222,5 +257,5 @@ def list_assets():
     asyncio.run(_list())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     data()

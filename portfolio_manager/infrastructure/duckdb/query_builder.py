@@ -17,7 +17,9 @@ class DuckDBQueryBuilder:
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     # Common SELECT patterns
-    def select_by_id(self, table: str, columns: list[str], id_column: str = "id") -> str:
+    def select_by_id(
+        self, table: str, columns: list[str], id_column: str = "id"
+    ) -> str:
         """Build SELECT query to find record by ID.
 
         Args:
@@ -30,7 +32,9 @@ class DuckDBQueryBuilder:
         """
         return f"SELECT {', '.join(columns)} FROM {table} WHERE {id_column} = ?"
 
-    def select_all(self, table: str, columns: list[str], order_by: str | None = None) -> str:
+    def select_all(
+        self, table: str, columns: list[str], order_by: str | None = None
+    ) -> str:
         """Build SELECT query for all records.
 
         Args:
@@ -46,10 +50,14 @@ class DuckDBQueryBuilder:
             query += f" ORDER BY {order_by}"
         return query
 
-    def select_by_criteria(self, table: str, columns: list[str],
-                          where_conditions: dict[str, Any],
-                          order_by: str | None = None,
-                          limit: int | None = None) -> tuple[str, list[Any]]:
+    def select_by_criteria(
+        self,
+        table: str,
+        columns: list[str],
+        where_conditions: dict[str, Any],
+        order_by: str | None = None,
+        limit: int | None = None,
+    ) -> tuple[str, list[Any]]:
         """Build SELECT query with WHERE conditions.
 
         Args:
@@ -80,7 +88,9 @@ class DuckDBQueryBuilder:
 
         return query, parameters
 
-    def count_records(self, table: str, where_conditions: dict[str, Any] | None = None) -> tuple[str, list[Any]]:
+    def count_records(
+        self, table: str, where_conditions: dict[str, Any] | None = None
+    ) -> tuple[str, list[Any]]:
         """Build COUNT query for records.
 
         Args:
@@ -102,7 +112,9 @@ class DuckDBQueryBuilder:
 
         return query, parameters
 
-    def exists_check(self, table: str, where_conditions: dict[str, Any]) -> tuple[str, list[Any]]:
+    def exists_check(
+        self, table: str, where_conditions: dict[str, Any]
+    ) -> tuple[str, list[Any]]:
         """Build EXISTS check query.
 
         Args:
@@ -122,9 +134,13 @@ class DuckDBQueryBuilder:
         return query, parameters
 
     # Common INSERT patterns
-    def upsert(self, table: str, columns: list[str],
-              conflict_columns: str | list[str],
-              update_columns: list[str] | None = None) -> str:
+    def upsert(
+        self,
+        table: str,
+        columns: list[str],
+        conflict_columns: str | list[str],
+        update_columns: list[str] | None = None,
+    ) -> str:
         """Build UPSERT (INSERT ... ON CONFLICT) query.
 
         Args:
@@ -136,8 +152,10 @@ class DuckDBQueryBuilder:
         Returns:
             SQL INSERT ... ON CONFLICT query string
         """
-        placeholders = ', '.join(['?' for _ in columns])
-        base_query = f"INSERT INTO {table} ({', '.join(columns)}) VALUES ({placeholders})"
+        placeholders = ", ".join(["?" for _ in columns])
+        base_query = (
+            f"INSERT INTO {table} ({', '.join(columns)}) VALUES ({placeholders})"
+        )
 
         # Handle both single column and multiple columns
         if isinstance(conflict_columns, str):
@@ -145,19 +163,23 @@ class DuckDBQueryBuilder:
             conflict_clause = conflict_columns
         else:
             conflict_columns_list = conflict_columns
-            conflict_clause = ', '.join(conflict_columns)
+            conflict_clause = ", ".join(conflict_columns)
 
         if update_columns is None:
             # Update all columns except conflict columns
-            update_columns = [col for col in columns if col not in conflict_columns_list]
+            update_columns = [
+                col for col in columns if col not in conflict_columns_list
+            ]
 
         if update_columns:
-            updates = ', '.join([f"{col} = EXCLUDED.{col}" for col in update_columns])
+            updates = ", ".join([f"{col} = EXCLUDED.{col}" for col in update_columns])
             base_query += f" ON CONFLICT ({conflict_clause}) DO UPDATE SET {updates}"
 
         return base_query
 
-    def insert_ignore_duplicate(self, table: str, columns: list[str], conflict_column: str) -> str:
+    def insert_ignore_duplicate(
+        self, table: str, columns: list[str], conflict_column: str
+    ) -> str:
         """Build INSERT query that ignores duplicates.
 
         Args:
@@ -168,10 +190,12 @@ class DuckDBQueryBuilder:
         Returns:
             SQL INSERT query string
         """
-        placeholders = ', '.join(['?' for _ in columns])
+        placeholders = ", ".join(["?" for _ in columns])
         return f"INSERT INTO {table} ({', '.join(columns)}) VALUES ({placeholders}) ON CONFLICT ({conflict_column}) DO NOTHING"
 
-    def batch_insert(self, table: str, columns: list[str], batch_size: int = 1000) -> str:
+    def batch_insert(
+        self, table: str, columns: list[str], batch_size: int = 1000
+    ) -> str:
         """Build batch INSERT query for multiple records.
 
         Args:
@@ -182,12 +206,14 @@ class DuckDBQueryBuilder:
         Returns:
             SQL INSERT query string with placeholders for batch
         """
-        single_row = '(' + ', '.join(['?' for _ in columns]) + ')'
-        all_rows = ', '.join([single_row for _ in range(batch_size)])
+        single_row = "(" + ", ".join(["?" for _ in columns]) + ")"
+        all_rows = ", ".join([single_row for _ in range(batch_size)])
         return f"INSERT INTO {table} ({', '.join(columns)}) VALUES {all_rows}"
 
     # Common UPDATE patterns
-    def update_by_id(self, table: str, update_columns: list[str], id_column: str = "id") -> str:
+    def update_by_id(
+        self, table: str, update_columns: list[str], id_column: str = "id"
+    ) -> str:
         """Build UPDATE query for single record by ID.
 
         Args:
@@ -198,11 +224,12 @@ class DuckDBQueryBuilder:
         Returns:
             SQL UPDATE query string
         """
-        set_clauses = ', '.join([f"{col} = ?" for col in update_columns])
+        set_clauses = ", ".join([f"{col} = ?" for col in update_columns])
         return f"UPDATE {table} SET {set_clauses} WHERE {id_column} = ?"
 
-    def update_by_criteria(self, table: str, update_columns: list[str],
-                          where_conditions: dict[str, Any]) -> tuple[str, int]:
+    def update_by_criteria(
+        self, table: str, update_columns: list[str], where_conditions: dict[str, Any]
+    ) -> tuple[str, int]:
         """Build UPDATE query with WHERE conditions.
 
         Args:
@@ -213,8 +240,8 @@ class DuckDBQueryBuilder:
         Returns:
             Tuple of (SQL query, total parameter count)
         """
-        set_clauses = ', '.join([f"{col} = ?" for col in update_columns])
-        where_clauses = ' AND '.join([f"{col} = ?" for col in where_conditions.keys()])
+        set_clauses = ", ".join([f"{col} = ?" for col in update_columns])
+        where_clauses = " AND ".join([f"{col} = ?" for col in where_conditions.keys()])
 
         query = f"UPDATE {table} SET {set_clauses} WHERE {where_clauses}"
         param_count = len(update_columns) + len(where_conditions)
@@ -234,7 +261,9 @@ class DuckDBQueryBuilder:
         """
         return f"DELETE FROM {table} WHERE {id_column} = ?"
 
-    def delete_by_criteria(self, table: str, where_conditions: dict[str, Any]) -> tuple[str, list[Any]]:
+    def delete_by_criteria(
+        self, table: str, where_conditions: dict[str, Any]
+    ) -> tuple[str, list[Any]]:
         """Build DELETE query with WHERE conditions.
 
         Args:
@@ -257,12 +286,18 @@ class DuckDBQueryBuilder:
         return query, parameters
 
     # Specialized domain patterns
-    def time_series_query(self, table: str, symbol_column: str, timestamp_column: str,
-                         data_columns: list[str], symbol: str,
-                         start_date: datetime | None = None,
-                         end_date: datetime | None = None,
-                         order_desc: bool = False,
-                         limit: int | None = None) -> tuple[str, list[Any]]:
+    def time_series_query(
+        self,
+        table: str,
+        symbol_column: str,
+        timestamp_column: str,
+        data_columns: list[str],
+        symbol: str,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+        order_desc: bool = False,
+        limit: int | None = None,
+    ) -> tuple[str, list[Any]]:
         """Build time series data query.
 
         Args:
@@ -280,7 +315,9 @@ class DuckDBQueryBuilder:
             Tuple of (SQL query, parameters list)
         """
         all_columns = [symbol_column, timestamp_column] + data_columns
-        query = f"SELECT {', '.join(all_columns)} FROM {table} WHERE {symbol_column} = ?"
+        query = (
+            f"SELECT {', '.join(all_columns)} FROM {table} WHERE {symbol_column} = ?"
+        )
         parameters = [symbol]
 
         if start_date:
@@ -299,8 +336,14 @@ class DuckDBQueryBuilder:
 
         return query, parameters
 
-    def latest_record_query(self, table: str, partition_column: str, timestamp_column: str,
-                           data_columns: list[str], partition_value: str | None = None) -> tuple[str, list[Any]]:
+    def latest_record_query(
+        self,
+        table: str,
+        partition_column: str,
+        timestamp_column: str,
+        data_columns: list[str],
+        partition_value: str | None = None,
+    ) -> tuple[str, list[Any]]:
         """Build query to get latest record per partition (e.g., latest price per symbol).
 
         Args:
@@ -314,7 +357,7 @@ class DuckDBQueryBuilder:
             Tuple of (SQL query, parameters list)
         """
         all_columns = [partition_column, timestamp_column] + data_columns
-        column_list = ', '.join(all_columns)
+        column_list = ", ".join(all_columns)
 
         if partition_value:
             # Get latest for specific partition
@@ -341,10 +384,14 @@ class DuckDBQueryBuilder:
 
         return query, parameters
 
-    def aggregation_query(self, table: str, group_columns: list[str],
-                         aggregations: dict[str, str],
-                         where_conditions: dict[str, Any] | None = None,
-                         having_conditions: dict[str, Any] | None = None) -> tuple[str, list[Any]]:
+    def aggregation_query(
+        self,
+        table: str,
+        group_columns: list[str],
+        aggregations: dict[str, str],
+        where_conditions: dict[str, Any] | None = None,
+        having_conditions: dict[str, Any] | None = None,
+    ) -> tuple[str, list[Any]]:
         """Build aggregation query with GROUP BY.
 
         Args:
@@ -408,7 +455,7 @@ class QueryParameterBuilder:
     @staticmethod
     def prepare_enum(value) -> str:
         """Convert enum to its string value."""
-        return value.value if hasattr(value, 'value') else str(value)
+        return value.value if hasattr(value, "value") else str(value)
 
     @classmethod
     def build_parameters(cls, values: list[Any]) -> list[Any]:
@@ -428,7 +475,7 @@ class QueryParameterBuilder:
                 parameters.append(cls.prepare_decimal(value))
             elif isinstance(value, datetime):
                 parameters.append(cls.prepare_datetime(value))
-            elif hasattr(value, 'value'):  # Enum-like objects
+            elif hasattr(value, "value"):  # Enum-like objects
                 parameters.append(cls.prepare_enum(value))
             else:
                 parameters.append(value)

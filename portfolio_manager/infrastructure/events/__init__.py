@@ -8,8 +8,4 @@ event bus, handlers, and subscription management.
 from .event_bus import EventBus, EventSubscription
 from .handlers import EventHandler
 
-__all__ = [
-    "EventBus",
-    "EventSubscription",
-    "EventHandler"
-]
+__all__ = ["EventBus", "EventSubscription", "EventHandler"]

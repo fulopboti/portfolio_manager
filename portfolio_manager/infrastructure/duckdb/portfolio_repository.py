@@ -19,14 +19,18 @@ from .connection import DuckDBConnection
 from .query_executor import DuckDBQueryExecutor
 
 
-class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBuilderMixin, PortfolioDataAccess):
+class DuckDBPortfolioRepository(
+    BaseDuckDBRepository, EntityMapperMixin, QueryBuilderMixin, PortfolioDataAccess
+):
     """DuckDB concrete implementation of PortfolioDataAccess interface.
 
     Provides full implementation of portfolio and trading data persistence
     using DuckDB's columnar storage optimized for analytical workloads.
     """
 
-    def __init__(self, connection: DuckDBConnection, query_executor: DuckDBQueryExecutor):
+    def __init__(
+        self, connection: DuckDBConnection, query_executor: DuckDBQueryExecutor
+    ):
         """Initialize the DuckDB portfolio repository.
 
         Args:
@@ -64,10 +68,12 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             portfolio.name,
             portfolio.base_ccy,
             str(portfolio.cash_balance),
-            portfolio.created
+            portfolio.created,
         ]
 
-        await self._execute_query(query, parameters, f"save_portfolio({portfolio_info})")
+        await self._execute_query(
+            query, parameters, f"save_portfolio({portfolio_info})"
+        )
         self._log_operation_success("save_portfolio", portfolio_info)
 
     async def get_portfolio(self, portfolio_id: UUID) -> Portfolio | None:
@@ -84,7 +90,9 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
         FROM portfolios
         WHERE portfolio_id = ?
         """
-        result = await self._fetch_one(query, [str(portfolio_id)], f"get_portfolio({portfolio_id})")
+        result = await self._fetch_one(
+            query, [str(portfolio_id)], f"get_portfolio({portfolio_id})"
+        )
 
         if result is None:
             return None
@@ -94,7 +102,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             name=result[1],
             base_ccy=result[2],
             cash_balance=self._safe_decimal_convert(result[3]),
-            created=result[4]
+            created=result[4],
         )
 
     async def get_all_portfolios(self) -> list[Portfolio]:
@@ -117,7 +125,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
                     name=row[1],
                     base_ccy=row[2],
                     cash_balance=self._safe_decimal_convert(row[3]),
-                    created=row[4]
+                    created=row[4],
                 )
                 for row in results
             ]
@@ -151,7 +159,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
                 portfolio.name,
                 portfolio.base_ccy,
                 str(portfolio.cash_balance),
-                str(portfolio.portfolio_id)
+                str(portfolio.portfolio_id),
             ]
 
             await self.query_executor.execute_query(query, parameters)
@@ -180,7 +188,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
                 "DELETE FROM portfolio_metrics WHERE portfolio_id = ?",
                 "DELETE FROM positions WHERE portfolio_id = ?",
                 "DELETE FROM trades WHERE portfolio_id = ?",
-                "DELETE FROM portfolios WHERE portfolio_id = ?"
+                "DELETE FROM portfolios WHERE portfolio_id = ?",
             ]
 
             for query in delete_queries:
@@ -221,7 +229,9 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
         try:
             query = "SELECT portfolio_id FROM portfolios ORDER BY portfolio_id"
             results = await self.query_executor.fetch_all(query)
-            return {row[0] if isinstance(row[0], UUID) else UUID(row[0]) for row in results}
+            return {
+                row[0] if isinstance(row[0], UUID) else UUID(row[0]) for row in results
+            }
 
         except Exception as e:
             error_msg = f"Failed to get portfolio IDs: {str(e)}"
@@ -229,9 +239,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             raise DataAccessError(error_msg) from e
 
     async def update_portfolio_cash(
-        self,
-        portfolio_id: UUID,
-        new_balance: Decimal
+        self, portfolio_id: UUID, new_balance: Decimal
     ) -> None:
         """Update the cash balance of a portfolio.
 
@@ -256,12 +264,16 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             parameters = [str(new_balance), str(portfolio_id)]
 
             await self.query_executor.execute_query(query, parameters)
-            self.logger.debug(f"Updated cash balance for portfolio {portfolio_id}: {new_balance}")
+            self.logger.debug(
+                f"Updated cash balance for portfolio {portfolio_id}: {new_balance}"
+            )
 
         except NotFoundError:
             raise
         except Exception as e:
-            error_msg = f"Failed to update cash balance for portfolio {portfolio_id}: {str(e)}"
+            error_msg = (
+                f"Failed to update cash balance for portfolio {portfolio_id}: {str(e)}"
+            )
             self.logger.error(error_msg)
             raise DataAccessError(error_msg) from e
 
@@ -309,7 +321,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
                 str(trade.fee_pct),
                 trade.unit,
                 trade.price_ccy,
-                trade.comment
+                trade.comment,
             ]
 
             await self.query_executor.execute_query(query, parameters)
@@ -343,7 +355,9 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
 
             return Trade(
                 trade_id=result[0] if isinstance(result[0], UUID) else UUID(result[0]),
-                portfolio_id=result[1] if isinstance(result[1], UUID) else UUID(result[1]),
+                portfolio_id=(
+                    result[1] if isinstance(result[1], UUID) else UUID(result[1])
+                ),
                 symbol=result[2],
                 timestamp=result[3],
                 side=TradeSide(result[4]),
@@ -354,7 +368,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
                 fee_pct=Decimal(str(result[9])),
                 unit=result[10],
                 price_ccy=result[11],
-                comment=result[12] or ""
+                comment=result[12] or "",
             )
 
         except Exception as e:
@@ -363,10 +377,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             raise DataAccessError(error_msg) from e
 
     async def get_trades_for_portfolio(
-        self,
-        portfolio_id: UUID,
-        limit: int | None = None,
-        offset: int | None = None
+        self, portfolio_id: UUID, limit: int | None = None, offset: int | None = None
     ) -> list[Trade]:
         """Get all trades for a specific portfolio.
 
@@ -408,7 +419,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
                     fee_pct=Decimal(str(row[9])),
                     unit=row[10],
                     price_ccy=row[11],
-                    comment=row[12] or ""
+                    comment=row[12] or "",
                 )
                 for row in results
             ]
@@ -419,10 +430,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             raise DataAccessError(error_msg) from e
 
     async def get_trades_for_symbol(
-        self,
-        portfolio_id: UUID,
-        symbol: str,
-        limit: int | None = None
+        self, portfolio_id: UUID, symbol: str, limit: int | None = None
     ) -> list[Trade]:
         """Get all trades for a specific asset in a portfolio.
 
@@ -446,7 +454,9 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             if limit is not None:
                 query += f" LIMIT {limit}"
 
-            results = await self.query_executor.fetch_all(query, [str(portfolio_id), symbol])
+            results = await self.query_executor.fetch_all(
+                query, [str(portfolio_id), symbol]
+            )
 
             return [
                 Trade(
@@ -462,7 +472,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
                     fee_pct=Decimal(str(row[9])),
                     unit=row[10],
                     price_ccy=row[11],
-                    comment=row[12] or ""
+                    comment=row[12] or "",
                 )
                 for row in results
             ]
@@ -473,10 +483,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             raise DataAccessError(error_msg) from e
 
     async def get_trades_in_date_range(
-        self,
-        portfolio_id: UUID,
-        start_date: datetime,
-        end_date: datetime
+        self, portfolio_id: UUID, start_date: datetime, end_date: datetime
     ) -> list[Trade]:
         """Get trades within a specific date range.
 
@@ -515,13 +522,15 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
                     fee_pct=Decimal(str(row[9])),
                     unit=row[10],
                     price_ccy=row[11],
-                    comment=row[12] or ""
+                    comment=row[12] or "",
                 )
                 for row in results
             ]
 
         except Exception as e:
-            error_msg = f"Failed to get trades in date range for {portfolio_id}: {str(e)}"
+            error_msg = (
+                f"Failed to get trades in date range for {portfolio_id}: {str(e)}"
+            )
             self.logger.error(error_msg)
             raise DataAccessError(error_msg) from e
 
@@ -536,7 +545,9 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
         """
         try:
             # Use the count pattern for cleaner code
-            return await self._count_pattern("trades", {"portfolio_id": str(portfolio_id)})
+            return await self._count_pattern(
+                "trades", {"portfolio_id": str(portfolio_id)}
+            )
 
         except Exception as e:
             error_msg = f"Failed to get trade count for {portfolio_id}: {str(e)}"
@@ -547,7 +558,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
         self,
         portfolio_id: UUID,
         start_date: datetime | None = None,
-        end_date: datetime | None = None
+        end_date: datetime | None = None,
     ) -> dict[str, Decimal]:
         """Get trade volume statistics for a portfolio.
 
@@ -589,28 +600,34 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
 
             if not result or result[0] == 0:
                 return {
-                    'trade_count': Decimal('0'),
-                    'total_volume': Decimal('0'),
-                    'avg_trade_size': Decimal('0'),
-                    'min_trade_size': Decimal('0'),
-                    'max_trade_size': Decimal('0'),
-                    'buy_volume': Decimal('0'),
-                    'sell_volume': Decimal('0'),
-                    'net_volume': Decimal('0')
+                    "trade_count": Decimal("0"),
+                    "total_volume": Decimal("0"),
+                    "avg_trade_size": Decimal("0"),
+                    "min_trade_size": Decimal("0"),
+                    "max_trade_size": Decimal("0"),
+                    "buy_volume": Decimal("0"),
+                    "sell_volume": Decimal("0"),
+                    "net_volume": Decimal("0"),
                 }
 
-            buy_volume = Decimal(str(result[5])) if result[5] else Decimal('0')
-            sell_volume = Decimal(str(result[6])) if result[6] else Decimal('0')
+            buy_volume = Decimal(str(result[5])) if result[5] else Decimal("0")
+            sell_volume = Decimal(str(result[6])) if result[6] else Decimal("0")
 
             return {
-                'trade_count': Decimal(str(result[0])),
-                'total_volume': Decimal(str(result[1])) if result[1] else Decimal('0'),
-                'avg_trade_size': Decimal(str(result[2])) if result[2] else Decimal('0'),
-                'min_trade_size': Decimal(str(result[3])) if result[3] else Decimal('0'),
-                'max_trade_size': Decimal(str(result[4])) if result[4] else Decimal('0'),
-                'buy_volume': buy_volume,
-                'sell_volume': sell_volume,
-                'net_volume': buy_volume - sell_volume
+                "trade_count": Decimal(str(result[0])),
+                "total_volume": Decimal(str(result[1])) if result[1] else Decimal("0"),
+                "avg_trade_size": (
+                    Decimal(str(result[2])) if result[2] else Decimal("0")
+                ),
+                "min_trade_size": (
+                    Decimal(str(result[3])) if result[3] else Decimal("0")
+                ),
+                "max_trade_size": (
+                    Decimal(str(result[4])) if result[4] else Decimal("0")
+                ),
+                "buy_volume": buy_volume,
+                "sell_volume": sell_volume,
+                "net_volume": buy_volume - sell_volume,
             }
 
         except Exception as e:
@@ -648,22 +665,20 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
                 str(position.avg_cost),
                 position.unit,
                 position.price_ccy,
-                position.last_updated
+                position.last_updated,
             ]
 
             await self.query_executor.execute_query(query, parameters)
-            self.logger.debug(f"Saved position: {position.portfolio_id}.{position.symbol}")
+            self.logger.debug(
+                f"Saved position: {position.portfolio_id}.{position.symbol}"
+            )
 
         except Exception as e:
             error_msg = f"Failed to save position {position.portfolio_id}.{position.symbol}: {str(e)}"
             self.logger.error(error_msg)
             raise DataAccessError(error_msg) from e
 
-    async def get_position(
-        self,
-        portfolio_id: UUID,
-        symbol: str
-    ) -> Position | None:
+    async def get_position(self, portfolio_id: UUID, symbol: str) -> Position | None:
         """Get a specific position.
 
         Args:
@@ -679,7 +694,9 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             FROM positions
             WHERE portfolio_id = ? AND symbol = ?
             """
-            result = await self.query_executor.fetch_one(query, [str(portfolio_id), symbol])
+            result = await self.query_executor.fetch_one(
+                query, [str(portfolio_id), symbol]
+            )
 
             if result is None:
                 return None
@@ -691,7 +708,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
                 avg_cost=Decimal(str(result[3])),
                 unit=result[4],
                 price_ccy=result[5],
-                last_updated=result[6]
+                last_updated=result[6],
             )
 
         except Exception as e:
@@ -725,20 +742,20 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
                     avg_cost=Decimal(str(row[3])),
                     unit=row[4],
                     price_ccy=row[5],
-                    last_updated=row[6]
+                    last_updated=row[6],
                 )
                 for row in results
             ]
 
         except Exception as e:
-            error_msg = f"Failed to get positions for portfolio {portfolio_id}: {str(e)}"
+            error_msg = (
+                f"Failed to get positions for portfolio {portfolio_id}: {str(e)}"
+            )
             self.logger.error(error_msg)
             raise DataAccessError(error_msg) from e
 
     async def get_positions_for_symbols(
-        self,
-        portfolio_id: UUID,
-        symbols: list[str]
+        self, portfolio_id: UUID, symbols: list[str]
     ) -> dict[str, Position | None]:
         """Get positions for multiple symbols.
 
@@ -753,7 +770,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             if not symbols:
                 return {}
 
-            placeholders = ','.join(['?'] * len(symbols))
+            placeholders = ",".join(["?"] * len(symbols))
             query = f"""
             SELECT portfolio_id, symbol, qty, avg_cost, unit, price_ccy, last_updated
             FROM positions
@@ -774,13 +791,15 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
                     avg_cost=Decimal(str(row[3])),
                     unit=row[4],
                     price_ccy=row[5],
-                    last_updated=row[6]
+                    last_updated=row[6],
                 )
 
             return result_dict
 
         except Exception as e:
-            error_msg = f"Failed to get positions for symbols in {portfolio_id}: {str(e)}"
+            error_msg = (
+                f"Failed to get positions for symbols in {portfolio_id}: {str(e)}"
+            )
             self.logger.error(error_msg)
             raise DataAccessError(error_msg) from e
 
@@ -807,14 +826,18 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
                 position.price_ccy,
                 position.last_updated,
                 str(position.portfolio_id),
-                position.symbol
+                position.symbol,
             ]
 
             cursor = await self.query_executor.execute_query(query, parameters)
             if cursor and cursor.rowcount == 0:
-                raise NotFoundError(f"Position {position.portfolio_id}.{position.symbol} not found")
+                raise NotFoundError(
+                    f"Position {position.portfolio_id}.{position.symbol} not found"
+                )
 
-            self.logger.debug(f"Updated position: {position.portfolio_id}.{position.symbol}")
+            self.logger.debug(
+                f"Updated position: {position.portfolio_id}.{position.symbol}"
+            )
 
         except NotFoundError:
             raise
@@ -866,9 +889,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             raise DataAccessError(error_msg) from e
 
     async def get_largest_positions(
-        self,
-        portfolio_id: UUID,
-        limit: int = 10
+        self, portfolio_id: UUID, limit: int = 10
     ) -> list[Position]:
         """Get the largest positions by market value.
 
@@ -899,7 +920,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
                     avg_cost=Decimal(str(row[3])),
                     unit=row[4],
                     price_ccy=row[5],
-                    last_updated=row[6]
+                    last_updated=row[6],
                 )
                 for row in results
             ]
@@ -912,9 +933,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
     # Portfolio Analytics Methods (Simplified implementations)
 
     async def calculate_portfolio_value(
-        self,
-        portfolio_id: UUID,
-        as_of_date: datetime | None = None
+        self, portfolio_id: UUID, as_of_date: datetime | None = None
     ) -> dict[str, Decimal]:
         """Calculate total portfolio value and breakdown.
 
@@ -942,25 +961,26 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             """
             result = await self.query_executor.fetch_one(query, [str(portfolio_id)])
 
-            market_value = Decimal(str(result[0])) if result and result[0] else Decimal('0')
+            market_value = (
+                Decimal(str(result[0])) if result and result[0] else Decimal("0")
+            )
             total_value = cash_value + market_value
 
             return {
-                'cash_value': cash_value,
-                'market_value': market_value,
-                'total_value': total_value
+                "cash_value": cash_value,
+                "market_value": market_value,
+                "total_value": total_value,
             }
 
         except Exception as e:
-            error_msg = f"Failed to calculate portfolio value for {portfolio_id}: {str(e)}"
+            error_msg = (
+                f"Failed to calculate portfolio value for {portfolio_id}: {str(e)}"
+            )
             self.logger.error(error_msg)
             raise DataAccessError(error_msg) from e
 
     async def calculate_portfolio_returns(
-        self,
-        portfolio_id: UUID,
-        start_date: datetime,
-        end_date: datetime
+        self, portfolio_id: UUID, start_date: datetime, end_date: datetime
     ) -> dict[str, Decimal]:
         """Calculate portfolio returns over a period.
 
@@ -974,7 +994,9 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
         """
         try:
             # Simplified implementation - calculate based on cash flows
-            trades = await self.get_trades_in_date_range(portfolio_id, start_date, end_date)
+            trades = await self.get_trades_in_date_range(
+                portfolio_id, start_date, end_date
+            )
 
             total_invested = sum(
                 trade.net_amount() for trade in trades if trade.side == TradeSide.BUY
@@ -986,10 +1008,10 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             net_cash_flow = total_invested - total_divested
 
             return {
-                'total_invested': total_invested,
-                'total_divested': total_divested,
-                'net_cash_flow': net_cash_flow,
-                'trade_count': Decimal(str(len(trades)))
+                "total_invested": total_invested,
+                "total_divested": total_divested,
+                "net_cash_flow": net_cash_flow,
+                "trade_count": Decimal(str(len(trades))),
             }
 
         except Exception as e:
@@ -1033,15 +1055,14 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             return allocations
 
         except Exception as e:
-            error_msg = f"Failed to get portfolio allocation for {portfolio_id}: {str(e)}"
+            error_msg = (
+                f"Failed to get portfolio allocation for {portfolio_id}: {str(e)}"
+            )
             self.logger.error(error_msg)
             raise DataAccessError(error_msg) from e
 
     async def get_portfolio_performance_history(
-        self,
-        portfolio_id: UUID,
-        start_date: datetime,
-        end_date: datetime
+        self, portfolio_id: UUID, start_date: datetime, end_date: datetime
     ) -> list[dict[str, Any]]:
         """Get historical portfolio performance data.
 
@@ -1072,15 +1093,17 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
 
             return [
                 {
-                    'date': row[0],
-                    'net_flow': Decimal(str(row[1])) if row[1] else Decimal('0.0'),
-                    'trade_count': row[2]
+                    "date": row[0],
+                    "net_flow": Decimal(str(row[1])) if row[1] else Decimal("0.0"),
+                    "trade_count": row[2],
                 }
                 for row in results
             ]
 
         except Exception as e:
-            error_msg = f"Failed to get performance history for {portfolio_id}: {str(e)}"
+            error_msg = (
+                f"Failed to get performance history for {portfolio_id}: {str(e)}"
+            )
             self.logger.error(error_msg)
             raise DataAccessError(error_msg) from e
 
@@ -1100,7 +1123,9 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             cursor = await self.query_executor.execute_query(query, [str(portfolio_id)])
             deleted_count = cursor.rowcount if cursor else 0
 
-            self.logger.debug(f"Cleaned up {deleted_count} zero positions for {portfolio_id}")
+            self.logger.debug(
+                f"Cleaned up {deleted_count} zero positions for {portfolio_id}"
+            )
             return deleted_count
 
         except Exception as e:
@@ -1109,9 +1134,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             raise DataAccessError(error_msg) from e
 
     async def archive_old_trades(
-        self,
-        portfolio_id: UUID,
-        before_date: datetime
+        self, portfolio_id: UUID, before_date: datetime
     ) -> int:
         """Archive trades older than a specific date.
 
@@ -1134,7 +1157,9 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             )
 
             count = result[0] if result else 0
-            self.logger.debug(f"Would archive {count} trades for {portfolio_id} before {before_date}")
+            self.logger.debug(
+                f"Would archive {count} trades for {portfolio_id} before {before_date}"
+            )
             return count
 
         except Exception as e:
@@ -1156,7 +1181,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
 
             # Check if portfolio exists
             if not await self.portfolio_exists(portfolio_id):
-                return {'valid': False, 'issues': ['Portfolio does not exist']}
+                return {"valid": False, "issues": ["Portfolio does not exist"]}
 
             # Check for negative positions
             query = """
@@ -1167,7 +1192,9 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             negative_positions = result[0] if result else 0
 
             if negative_positions > 0:
-                issues.append(f"{negative_positions} positions have negative quantities")
+                issues.append(
+                    f"{negative_positions} positions have negative quantities"
+                )
 
             # Check for orphaned trades (trades without corresponding asset)
             query = """
@@ -1182,13 +1209,15 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
                 issues.append(f"{orphaned_trades} trades reference non-existent assets")
 
             return {
-                'valid': len(issues) == 0,
-                'issues': issues,
-                'negative_positions': negative_positions,
-                'orphaned_trades': orphaned_trades
+                "valid": len(issues) == 0,
+                "issues": issues,
+                "negative_positions": negative_positions,
+                "orphaned_trades": orphaned_trades,
             }
 
         except Exception as e:
-            error_msg = f"Failed to validate portfolio integrity for {portfolio_id}: {str(e)}"
+            error_msg = (
+                f"Failed to validate portfolio integrity for {portfolio_id}: {str(e)}"
+            )
             self.logger.error(error_msg)
             raise DataAccessError(error_msg) from e

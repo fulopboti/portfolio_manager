@@ -16,6 +16,7 @@ from portfolio_manager.domain.exceptions import (
 
 class AssetType(Enum):
     """Enumeration of supported asset types."""
+
     STOCK = "STOCK"
     ETF = "ETF"
     CRYPTO = "CRYPTO"
@@ -24,6 +25,7 @@ class AssetType(Enum):
 
 class TradeSide(Enum):
     """Enumeration of trade sides."""
+
     BUY = "BUY"
     SELL = "SELL"
 
@@ -49,8 +51,8 @@ class Asset:
             raise DomainValidationError("Name cannot be empty")
 
         # Normalize symbol and exchange to uppercase
-        object.__setattr__(self, 'symbol', self.symbol.upper().strip())
-        object.__setattr__(self, 'exchange', self.exchange.upper().strip())
+        object.__setattr__(self, "symbol", self.symbol.upper().strip())
+        object.__setattr__(self, "exchange", self.exchange.upper().strip())
 
     def __eq__(self, other) -> bool:
         """Assets are equal if they have the same symbol."""
@@ -110,7 +112,7 @@ class AssetSnapshot:
     def daily_return(self) -> Decimal:
         """Calculate the daily return percentage."""
         if self.open == 0:
-            return Decimal('0')
+            return Decimal("0")
         return (self.close - self.open) / self.open
 
     def is_green_day(self) -> bool:
@@ -273,7 +275,7 @@ class Position:
     def unrealized_pnl_pct(self, current_price: Decimal) -> Decimal:
         """Calculate unrealized profit/loss percentage."""
         if self.avg_cost == 0:
-            return Decimal('0')
+            return Decimal("0")
         return (current_price - self.avg_cost) / self.avg_cost
 
     def add_shares(self, additional_qty: Decimal, price: Decimal) -> None:

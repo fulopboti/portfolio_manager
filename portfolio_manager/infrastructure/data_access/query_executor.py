@@ -60,9 +60,7 @@ class QueryExecutor(ABC):
 
     @abstractmethod
     async def execute_query(
-        self,
-        sql: str,
-        parameters: dict[str, Any] | None = None
+        self, sql: str, parameters: dict[str, Any] | None = None
     ) -> QueryResult:
         """Execute a SELECT query and return results.
 
@@ -81,9 +79,7 @@ class QueryExecutor(ABC):
 
     @abstractmethod
     async def execute_command(
-        self,
-        sql: str,
-        parameters: dict[str, Any] | None = None
+        self, sql: str, parameters: dict[str, Any] | None = None
     ) -> int:
         """Execute a non-query command (INSERT, UPDATE, DELETE).
 
@@ -102,9 +98,7 @@ class QueryExecutor(ABC):
 
     @abstractmethod
     async def execute_batch(
-        self,
-        sql: str,
-        parameters_list: list[dict[str, Any]]
+        self, sql: str, parameters_list: list[dict[str, Any]]
     ) -> list[int]:
         """Execute a command multiple times with different parameters.
 
@@ -123,9 +117,7 @@ class QueryExecutor(ABC):
 
     @abstractmethod
     async def execute_scalar(
-        self,
-        sql: str,
-        parameters: dict[str, Any] | None = None
+        self, sql: str, parameters: dict[str, Any] | None = None
     ) -> Any:
         """Execute a query and return a single scalar value.
 
@@ -144,8 +136,7 @@ class QueryExecutor(ABC):
 
     @abstractmethod
     async def execute_transaction(
-        self,
-        operations: list[tuple[str, dict[str, Any] | None]]
+        self, operations: list[tuple[str, dict[str, Any] | None]]
     ) -> list[Any]:
         """Execute multiple operations within a single transaction.
 

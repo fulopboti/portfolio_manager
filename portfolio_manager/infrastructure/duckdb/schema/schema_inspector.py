@@ -32,12 +32,14 @@ class DuckDBSchemaInspector:
             Set of table names
         """
         try:
-            result = await self.query_executor.execute_query("""
+            result = await self.query_executor.execute_query(
+                """
                 SELECT table_name
                 FROM information_schema.tables
                 WHERE table_schema = 'main'
                   AND table_type = 'BASE TABLE'
-            """)
+            """
+            )
 
             return {row["table_name"] for row in result.rows}
 
@@ -55,7 +57,8 @@ class DuckDBSchemaInspector:
             Dictionary mapping column names to their definitions, or None if table doesn't exist
         """
         try:
-            result = await self.query_executor.execute_query("""
+            result = await self.query_executor.execute_query(
+                """
                 SELECT
                     column_name,
                     data_type,
@@ -65,7 +68,9 @@ class DuckDBSchemaInspector:
                 WHERE table_name = $table_name
                   AND table_schema = 'main'
                 ORDER BY ordinal_position
-            """, {"table_name": table_name})
+            """,
+                {"table_name": table_name},
+            )
 
             if not result.rows:
                 return None
@@ -104,21 +109,26 @@ class DuckDBSchemaInspector:
         try:
             # DuckDB doesn't have a standard information_schema for indexes
             # We'll use PRAGMA table_info and other DuckDB-specific queries
-            result = await self.query_executor.execute_query("""
+            result = await self.query_executor.execute_query(
+                """
                 SELECT
                     index_name,
                     is_unique
                 FROM duckdb_indexes()
                 WHERE table_name = $table_name
-            """, {"table_name": table_name})
+            """,
+                {"table_name": table_name},
+            )
 
             indexes = []
             for row in result.rows:
-                indexes.append({
-                    "name": row["index_name"],
-                    "column": "unknown",  # DuckDB doesn't easily provide column info
-                    "unique": bool(row["is_unique"])
-                })
+                indexes.append(
+                    {
+                        "name": row["index_name"],
+                        "column": "unknown",  # DuckDB doesn't easily provide column info
+                        "unique": bool(row["is_unique"]),
+                    }
+                )
 
             return indexes
 
@@ -143,7 +153,9 @@ class DuckDBSchemaInspector:
             logger.error(f"Failed to check if table {table_name} exists: {str(e)}")
             return False
 
-    async def validate_schema_integrity(self, expected_tables: dict[str, TableDefinition]) -> dict[str, list[str]]:
+    async def validate_schema_integrity(
+        self, expected_tables: dict[str, TableDefinition]
+    ) -> dict[str, list[str]]:
         """Validate database schema against expected schema definitions.
 
         Args:
@@ -158,7 +170,7 @@ class DuckDBSchemaInspector:
         validation_results = {
             "missing_tables": [],
             "extra_tables": [],
-            "column_mismatches": []
+            "column_mismatches": [],
         }
 
         try:
@@ -196,7 +208,9 @@ class DuckDBSchemaInspector:
                     if extra_cols:
                         mismatch_info += f"extra columns {extra_cols}, "
 
-                    validation_results["column_mismatches"].append(mismatch_info.rstrip(", "))
+                    validation_results["column_mismatches"].append(
+                        mismatch_info.rstrip(", ")
+                    )
 
             return validation_results
 
@@ -258,38 +272,50 @@ class DuckDBSchemaInspector:
                 return violations
 
             # Check trades reference valid portfolios
-            result = await self.query_executor.execute_query("""
+            result = await self.query_executor.execute_query(
+                """
                 SELECT COUNT(*) as count
                 FROM trades t
                 LEFT JOIN portfolios p ON t.portfolio_id = p.portfolio_id
                 WHERE p.portfolio_id IS NULL
-            """)
+            """
+            )
 
             if result.rows and result.rows[0]["count"] > 0:
-                violations.append(f"Found {result.rows[0]['count']} trades with invalid portfolio references")
+                violations.append(
+                    f"Found {result.rows[0]['count']} trades with invalid portfolio references"
+                )
 
             # Check trades reference valid assets
-            result = await self.query_executor.execute_query("""
+            result = await self.query_executor.execute_query(
+                """
                 SELECT COUNT(*) as count
                 FROM trades t
                 LEFT JOIN assets a ON t.symbol = a.symbol
                 WHERE a.symbol IS NULL
-            """)
+            """
+            )
 
             if result.rows and result.rows[0]["count"] > 0:
-                violations.append(f"Found {result.rows[0]['count']} trades with invalid asset references")
+                violations.append(
+                    f"Found {result.rows[0]['count']} trades with invalid asset references"
+                )
 
             # Check positions reference valid portfolios and assets
-            result = await self.query_executor.execute_query("""
+            result = await self.query_executor.execute_query(
+                """
                 SELECT COUNT(*) as count
                 FROM positions pos
                 LEFT JOIN portfolios p ON pos.portfolio_id = p.portfolio_id
                 LEFT JOIN assets a ON pos.symbol = a.symbol
                 WHERE p.portfolio_id IS NULL OR a.symbol IS NULL
-            """)
+            """
+            )
 
             if result.rows and result.rows[0]["count"] > 0:
-                violations.append(f"Found {result.rows[0]['count']} positions with invalid references")
+                violations.append(
+                    f"Found {result.rows[0]['count']} positions with invalid references"
+                )
 
         except Exception as e:
             logger.error(f"Referential integrity check failed: {str(e)}")

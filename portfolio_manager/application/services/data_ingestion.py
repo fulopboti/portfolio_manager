@@ -43,9 +43,13 @@ class DataIngestionService(ExceptionBasedService):
         self.retry_attempts = retry_attempts if retry_attempts is not None else 3
 
         # Log configuration for observability
-        self._log_operation_start("initialize_service",
-            f"batch_size={self.batch_size}, retry_attempts={self.retry_attempts}")
-        self._log_operation_success("initialize_service", "DataIngestionService configured")
+        self._log_operation_start(
+            "initialize_service",
+            f"batch_size={self.batch_size}, retry_attempts={self.retry_attempts}",
+        )
+        self._log_operation_success(
+            "initialize_service", "DataIngestionService configured"
+        )
 
     async def ingest_symbol(
         self,
@@ -60,11 +64,15 @@ class DataIngestionService(ExceptionBasedService):
         try:
             # Get OHLCV data from provider first (fail fast)
             if start_date is None:
-                start_date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+                start_date = datetime.now().replace(
+                    hour=0, minute=0, second=0, microsecond=0
+                )
             if end_date is None:
                 end_date = datetime.now()
 
-            snapshots = await self.data_provider.get_ohlcv_data(symbol, start_date, end_date)
+            snapshots = await self.data_provider.get_ohlcv_data(
+                symbol, start_date, end_date
+            )
 
             # Only create asset if data fetching succeeds
             existing_asset = await self.asset_repository.get_asset(symbol)
@@ -89,7 +97,7 @@ class DataIngestionService(ExceptionBasedService):
                         symbol=symbol,
                         success=False,
                         snapshots_count=0,
-                        error=f"Snapshot validation error: {str(e)}"
+                        error=f"Snapshot validation error: {str(e)}",
                     )
                 except Exception as e:
                     # Catch-all for unexpected errors
@@ -97,20 +105,26 @@ class DataIngestionService(ExceptionBasedService):
                         symbol=symbol,
                         success=False,
                         snapshots_count=0,
-                        error=f"Unexpected error during snapshot processing: {str(e)}"
+                        error=f"Unexpected error during snapshot processing: {str(e)}",
                     )
 
             # Get and save fundamental data
             try:
                 fundamentals = await self.data_provider.get_fundamental_data(symbol)
                 if fundamentals:
-                    await self.asset_repository.save_fundamental_metrics(symbol, fundamentals)
+                    await self.asset_repository.save_fundamental_metrics(
+                        symbol, fundamentals
+                    )
             except (DataAccessError, DataIngestionError) as e:
                 # Log but don't fail - fundamental data is optional
-                self._logger.warning(f"Failed to save fundamental data for {symbol}: {e}")
+                self._logger.warning(
+                    f"Failed to save fundamental data for {symbol}: {e}"
+                )
             except Exception as e:
                 # Unexpected errors in fundamental data processing
-                self._logger.warning(f"Unexpected error saving fundamental data for {symbol}: {e}")
+                self._logger.warning(
+                    f"Unexpected error saving fundamental data for {symbol}: {e}"
+                )
 
             return IngestionResult(
                 symbol=symbol,

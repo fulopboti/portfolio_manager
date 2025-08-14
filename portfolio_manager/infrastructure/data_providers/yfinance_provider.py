@@ -37,7 +37,9 @@ class YFinanceProvider(DataProvider):
     ) -> list[AssetSnapshot]:
         """Retrieve OHLCV data from Yahoo Finance."""
         if not self.supports_symbol(symbol):
-            raise DataIngestionError(f"Symbol {symbol} is not supported by Yahoo Finance")
+            raise DataIngestionError(
+                f"Symbol {symbol} is not supported by Yahoo Finance"
+            )
 
         try:
             # Add delay to respect rate limits
@@ -62,7 +64,9 @@ class YFinanceProvider(DataProvider):
                     if snapshot:
                         snapshots.append(snapshot)
                 except (ValueError, InvalidOperation) as e:
-                    self.logger.warning(f"Skipping invalid data point for {symbol} on {date}: {e}")
+                    self.logger.warning(
+                        f"Skipping invalid data point for {symbol} on {date}: {e}"
+                    )
                     continue
 
             if not snapshots:
@@ -77,12 +81,16 @@ class YFinanceProvider(DataProvider):
             if isinstance(e, DataIngestionError):
                 raise
             else:
-                raise DataIngestionError(f"Failed to fetch data for {symbol}: {str(e)}") from e
+                raise DataIngestionError(
+                    f"Failed to fetch data for {symbol}: {str(e)}"
+                ) from e
 
     async def get_fundamental_data(self, symbol: str) -> dict[str, Any]:
         """Retrieve fundamental data from Yahoo Finance."""
         if not self.supports_symbol(symbol):
-            raise DataIngestionError(f"Symbol {symbol} is not supported by Yahoo Finance")
+            raise DataIngestionError(
+                f"Symbol {symbol} is not supported by Yahoo Finance"
+            )
 
         try:
             # Add delay to respect rate limits
@@ -104,7 +112,9 @@ class YFinanceProvider(DataProvider):
 
         except Exception as e:
             self._failed_requests += 1
-            raise DataIngestionError(f"Failed to fetch fundamental data for {symbol}: {str(e)}") from e
+            raise DataIngestionError(
+                f"Failed to fetch fundamental data for {symbol}: {str(e)}"
+            ) from e
 
     def supports_symbol(self, symbol: str) -> bool:
         """Check if the provider supports the given symbol."""
@@ -116,7 +126,14 @@ class YFinanceProvider(DataProvider):
 
         # Invalid symbols that should be rejected
         invalid_symbols = {
-            "", "INVALID", "TEST", "MOCK", "FAIL", "ERROR", "NULL", "NONE"
+            "",
+            "INVALID",
+            "TEST",
+            "MOCK",
+            "FAIL",
+            "ERROR",
+            "NULL",
+            "NONE",
         }
 
         return symbol not in invalid_symbols and len(symbol) <= 10
@@ -136,25 +153,27 @@ class YFinanceProvider(DataProvider):
             "failed_requests": self._failed_requests,
             "request_delay": self.request_delay,
             "max_retries": self.max_retries,
-            "notes": "Unofficial API with rate limiting based on community guidelines"
+            "notes": "Unofficial API with rate limiting based on community guidelines",
         }
 
-    def _fetch_ticker_data(self, symbol: str, start_date: datetime, end_date: datetime) -> pd.DataFrame | None:
+    def _fetch_ticker_data(
+        self, symbol: str, start_date: datetime, end_date: datetime
+    ) -> pd.DataFrame | None:
         """Fetch ticker data using yfinance (synchronous)."""
         try:
             ticker = yf.Ticker(symbol)
 
             # Format dates for yfinance
-            start_str = start_date.strftime('%Y-%m-%d')
-            end_str = end_date.strftime('%Y-%m-%d')
+            start_str = start_date.strftime("%Y-%m-%d")
+            end_str = end_date.strftime("%Y-%m-%d")
 
             # Fetch historical data
             data = ticker.history(
                 start=start_str,
                 end=end_str,
-                interval='1d',
+                interval="1d",
                 auto_adjust=True,
-                prepost=False
+                prepost=False,
             )
 
             if data.empty:
@@ -180,48 +199,50 @@ class YFinanceProvider(DataProvider):
             fundamental_data = {}
 
             # Financial ratios
-            if 'trailingPE' in info and info['trailingPE']:
-                fundamental_data['pe_ratio'] = Decimal(str(info['trailingPE']))
+            if "trailingPE" in info and info["trailingPE"]:
+                fundamental_data["pe_ratio"] = Decimal(str(info["trailingPE"]))
 
-            if 'priceToBook' in info and info['priceToBook']:
-                fundamental_data['pb_ratio'] = Decimal(str(info['priceToBook']))
+            if "priceToBook" in info and info["priceToBook"]:
+                fundamental_data["pb_ratio"] = Decimal(str(info["priceToBook"]))
 
-            if 'dividendYield' in info and info['dividendYield']:
-                fundamental_data['dividend_yield'] = Decimal(str(info['dividendYield']))
+            if "dividendYield" in info and info["dividendYield"]:
+                fundamental_data["dividend_yield"] = Decimal(str(info["dividendYield"]))
 
             # Market data
-            if 'marketCap' in info and info['marketCap']:
-                fundamental_data['market_cap'] = Decimal(str(info['marketCap']))
+            if "marketCap" in info and info["marketCap"]:
+                fundamental_data["market_cap"] = Decimal(str(info["marketCap"]))
 
-            if 'totalRevenue' in info and info['totalRevenue']:
-                fundamental_data['revenue'] = Decimal(str(info['totalRevenue']))
+            if "totalRevenue" in info and info["totalRevenue"]:
+                fundamental_data["revenue"] = Decimal(str(info["totalRevenue"]))
 
-            if 'netIncomeToCommon' in info and info['netIncomeToCommon']:
-                fundamental_data['net_income'] = Decimal(str(info['netIncomeToCommon']))
+            if "netIncomeToCommon" in info and info["netIncomeToCommon"]:
+                fundamental_data["net_income"] = Decimal(str(info["netIncomeToCommon"]))
 
             # Financial health ratios
-            if 'debtToEquity' in info and info['debtToEquity']:
-                fundamental_data['debt_to_equity'] = Decimal(str(info['debtToEquity']))
+            if "debtToEquity" in info and info["debtToEquity"]:
+                fundamental_data["debt_to_equity"] = Decimal(str(info["debtToEquity"]))
 
-            if 'currentRatio' in info and info['currentRatio']:
-                fundamental_data['current_ratio'] = Decimal(str(info['currentRatio']))
+            if "currentRatio" in info and info["currentRatio"]:
+                fundamental_data["current_ratio"] = Decimal(str(info["currentRatio"]))
 
-            if 'returnOnEquity' in info and info['returnOnEquity']:
-                fundamental_data['roe'] = Decimal(str(info['returnOnEquity']))
+            if "returnOnEquity" in info and info["returnOnEquity"]:
+                fundamental_data["roe"] = Decimal(str(info["returnOnEquity"]))
 
-            if 'returnOnAssets' in info and info['returnOnAssets']:
-                fundamental_data['roa'] = Decimal(str(info['returnOnAssets']))
+            if "returnOnAssets" in info and info["returnOnAssets"]:
+                fundamental_data["roa"] = Decimal(str(info["returnOnAssets"]))
 
             # Growth metrics
-            if 'revenueGrowth' in info and info['revenueGrowth']:
-                fundamental_data['revenue_growth'] = Decimal(str(info['revenueGrowth']))
+            if "revenueGrowth" in info and info["revenueGrowth"]:
+                fundamental_data["revenue_growth"] = Decimal(str(info["revenueGrowth"]))
 
-            if 'earningsGrowth' in info and info['earningsGrowth']:
-                fundamental_data['earnings_growth'] = Decimal(str(info['earningsGrowth']))
+            if "earningsGrowth" in info and info["earningsGrowth"]:
+                fundamental_data["earnings_growth"] = Decimal(
+                    str(info["earningsGrowth"])
+                )
 
             # Add metadata
-            fundamental_data['data_source'] = 'yahoo_finance'
-            fundamental_data['last_updated'] = datetime.now(UTC).isoformat()
+            fundamental_data["data_source"] = "yahoo_finance"
+            fundamental_data["last_updated"] = datetime.now(UTC).isoformat()
 
             return fundamental_data
 
@@ -229,11 +250,13 @@ class YFinanceProvider(DataProvider):
             self.logger.error(f"Error fetching fundamental data for {symbol}: {e}")
             raise
 
-    def _create_asset_snapshot(self, symbol: str, date: pd.Timestamp, row: pd.Series) -> AssetSnapshot | None:
+    def _create_asset_snapshot(
+        self, symbol: str, date: pd.Timestamp, row: pd.Series
+    ) -> AssetSnapshot | None:
         """Create AssetSnapshot from pandas row data."""
         try:
             # Convert pandas Timestamp to Python datetime
-            if hasattr(date, 'to_pydatetime'):
+            if hasattr(date, "to_pydatetime"):
                 timestamp = date.to_pydatetime()
             else:
                 timestamp = pd.to_datetime(date).to_pydatetime()
@@ -243,18 +266,20 @@ class YFinanceProvider(DataProvider):
                 timestamp = timestamp.replace(tzinfo=UTC)
 
             # Extract OHLCV data and convert to Decimal
-            open_price = self._safe_decimal(row.get('Open'))
-            high_price = self._safe_decimal(row.get('High'))
-            low_price = self._safe_decimal(row.get('Low'))
-            close_price = self._safe_decimal(row.get('Close'))
-            volume = int(row.get('Volume', 0))
+            open_price = self._safe_decimal(row.get("Open"))
+            high_price = self._safe_decimal(row.get("High"))
+            low_price = self._safe_decimal(row.get("Low"))
+            close_price = self._safe_decimal(row.get("Close"))
+            volume = int(row.get("Volume", 0))
 
             # Validate that we have required data
             if None in [open_price, high_price, low_price, close_price]:
                 return None
 
             # Additional validation
-            if any(price <= 0 for price in [open_price, high_price, low_price, close_price]):
+            if any(
+                price <= 0 for price in [open_price, high_price, low_price, close_price]
+            ):
                 return None
 
             if volume < 0:
@@ -267,7 +292,7 @@ class YFinanceProvider(DataProvider):
                 high=high_price,
                 low=low_price,
                 close=close_price,
-                volume=volume
+                volume=volume,
             )
 
         except Exception as e:

@@ -134,9 +134,7 @@ class AssetDataAccess(ABC):
 
     @abstractmethod
     async def get_snapshot_at_date(
-        self,
-        symbol: str,
-        date: datetime
+        self, symbol: str, date: datetime
     ) -> AssetSnapshot | None:
         """Get price snapshot closest to a specific date.
 
@@ -151,10 +149,7 @@ class AssetDataAccess(ABC):
 
     @abstractmethod
     async def get_historical_snapshots(
-        self,
-        symbol: str,
-        start_date: datetime,
-        end_date: datetime
+        self, symbol: str, start_date: datetime, end_date: datetime
     ) -> list[AssetSnapshot]:
         """Get historical price snapshots for a date range.
 
@@ -170,9 +165,7 @@ class AssetDataAccess(ABC):
 
     @abstractmethod
     async def get_snapshots_bulk(
-        self,
-        symbols: list[str],
-        date: datetime
+        self, symbols: list[str], date: datetime
     ) -> dict[str, AssetSnapshot | None]:
         """Get snapshots for multiple assets at a specific date.
 
@@ -216,7 +209,7 @@ class AssetDataAccess(ABC):
         self,
         symbol: str,
         metrics: dict[str, Decimal],
-        as_of_date: datetime | None = None
+        as_of_date: datetime | None = None,
     ) -> None:
         """Save fundamental metrics for an asset.
 
@@ -232,9 +225,7 @@ class AssetDataAccess(ABC):
 
     @abstractmethod
     async def get_fundamental_metrics(
-        self,
-        symbol: str,
-        as_of_date: datetime | None = None
+        self, symbol: str, as_of_date: datetime | None = None
     ) -> dict[str, Decimal] | None:
         """Get fundamental metrics for an asset.
 
@@ -249,9 +240,7 @@ class AssetDataAccess(ABC):
 
     @abstractmethod
     async def get_fundamental_metrics_bulk(
-        self,
-        symbols: list[str],
-        as_of_date: datetime | None = None
+        self, symbols: list[str], as_of_date: datetime | None = None
     ) -> dict[str, dict[str, Decimal] | None]:
         """Get fundamental metrics for multiple assets.
 
@@ -266,11 +255,7 @@ class AssetDataAccess(ABC):
 
     @abstractmethod
     async def get_metric_history(
-        self,
-        symbol: str,
-        metric_name: str,
-        start_date: datetime,
-        end_date: datetime
+        self, symbol: str, metric_name: str, start_date: datetime, end_date: datetime
     ) -> list[tuple[datetime, Decimal]]:
         """Get historical values for a specific fundamental metric.
 
@@ -287,9 +272,7 @@ class AssetDataAccess(ABC):
 
     @abstractmethod
     async def delete_fundamental_metrics(
-        self,
-        symbol: str,
-        before_date: datetime | None = None
+        self, symbol: str, before_date: datetime | None = None
     ) -> int:
         """Delete fundamental metrics for an asset.
 

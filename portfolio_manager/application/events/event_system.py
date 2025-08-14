@@ -38,7 +38,7 @@ class EventSystem:
         position_repository,
         audit_service,
         portfolio_metrics_service,
-        risk_service
+        risk_service,
     ) -> None:
         """
         Set up trade processing event handlers.
@@ -55,20 +55,19 @@ class EventSystem:
         """
         # Create trade execution handler
         trade_handler = TradeExecutedEventHandler(
-            portfolio_repository,
-            position_repository,
-            audit_service
+            portfolio_repository, position_repository, audit_service
         )
 
         # Create portfolio metrics handler
         metrics_handler = PortfolioMetricsEventHandler(
-            portfolio_metrics_service,
-            risk_service
+            portfolio_metrics_service, risk_service
         )
 
         # Subscribe handlers to trade events
         trade_sub_id = await self.event_bus.subscribe(TradeExecutedEvent, trade_handler)
-        metrics_sub_id = await self.event_bus.subscribe(TradeExecutedEvent, metrics_handler)
+        metrics_sub_id = await self.event_bus.subscribe(
+            TradeExecutedEvent, metrics_handler
+        )
 
         # Track subscriptions for cleanup
         self._subscription_ids.extend([trade_sub_id, metrics_sub_id])
@@ -105,5 +104,7 @@ class EventSystem:
         """
         return {
             "total_subscriptions": self.event_bus.get_total_subscriptions(),
-            "trade_event_subscriptions": self.event_bus.get_subscription_count(TradeExecutedEvent)
+            "trade_event_subscriptions": self.event_bus.get_subscription_count(
+                TradeExecutedEvent
+            ),
         }

@@ -50,7 +50,9 @@ class EventBus:
         self._subscriptions: dict[type, list[EventSubscription]] = defaultdict(list)
         self._handler_subscriptions: dict[str, EventSubscription] = {}
         self._logger = logging.getLogger(__name__)
-        self._processing_events: set[str] = set()  # Track events being processed to prevent recursion
+        self._processing_events: set[str] = (
+            set()
+        )  # Track events being processed to prevent recursion
 
     async def subscribe(self, event_type: type, handler: EventHandler) -> str:
         """
@@ -92,7 +94,8 @@ class EventBus:
         event_type = subscription.event_type
         if event_type in self._subscriptions:
             self._subscriptions[event_type] = [
-                s for s in self._subscriptions[event_type]
+                s
+                for s in self._subscriptions[event_type]
                 if s.subscription_id != subscription_id
             ]
 
@@ -120,7 +123,9 @@ class EventBus:
 
         # Check for recursion
         if event_key in self._processing_events:
-            self._logger.warning(f"Recursive event publishing prevented for {event_key}")
+            self._logger.warning(
+                f"Recursive event publishing prevented for {event_key}"
+            )
             return
 
         subscriptions = self._subscriptions.get(event_type, [])

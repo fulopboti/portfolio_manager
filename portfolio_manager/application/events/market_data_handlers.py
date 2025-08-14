@@ -57,7 +57,7 @@ class MarketDataReceivedEventHandler(BaseEventHandler):
                 price=event.price,
                 volume=event.volume,
                 market_cap=event.market_cap,
-                timestamp=event.timestamp
+                timestamp=event.timestamp,
             )
 
             # Check if this represents a price change
@@ -92,13 +92,16 @@ class MarketDataReceivedEventHandler(BaseEventHandler):
 
         if last_price is None or last_price != event.price:
             return {
-                'old_price': last_price or event.price,  # Use current price if no previous price
-                'new_price': event.price
+                "old_price": last_price
+                or event.price,  # Use current price if no previous price
+                "new_price": event.price,
             }
 
         return None
 
-    async def _publish_price_update_event(self, event: MarketDataReceivedEvent, price_change: dict) -> None:
+    async def _publish_price_update_event(
+        self, event: MarketDataReceivedEvent, price_change: dict
+    ) -> None:
         """
         Publish an asset price updated event.
 
@@ -111,8 +114,8 @@ class MarketDataReceivedEventHandler(BaseEventHandler):
                 event_id=f"price_update_{event.symbol}_{event.timestamp.isoformat()}",
                 timestamp=event.timestamp,
                 symbol=event.symbol,
-                old_price=price_change['old_price'],
-                new_price=price_change['new_price']
+                old_price=price_change["old_price"],
+                new_price=price_change["new_price"],
             )
 
             await self.event_bus.publish(price_update_event)
@@ -123,7 +126,9 @@ class MarketDataReceivedEventHandler(BaseEventHandler):
             )
 
         except Exception as e:
-            self._logger.warning(f"Failed to publish price update event for {event.symbol}: {e}")
+            self._logger.warning(
+                f"Failed to publish price update event for {event.symbol}: {e}"
+            )
 
     async def _update_asset_metadata(self, event: MarketDataReceivedEvent) -> None:
         """
@@ -138,11 +143,13 @@ class MarketDataReceivedEventHandler(BaseEventHandler):
                 market_cap=event.market_cap,
                 last_price=event.price,
                 last_volume=event.volume,
-                timestamp=event.timestamp
+                timestamp=event.timestamp,
             )
 
         except Exception as e:
-            self._logger.warning(f"Failed to update asset metadata for {event.symbol}: {e}")
+            self._logger.warning(
+                f"Failed to update asset metadata for {event.symbol}: {e}"
+            )
 
 
 class MarketDataQualityEventHandler(BaseEventHandler):
@@ -182,7 +189,9 @@ class MarketDataQualityEventHandler(BaseEventHandler):
             await self._update_quality_metrics(event)
 
         except Exception as e:
-            self._logger.warning(f"Failed to check data quality for {event.symbol}: {e}")
+            self._logger.warning(
+                f"Failed to check data quality for {event.symbol}: {e}"
+            )
             # Don't re-raise - quality checks should not break data processing
 
     async def _check_data_quality(self, event: MarketDataReceivedEvent) -> list:
@@ -199,18 +208,14 @@ class MarketDataQualityEventHandler(BaseEventHandler):
 
         # Check for price anomalies
         price_anomaly = await self.data_quality_service.check_price_anomaly(
-            symbol=event.symbol,
-            price=event.price,
-            timestamp=event.timestamp
+            symbol=event.symbol, price=event.price, timestamp=event.timestamp
         )
         if price_anomaly:
             issues.append(f"Price anomaly: {price_anomaly}")
 
         # Check for volume anomalies
         volume_anomaly = await self.data_quality_service.check_volume_anomaly(
-            symbol=event.symbol,
-            volume=event.volume,
-            timestamp=event.timestamp
+            symbol=event.symbol, volume=event.volume, timestamp=event.timestamp
         )
         if volume_anomaly:
             issues.append(f"Volume anomaly: {volume_anomaly}")
@@ -221,7 +226,9 @@ class MarketDataQualityEventHandler(BaseEventHandler):
 
         return issues
 
-    async def _handle_quality_issues(self, event: MarketDataReceivedEvent, issues: list) -> None:
+    async def _handle_quality_issues(
+        self, event: MarketDataReceivedEvent, issues: list
+    ) -> None:
         """
         Handle detected data quality issues.
 
@@ -242,10 +249,10 @@ class MarketDataQualityEventHandler(BaseEventHandler):
                     symbol=event.symbol,
                     issues=critical_issues,
                     data_point={
-                        'price': event.price,
-                        'volume': event.volume,
-                        'timestamp': event.timestamp
-                    }
+                        "price": event.price,
+                        "volume": event.volume,
+                        "timestamp": event.timestamp,
+                    },
                 )
 
             except Exception as e:
@@ -260,13 +267,13 @@ class MarketDataQualityEventHandler(BaseEventHandler):
         """
         try:
             await self.data_quality_service.update_quality_metrics(
-                symbol=event.symbol,
-                timestamp=event.timestamp,
-                data_received=True
+                symbol=event.symbol, timestamp=event.timestamp, data_received=True
             )
 
         except Exception as e:
-            self._logger.debug(f"Failed to update quality metrics for {event.symbol}: {e}")
+            self._logger.debug(
+                f"Failed to update quality metrics for {event.symbol}: {e}"
+            )
 
 
 class MarketDataCachingEventHandler(BaseEventHandler):
@@ -302,22 +309,24 @@ class MarketDataCachingEventHandler(BaseEventHandler):
                 price=event.price,
                 volume=event.volume,
                 market_cap=event.market_cap,
-                timestamp=event.timestamp
+                timestamp=event.timestamp,
             )
 
             # Distribute to real-time subscribers
             await self.distribution_service.distribute_market_data(
                 symbol=event.symbol,
                 data={
-                    'price': str(event.price),
-                    'volume': event.volume,
-                    'market_cap': str(event.market_cap) if event.market_cap else None,
-                    'timestamp': event.timestamp.isoformat()
-                }
+                    "price": str(event.price),
+                    "volume": event.volume,
+                    "market_cap": str(event.market_cap) if event.market_cap else None,
+                    "timestamp": event.timestamp.isoformat(),
+                },
             )
 
             self._logger.debug(f"Cached and distributed market data for {event.symbol}")
 
         except Exception as e:
-            self._logger.warning(f"Failed to cache/distribute market data for {event.symbol}: {e}")
+            self._logger.warning(
+                f"Failed to cache/distribute market data for {event.symbol}: {e}"
+            )
             # Don't re-raise - caching failures should not break data processing
