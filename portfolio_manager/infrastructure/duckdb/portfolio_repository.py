@@ -1,17 +1,19 @@
 """DuckDB concrete implementation of PortfolioDataAccess interface."""
 
-import logging
 from datetime import datetime
 from decimal import Decimal
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 from uuid import UUID
 
 from portfolio_manager.domain.entities import Portfolio, Position, Trade, TradeSide
-from portfolio_manager.infrastructure.data_access.portfolio_data_access import PortfolioDataAccess
 from portfolio_manager.infrastructure.data_access.exceptions import (
     DataAccessError,
     NotFoundError,
 )
+from portfolio_manager.infrastructure.data_access.portfolio_data_access import (
+    PortfolioDataAccess,
+)
+
 from .base_repository import BaseDuckDBRepository, EntityMapperMixin, QueryBuilderMixin
 from .connection import DuckDBConnection
 from .query_executor import DuckDBQueryExecutor
@@ -48,7 +50,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
         self._log_operation_start("save_portfolio", portfolio_info)
 
         query = """
-        INSERT INTO portfolios 
+        INSERT INTO portfolios
         (portfolio_id, name, base_ccy, cash_balance, created_at, updated_at)
         VALUES (?, ?, ?, ?, ?, NOW())
         ON CONFLICT (portfolio_id) DO UPDATE SET
@@ -68,7 +70,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
         await self._execute_query(query, parameters, f"save_portfolio({portfolio_info})")
         self._log_operation_success("save_portfolio", portfolio_info)
 
-    async def get_portfolio(self, portfolio_id: UUID) -> Optional[Portfolio]:
+    async def get_portfolio(self, portfolio_id: UUID) -> Portfolio | None:
         """Retrieve a portfolio by ID.
 
         Args:
@@ -95,7 +97,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             created=result[4]
         )
 
-    async def get_all_portfolios(self) -> List[Portfolio]:
+    async def get_all_portfolios(self) -> list[Portfolio]:
         """Retrieve all portfolios.
 
         Returns:
@@ -141,7 +143,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
                 raise NotFoundError(f"Portfolio {portfolio.portfolio_id} not found")
 
             query = """
-            UPDATE portfolios 
+            UPDATE portfolios
             SET name = ?, base_ccy = ?, cash_balance = ?, updated_at = CURRENT_TIMESTAMP
             WHERE portfolio_id = ?
             """
@@ -210,7 +212,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             self.logger.error(error_msg)
             raise DataAccessError(error_msg) from e
 
-    async def get_portfolio_ids(self) -> Set[UUID]:
+    async def get_portfolio_ids(self) -> set[UUID]:
         """Get all portfolio IDs in the database.
 
         Returns:
@@ -227,8 +229,8 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             raise DataAccessError(error_msg) from e
 
     async def update_portfolio_cash(
-        self, 
-        portfolio_id: UUID, 
+        self,
+        portfolio_id: UUID,
         new_balance: Decimal
     ) -> None:
         """Update the cash balance of a portfolio.
@@ -247,7 +249,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
                 raise NotFoundError(f"Portfolio {portfolio_id} not found")
 
             query = """
-            UPDATE portfolios 
+            UPDATE portfolios
             SET cash_balance = ?, updated_at = CURRENT_TIMESTAMP
             WHERE portfolio_id = ?
             """
@@ -276,8 +278,8 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
         """
         try:
             query = """
-            INSERT INTO trades 
-            (trade_id, portfolio_id, symbol, timestamp, side, qty, price, 
+            INSERT INTO trades
+            (trade_id, portfolio_id, symbol, timestamp, side, qty, price,
              pip_pct, fee_flat, fee_pct, unit, price_ccy, comment)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT (trade_id) DO UPDATE SET
@@ -318,7 +320,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             self.logger.error(error_msg)
             raise DataAccessError(error_msg) from e
 
-    async def get_trade(self, trade_id: UUID) -> Optional[Trade]:
+    async def get_trade(self, trade_id: UUID) -> Trade | None:
         """Retrieve a trade by ID.
 
         Args:
@@ -361,11 +363,11 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             raise DataAccessError(error_msg) from e
 
     async def get_trades_for_portfolio(
-        self, 
+        self,
         portfolio_id: UUID,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None
-    ) -> List[Trade]:
+        limit: int | None = None,
+        offset: int | None = None
+    ) -> list[Trade]:
         """Get all trades for a specific portfolio.
 
         Args:
@@ -417,11 +419,11 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             raise DataAccessError(error_msg) from e
 
     async def get_trades_for_symbol(
-        self, 
+        self,
         portfolio_id: UUID,
         symbol: str,
-        limit: Optional[int] = None
-    ) -> List[Trade]:
+        limit: int | None = None
+    ) -> list[Trade]:
         """Get all trades for a specific asset in a portfolio.
 
         Args:
@@ -471,11 +473,11 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             raise DataAccessError(error_msg) from e
 
     async def get_trades_in_date_range(
-        self, 
+        self,
         portfolio_id: UUID,
         start_date: datetime,
         end_date: datetime
-    ) -> List[Trade]:
+    ) -> list[Trade]:
         """Get trades within a specific date range.
 
         Args:
@@ -542,11 +544,11 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             raise DataAccessError(error_msg) from e
 
     async def get_trade_volume_stats(
-        self, 
+        self,
         portfolio_id: UUID,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None
-    ) -> Dict[str, Decimal]:
+        start_date: datetime | None = None,
+        end_date: datetime | None = None
+    ) -> dict[str, Decimal]:
         """Get trade volume statistics for a portfolio.
 
         Args:
@@ -559,7 +561,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
         """
         try:
             base_query = """
-            SELECT 
+            SELECT
                 COUNT(*) as trade_count,
                 SUM(qty * price) as total_volume,
                 AVG(qty * price) as avg_trade_size,
@@ -629,7 +631,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
         """
         try:
             query = """
-            INSERT INTO positions 
+            INSERT INTO positions
             (portfolio_id, symbol, qty, avg_cost, unit, price_ccy, last_updated)
             VALUES (?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT (portfolio_id, symbol) DO UPDATE SET
@@ -658,10 +660,10 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             raise DataAccessError(error_msg) from e
 
     async def get_position(
-        self, 
-        portfolio_id: UUID, 
+        self,
+        portfolio_id: UUID,
         symbol: str
-    ) -> Optional[Position]:
+    ) -> Position | None:
         """Get a specific position.
 
         Args:
@@ -697,7 +699,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             self.logger.error(error_msg)
             raise DataAccessError(error_msg) from e
 
-    async def get_positions_for_portfolio(self, portfolio_id: UUID) -> List[Position]:
+    async def get_positions_for_portfolio(self, portfolio_id: UUID) -> list[Position]:
         """Get all positions for a portfolio.
 
         Args:
@@ -734,10 +736,10 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             raise DataAccessError(error_msg) from e
 
     async def get_positions_for_symbols(
-        self, 
+        self,
         portfolio_id: UUID,
-        symbols: List[str]
-    ) -> Dict[str, Optional[Position]]:
+        symbols: list[str]
+    ) -> dict[str, Position | None]:
         """Get positions for multiple symbols.
 
         Args:
@@ -762,7 +764,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             results = await self.query_executor.fetch_all(query, parameters)
 
             # Build result dictionary
-            result_dict = {symbol: None for symbol in symbols}
+            result_dict = dict.fromkeys(symbols)
             for row in results:
                 symbol = row[1]
                 result_dict[symbol] = Position(
@@ -794,7 +796,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
         """
         try:
             query = """
-            UPDATE positions 
+            UPDATE positions
             SET qty = ?, avg_cost = ?, unit = ?, price_ccy = ?, last_updated = ?
             WHERE portfolio_id = ? AND symbol = ?
             """
@@ -864,10 +866,10 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             raise DataAccessError(error_msg) from e
 
     async def get_largest_positions(
-        self, 
+        self,
         portfolio_id: UUID,
         limit: int = 10
-    ) -> List[Position]:
+    ) -> list[Position]:
         """Get the largest positions by market value.
 
         Args:
@@ -879,7 +881,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
         """
         try:
             query = f"""
-            SELECT 
+            SELECT
                 p.portfolio_id, p.symbol, p.qty, p.avg_cost, p.unit, p.price_ccy, p.last_updated,
                 (p.qty * p.avg_cost) as cost_basis
             FROM positions p
@@ -910,10 +912,10 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
     # Portfolio Analytics Methods (Simplified implementations)
 
     async def calculate_portfolio_value(
-        self, 
+        self,
         portfolio_id: UUID,
-        as_of_date: Optional[datetime] = None
-    ) -> Dict[str, Decimal]:
+        as_of_date: datetime | None = None
+    ) -> dict[str, Decimal]:
         """Calculate total portfolio value and breakdown.
 
         Args:
@@ -955,11 +957,11 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             raise DataAccessError(error_msg) from e
 
     async def calculate_portfolio_returns(
-        self, 
+        self,
         portfolio_id: UUID,
         start_date: datetime,
         end_date: datetime
-    ) -> Dict[str, Decimal]:
+    ) -> dict[str, Decimal]:
         """Calculate portfolio returns over a period.
 
         Args:
@@ -995,7 +997,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             self.logger.error(error_msg)
             raise DataAccessError(error_msg) from e
 
-    async def get_portfolio_allocation(self, portfolio_id: UUID) -> Dict[str, Decimal]:
+    async def get_portfolio_allocation(self, portfolio_id: UUID) -> dict[str, Decimal]:
         """Get asset allocation breakdown for a portfolio.
 
         Args:
@@ -1006,7 +1008,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
         """
         try:
             query = """
-            SELECT 
+            SELECT
                 symbol,
                 (qty * avg_cost) as position_value,
                 SUM(qty * avg_cost) OVER () as total_invested
@@ -1036,11 +1038,11 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             raise DataAccessError(error_msg) from e
 
     async def get_portfolio_performance_history(
-        self, 
+        self,
         portfolio_id: UUID,
         start_date: datetime,
         end_date: datetime
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get historical portfolio performance data.
 
         Args:
@@ -1054,7 +1056,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
         try:
             # Simplified implementation using daily trade volumes
             query = """
-            SELECT 
+            SELECT
                 DATE(timestamp) as trade_date,
                 SUM(CASE WHEN side = 'BUY' THEN qty * price ELSE -qty * price END) as net_flow,
                 COUNT(*) as trade_count
@@ -1107,7 +1109,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             raise DataAccessError(error_msg) from e
 
     async def archive_old_trades(
-        self, 
+        self,
         portfolio_id: UUID,
         before_date: datetime
     ) -> int:
@@ -1124,7 +1126,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             # In a real implementation, this would move trades to an archive table
             # For now, we'll just count them
             query = """
-            SELECT COUNT(*) FROM trades 
+            SELECT COUNT(*) FROM trades
             WHERE portfolio_id = ? AND timestamp < ?
             """
             result = await self.query_executor.fetch_one(
@@ -1140,7 +1142,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
             self.logger.error(error_msg)
             raise DataAccessError(error_msg) from e
 
-    async def validate_portfolio_integrity(self, portfolio_id: UUID) -> Dict[str, Any]:
+    async def validate_portfolio_integrity(self, portfolio_id: UUID) -> dict[str, Any]:
         """Validate data integrity for a portfolio.
 
         Args:
@@ -1158,7 +1160,7 @@ class DuckDBPortfolioRepository(BaseDuckDBRepository, EntityMapperMixin, QueryBu
 
             # Check for negative positions
             query = """
-            SELECT COUNT(*) FROM positions 
+            SELECT COUNT(*) FROM positions
             WHERE portfolio_id = ? AND qty < 0
             """
             result = await self.query_executor.fetch_one(query, [str(portfolio_id)])

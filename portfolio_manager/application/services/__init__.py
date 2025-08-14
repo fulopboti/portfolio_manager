@@ -2,16 +2,20 @@
 
 from .base_service import (
     BaseApplicationService,
-    ResultBasedService,
+    DependencyContainer,
     ExceptionBasedService,
-    ServiceResult,
+    ResultBasedService,
     ServiceErrorStrategy,
     ServiceMetrics,
-    DependencyContainer,
+    ServiceResult,
 )
-from .portfolio_simulator import PortfolioSimulatorService, TradeResult, PortfolioMetrics
 from .data_ingestion import DataIngestionService, IngestionResult
-from .strategy_scorer import StrategyScoreService, StrategyScore, BacktestResult
+from .portfolio_simulator import (
+    PortfolioMetrics,
+    PortfolioSimulatorService,
+    TradeResult,
+)
+from .strategy_scorer import BacktestResult, StrategyScore, StrategyScoreService
 
 __all__ = [
     # Base service classes

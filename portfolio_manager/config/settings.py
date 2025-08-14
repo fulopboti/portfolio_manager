@@ -1,19 +1,16 @@
 """Configuration settings management for the portfolio manager application."""
 
-import os
 import logging
-import tempfile
+import os
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 try:
     import yaml
-except ImportError:
-    raise ImportError("PyYAML is required for configuration management")
+except ImportError as e:
+    raise ImportError("PyYAML is required for configuration management") from e
 
-from pydantic import BaseModel, ValidationError
 
-from portfolio_manager.config.schema import PortfolioManagerConfig, validate_config
 
 # Module-level logger for testing
 logger = logging.getLogger(__name__)
@@ -27,7 +24,7 @@ class ConfigurationError(Exception):
 class ConfigManager:
     """Manages application configuration with environment variable overrides."""
 
-    def __init__(self, config_dir: Optional[Path] = None, env_prefix: str = "PORTFOLIO_MANAGER"):
+    def __init__(self, config_dir: Path | None = None, env_prefix: str = "PORTFOLIO_MANAGER"):
         """Initialize configuration manager.
 
         Args:
@@ -36,7 +33,7 @@ class ConfigManager:
         """
         self.config_dir = config_dir or self._get_default_config_dir()
         self.env_prefix = env_prefix
-        self._config: Optional[Dict[str, Any]] = None
+        self._config: dict[str, Any] | None = None
 
         # Load configuration immediately to catch errors during construction
         self.load_config()
@@ -51,7 +48,7 @@ class ConfigManager:
         """Get the path to the configuration directory."""
         return self.config_dir
 
-    def load_config(self) -> Dict[str, Any]:
+    def load_config(self) -> dict[str, Any]:
         """Load and validate configuration from files and environment."""
         if self._config is not None:
             return self._config
@@ -73,23 +70,23 @@ class ConfigManager:
 
         except Exception as e:
             logger.error(f"Failed to load configuration: {e}")
-            raise ConfigurationError(f"Configuration loading failed: {e}")
+            raise ConfigurationError(f"Configuration loading failed: {e}") from e
 
-    def _load_base_config(self) -> Dict[str, Any]:
+    def _load_base_config(self) -> dict[str, Any]:
         """Load base configuration from base.yaml."""
         base_file = self.config_dir / "base.yaml"
         try:
-            with open(base_file, 'r', encoding='utf-8') as f:
+            with open(base_file, encoding='utf-8') as f:
                 config = yaml.safe_load(f) or {}
                 logger.debug("Loaded base configuration")
                 return config
         except FileNotFoundError:
             logger.error(f"Base configuration file not found: {base_file}")
-            raise ConfigurationError(f"Base configuration file not found: {base_file}")
+            raise ConfigurationError(f"Base configuration file not found: {base_file}") from None
         except yaml.YAMLError as e:
-            raise ConfigurationError(f"Invalid YAML in base config file: {e}")
+            raise ConfigurationError(f"Invalid YAML in base config file: {e}") from e
 
-    def _load_environment_config(self, base_config: Dict[str, Any]) -> Dict[str, Any]:
+    def _load_environment_config(self, base_config: dict[str, Any]) -> dict[str, Any]:
         """Load environment-specific configuration."""
         # Check for environment variable directly without applying to config
         environment = "development"  # default
@@ -104,7 +101,7 @@ class ConfigManager:
 
         if env_file.exists():
             try:
-                with open(env_file, 'r', encoding='utf-8') as f:
+                with open(env_file, encoding='utf-8') as f:
                     env_config = yaml.safe_load(f) or {}
                 logger.debug("Loaded environment configuration")
                 result = self._deep_merge(base_config, env_config)
@@ -119,7 +116,7 @@ class ConfigManager:
             logger.debug("No environment-specific configuration found")
             return base_config
 
-    def _deep_merge(self, base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
+    def _deep_merge(self, base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
         """Deep merge two dictionaries."""
         for key, value in override.items():
             if key in base and isinstance(base[key], dict) and isinstance(value, dict):
@@ -129,7 +126,7 @@ class ConfigManager:
 
         return base
 
-    def _apply_env_overrides(self, config: Dict[str, Any]) -> Dict[str, Any]:
+    def _apply_env_overrides(self, config: dict[str, Any]) -> dict[str, Any]:
         """Apply environment variable overrides to configuration."""
         applied_overrides = 0
         for env_var, value in os.environ.items():
@@ -186,7 +183,7 @@ class ConfigManager:
             except ValueError:
                 return value
 
-    def _set_nested_value(self, config: Dict[str, Any], path: list, value: Any) -> None:
+    def _set_nested_value(self, config: dict[str, Any], path: list, value: Any) -> None:
         """Set a nested value in configuration dictionary."""
         current = config
         for key in path[:-1]:
@@ -216,7 +213,7 @@ class ConfigManager:
         except (KeyError, AttributeError):
             return default
 
-    def get_section(self, section: str) -> Dict[str, Any]:
+    def get_section(self, section: str) -> dict[str, Any]:
         """Get a configuration section."""
         config = self.load_config()
         keys = section.split('.')
@@ -243,7 +240,7 @@ class ConfigManager:
         keys = key.split('.')
         self._set_nested_value(config, keys, value)
 
-    def get_all(self) -> Dict[str, Any]:
+    def get_all(self) -> dict[str, Any]:
         """Get all configuration as a dictionary."""
         return self.load_config().copy()
 

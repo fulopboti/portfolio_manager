@@ -6,14 +6,18 @@ components using the centralized configuration system.
 """
 
 import logging
-from typing import Dict, Any, Optional
+from typing import Any
 
-from .settings import config
-from .schema import (
-    PortfolioManagerConfig, validate_config, DatabaseConfig, EventSystemConfig,
-    PortfolioConfig, DataProvidersConfig
-)
 from ..domain.exceptions import DomainError
+from .schema import (
+    DatabaseConfig,
+    DataProvidersConfig,
+    EventSystemConfig,
+    PortfolioConfig,
+    PortfolioManagerConfig,
+    validate_config,
+)
+from .settings import config
 
 
 class ConfigurationError(DomainError):
@@ -38,7 +42,7 @@ class ConfiguredComponentFactory:
         """
         self.config_manager = config_manager or config
         self._logger = logging.getLogger(__name__)
-        self._validated_config: Optional[PortfolioManagerConfig] = None
+        self._validated_config: PortfolioManagerConfig | None = None
         self._validate_configuration()
 
     def _validate_configuration(self) -> None:
@@ -201,7 +205,7 @@ class ConfiguredComponentFactory:
             'retry_delay': event_config.handlers.retry_delay
         }
 
-    def get_logging_config(self) -> Dict[str, Any]:
+    def get_logging_config(self) -> dict[str, Any]:
         """
         Get logging configuration for setup.
 
@@ -224,7 +228,7 @@ class ConfiguredComponentFactory:
             }
         }
 
-    def get_connection_parameters(self) -> Dict[str, Any]:
+    def get_connection_parameters(self) -> dict[str, Any]:
         """
         Get database connection parameters from configuration.
 

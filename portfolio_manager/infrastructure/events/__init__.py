@@ -10,6 +10,6 @@ from .handlers import EventHandler
 
 __all__ = [
     "EventBus",
-    "EventSubscription", 
+    "EventSubscription",
     "EventHandler"
 ]

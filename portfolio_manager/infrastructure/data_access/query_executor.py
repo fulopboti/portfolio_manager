@@ -2,9 +2,7 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Union
-from decimal import Decimal
-from datetime import datetime
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -15,13 +13,13 @@ class QueryResult:
     of the underlying database implementation.
     """
 
-    rows: List[Dict[str, Any]]
+    rows: list[dict[str, Any]]
     row_count: int
-    column_names: List[str]
-    execution_time_ms: Optional[float] = None
-    affected_rows: Optional[int] = None
+    column_names: list[str]
+    execution_time_ms: float | None = None
+    affected_rows: int | None = None
 
-    def first(self) -> Optional[Dict[str, Any]]:
+    def first(self) -> dict[str, Any] | None:
         """Get the first row of results.
 
         Returns:
@@ -62,9 +60,9 @@ class QueryExecutor(ABC):
 
     @abstractmethod
     async def execute_query(
-        self, 
-        sql: str, 
-        parameters: Optional[Dict[str, Any]] = None
+        self,
+        sql: str,
+        parameters: dict[str, Any] | None = None
     ) -> QueryResult:
         """Execute a SELECT query and return results.
 
@@ -83,9 +81,9 @@ class QueryExecutor(ABC):
 
     @abstractmethod
     async def execute_command(
-        self, 
-        sql: str, 
-        parameters: Optional[Dict[str, Any]] = None
+        self,
+        sql: str,
+        parameters: dict[str, Any] | None = None
     ) -> int:
         """Execute a non-query command (INSERT, UPDATE, DELETE).
 
@@ -104,10 +102,10 @@ class QueryExecutor(ABC):
 
     @abstractmethod
     async def execute_batch(
-        self, 
-        sql: str, 
-        parameters_list: List[Dict[str, Any]]
-    ) -> List[int]:
+        self,
+        sql: str,
+        parameters_list: list[dict[str, Any]]
+    ) -> list[int]:
         """Execute a command multiple times with different parameters.
 
         Args:
@@ -125,9 +123,9 @@ class QueryExecutor(ABC):
 
     @abstractmethod
     async def execute_scalar(
-        self, 
-        sql: str, 
-        parameters: Optional[Dict[str, Any]] = None
+        self,
+        sql: str,
+        parameters: dict[str, Any] | None = None
     ) -> Any:
         """Execute a query and return a single scalar value.
 
@@ -146,9 +144,9 @@ class QueryExecutor(ABC):
 
     @abstractmethod
     async def execute_transaction(
-        self, 
-        operations: List[tuple[str, Optional[Dict[str, Any]]]]
-    ) -> List[Any]:
+        self,
+        operations: list[tuple[str, dict[str, Any] | None]]
+    ) -> list[Any]:
         """Execute multiple operations within a single transaction.
 
         Args:
@@ -163,7 +161,7 @@ class QueryExecutor(ABC):
         pass
 
     @abstractmethod
-    def validate_parameters(self, parameters: Dict[str, Any]) -> bool:
+    def validate_parameters(self, parameters: dict[str, Any]) -> bool:
         """Validate query parameters for type safety.
 
         Args:

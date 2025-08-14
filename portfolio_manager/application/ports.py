@@ -3,7 +3,6 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
 from decimal import Decimal
-from typing import List, Optional
 from uuid import UUID
 
 from portfolio_manager.domain.entities import (
@@ -25,12 +24,12 @@ class AssetRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_asset(self, symbol: str) -> Optional[Asset]:
+    async def get_asset(self, symbol: str) -> Asset | None:
         """Retrieve an asset by symbol."""
         pass
 
     @abstractmethod
-    async def get_all_assets(self, asset_type: Optional[AssetType] = None) -> List[Asset]:
+    async def get_all_assets(self, asset_type: AssetType | None = None) -> list[Asset]:
         """Retrieve all assets, optionally filtered by type."""
         pass
 
@@ -40,19 +39,19 @@ class AssetRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_latest_snapshot(self, symbol: str) -> Optional[AssetSnapshot]:
+    async def get_latest_snapshot(self, symbol: str) -> AssetSnapshot | None:
         """Retrieve the latest snapshot for an asset."""
         pass
 
     @abstractmethod
     async def get_historical_snapshots(
         self, symbol: str, start_date: datetime, end_date: datetime
-    ) -> List[AssetSnapshot]:
+    ) -> list[AssetSnapshot]:
         """Retrieve historical snapshots for an asset within a date range."""
         pass
 
     @abstractmethod
-    async def get_fundamental_metrics(self, symbol: str) -> Optional[dict]:
+    async def get_fundamental_metrics(self, symbol: str) -> dict | None:
         """Retrieve fundamental metrics for an asset."""
         pass
 
@@ -81,12 +80,12 @@ class PortfolioRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_portfolio(self, portfolio_id: UUID) -> Optional[Portfolio]:
+    async def get_portfolio(self, portfolio_id: UUID) -> Portfolio | None:
         """Retrieve a portfolio by ID."""
         pass
 
     @abstractmethod
-    async def get_all_portfolios(self) -> List[Portfolio]:
+    async def get_all_portfolios(self) -> list[Portfolio]:
         """Retrieve all portfolios."""
         pass
 
@@ -101,14 +100,14 @@ class PortfolioRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_trade(self, trade_id: UUID) -> Optional[Trade]:
+    async def get_trade(self, trade_id: UUID) -> Trade | None:
         """Retrieve a trade by ID."""
         pass
 
     @abstractmethod
     async def get_trades_for_portfolio(
-        self, portfolio_id: UUID, limit: Optional[int] = None
-    ) -> List[Trade]:
+        self, portfolio_id: UUID, limit: int | None = None
+    ) -> list[Trade]:
         """Retrieve trades for a portfolio, optionally limited."""
         pass
 
@@ -118,12 +117,12 @@ class PortfolioRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_position(self, portfolio_id: UUID, symbol: str) -> Optional[Position]:
+    async def get_position(self, portfolio_id: UUID, symbol: str) -> Position | None:
         """Retrieve a position for a specific asset in a portfolio."""
         pass
 
     @abstractmethod
-    async def get_positions_for_portfolio(self, portfolio_id: UUID) -> List[Position]:
+    async def get_positions_for_portfolio(self, portfolio_id: UUID) -> list[Position]:
         """Retrieve all positions for a portfolio."""
         pass
 
@@ -137,7 +136,7 @@ class PortfolioRepository(ABC):
         """Check if a portfolio exists in the repository."""
         pass
 
-    async def get_positions(self, portfolio_id: UUID) -> List[Position]:
+    async def get_positions(self, portfolio_id: UUID) -> list[Position]:
         """Get positions for portfolio - alias for get_positions_for_portfolio."""
         return await self.get_positions_for_portfolio(portfolio_id)
 
@@ -148,7 +147,7 @@ class DataProvider(ABC):
     @abstractmethod
     async def get_ohlcv_data(
         self, symbol: str, start_date: datetime, end_date: datetime
-    ) -> List[AssetSnapshot]:
+    ) -> list[AssetSnapshot]:
         """Retrieve OHLCV data for a symbol within a date range."""
         pass
 
@@ -194,7 +193,7 @@ class StrategyCalculator(ABC):
         pass
 
     @abstractmethod
-    def get_required_metrics(self) -> List[str]:
+    def get_required_metrics(self) -> list[str]:
         """Get the list of required fundamental metrics."""
         pass
 

@@ -5,11 +5,9 @@ This module contains handlers that process market data events and
 coordinate data distribution to various system components.
 """
 
-import logging
 from typing import Any
 
-from ...domain.events import MarketDataReceivedEvent, AssetPriceUpdatedEvent
-from ...domain.exceptions import DomainError
+from ...domain.events import AssetPriceUpdatedEvent, MarketDataReceivedEvent
 from .base_handler import BaseEventHandler, ErrorHandlingStrategy
 
 

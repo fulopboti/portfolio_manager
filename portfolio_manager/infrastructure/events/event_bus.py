@@ -9,7 +9,7 @@ domain events.
 import asyncio
 import logging
 from collections import defaultdict
-from typing import Any, Dict, List, Set, Type
+from typing import Any
 from uuid import uuid4
 
 from .handlers import EventHandler
@@ -18,7 +18,7 @@ from .handlers import EventHandler
 class EventSubscription:
     """Represents a subscription to an event type."""
 
-    def __init__(self, event_type: Type, handler: EventHandler, subscription_id: str):
+    def __init__(self, event_type: type, handler: EventHandler, subscription_id: str):
         """
         Initialize an event subscription.
 
@@ -47,12 +47,12 @@ class EventBus:
 
     def __init__(self):
         """Initialize the event bus."""
-        self._subscriptions: Dict[Type, List[EventSubscription]] = defaultdict(list)
-        self._handler_subscriptions: Dict[str, EventSubscription] = {}
+        self._subscriptions: dict[type, list[EventSubscription]] = defaultdict(list)
+        self._handler_subscriptions: dict[str, EventSubscription] = {}
         self._logger = logging.getLogger(__name__)
-        self._processing_events: Set[str] = set()  # Track events being processed to prevent recursion
+        self._processing_events: set[str] = set()  # Track events being processed to prevent recursion
 
-    async def subscribe(self, event_type: Type, handler: EventHandler) -> str:
+    async def subscribe(self, event_type: type, handler: EventHandler) -> str:
         """
         Subscribe a handler to an event type.
 
@@ -161,7 +161,7 @@ class EventBus:
             self._logger.error(f"Handler {handler.__class__.__name__} failed: {e}")
             # Don't re-raise - isolate handler errors from other handlers
 
-    def get_subscription_count(self, event_type: Type) -> int:
+    def get_subscription_count(self, event_type: type) -> int:
         """
         Get the number of active subscriptions for an event type.
 

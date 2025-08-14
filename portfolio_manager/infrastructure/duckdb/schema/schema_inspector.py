@@ -1,9 +1,10 @@
 """DuckDB schema introspection and validation."""
 
 import logging
-from typing import Dict, List, Optional, Set
-from portfolio_manager.infrastructure.data_access.schema_manager import TableDefinition
+
 from portfolio_manager.infrastructure.data_access.exceptions import SchemaError
+from portfolio_manager.infrastructure.data_access.schema_manager import TableDefinition
+
 from ..query_executor import DuckDBQueryExecutor
 
 logger = logging.getLogger(__name__)
@@ -24,7 +25,7 @@ class DuckDBSchemaInspector:
         """
         self.query_executor = query_executor
 
-    async def get_existing_tables(self) -> Set[str]:
+    async def get_existing_tables(self) -> set[str]:
         """Get names of all tables that exist in the database.
 
         Returns:
@@ -32,8 +33,8 @@ class DuckDBSchemaInspector:
         """
         try:
             result = await self.query_executor.execute_query("""
-                SELECT table_name 
-                FROM information_schema.tables 
+                SELECT table_name
+                FROM information_schema.tables
                 WHERE table_schema = 'main'
                   AND table_type = 'BASE TABLE'
             """)
@@ -44,7 +45,7 @@ class DuckDBSchemaInspector:
             logger.error(f"Failed to get existing tables: {str(e)}")
             raise SchemaError(f"Cannot inspect existing tables: {str(e)}") from e
 
-    async def get_table_structure(self, table_name: str) -> Optional[Dict[str, str]]:
+    async def get_table_structure(self, table_name: str) -> dict[str, str] | None:
         """Get column structure for a specific table.
 
         Args:
@@ -55,7 +56,7 @@ class DuckDBSchemaInspector:
         """
         try:
             result = await self.query_executor.execute_query("""
-                SELECT 
+                SELECT
                     column_name,
                     data_type,
                     is_nullable,
@@ -91,7 +92,7 @@ class DuckDBSchemaInspector:
             logger.error(f"Failed to get table structure for {table_name}: {str(e)}")
             raise SchemaError(f"Cannot inspect table {table_name}: {str(e)}") from e
 
-    async def get_table_indexes(self, table_name: str) -> List[Dict[str, str]]:
+    async def get_table_indexes(self, table_name: str) -> list[dict[str, str]]:
         """Get indexes for a specific table.
 
         Args:
@@ -104,7 +105,7 @@ class DuckDBSchemaInspector:
             # DuckDB doesn't have a standard information_schema for indexes
             # We'll use PRAGMA table_info and other DuckDB-specific queries
             result = await self.query_executor.execute_query("""
-                SELECT 
+                SELECT
                     index_name,
                     is_unique
                 FROM duckdb_indexes()
@@ -142,7 +143,7 @@ class DuckDBSchemaInspector:
             logger.error(f"Failed to check if table {table_name} exists: {str(e)}")
             return False
 
-    async def validate_schema_integrity(self, expected_tables: Dict[str, TableDefinition]) -> Dict[str, List[str]]:
+    async def validate_schema_integrity(self, expected_tables: dict[str, TableDefinition]) -> dict[str, list[str]]:
         """Validate database schema against expected schema definitions.
 
         Args:
@@ -156,7 +157,7 @@ class DuckDBSchemaInspector:
         """
         validation_results = {
             "missing_tables": [],
-            "extra_tables": [], 
+            "extra_tables": [],
             "column_mismatches": []
         }
 
@@ -203,7 +204,7 @@ class DuckDBSchemaInspector:
             logger.error(f"Schema validation failed: {str(e)}")
             raise SchemaError(f"Cannot validate schema integrity: {str(e)}") from e
 
-    async def get_database_statistics(self) -> Dict[str, int]:
+    async def get_database_statistics(self) -> dict[str, int]:
         """Get basic database statistics.
 
         Returns:
@@ -238,7 +239,7 @@ class DuckDBSchemaInspector:
             logger.error(f"Failed to get database statistics: {str(e)}")
             return {"error": str(e)}
 
-    async def check_referential_integrity(self) -> List[str]:
+    async def check_referential_integrity(self) -> list[str]:
         """Check referential integrity of foreign key constraints.
 
         Returns:

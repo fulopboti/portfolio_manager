@@ -1,12 +1,12 @@
 """Portfolio and trading data access layer abstractions."""
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Set
 from datetime import datetime
 from decimal import Decimal
+from typing import Any
 from uuid import UUID
 
-from portfolio_manager.domain.entities import Portfolio, Trade, Position, TradeSide
+from portfolio_manager.domain.entities import Portfolio, Position, Trade
 
 
 class PortfolioDataAccess(ABC):
@@ -30,7 +30,7 @@ class PortfolioDataAccess(ABC):
         pass
 
     @abstractmethod
-    async def get_portfolio(self, portfolio_id: UUID) -> Optional[Portfolio]:
+    async def get_portfolio(self, portfolio_id: UUID) -> Portfolio | None:
         """Retrieve a portfolio by ID.
 
         Args:
@@ -42,7 +42,7 @@ class PortfolioDataAccess(ABC):
         pass
 
     @abstractmethod
-    async def get_all_portfolios(self) -> List[Portfolio]:
+    async def get_all_portfolios(self) -> list[Portfolio]:
         """Retrieve all portfolios.
 
         Returns:
@@ -88,7 +88,7 @@ class PortfolioDataAccess(ABC):
         pass
 
     @abstractmethod
-    async def get_portfolio_ids(self) -> Set[UUID]:
+    async def get_portfolio_ids(self) -> set[UUID]:
         """Get all portfolio IDs in the database.
 
         Returns:
@@ -98,8 +98,8 @@ class PortfolioDataAccess(ABC):
 
     @abstractmethod
     async def update_portfolio_cash(
-        self, 
-        portfolio_id: UUID, 
+        self,
+        portfolio_id: UUID,
         new_balance: Decimal
     ) -> None:
         """Update the cash balance of a portfolio.
@@ -128,7 +128,7 @@ class PortfolioDataAccess(ABC):
         pass
 
     @abstractmethod
-    async def get_trade(self, trade_id: UUID) -> Optional[Trade]:
+    async def get_trade(self, trade_id: UUID) -> Trade | None:
         """Retrieve a trade by ID.
 
         Args:
@@ -141,11 +141,11 @@ class PortfolioDataAccess(ABC):
 
     @abstractmethod
     async def get_trades_for_portfolio(
-        self, 
+        self,
         portfolio_id: UUID,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None
-    ) -> List[Trade]:
+        limit: int | None = None,
+        offset: int | None = None
+    ) -> list[Trade]:
         """Get all trades for a specific portfolio.
 
         Args:
@@ -160,11 +160,11 @@ class PortfolioDataAccess(ABC):
 
     @abstractmethod
     async def get_trades_for_symbol(
-        self, 
+        self,
         portfolio_id: UUID,
         symbol: str,
-        limit: Optional[int] = None
-    ) -> List[Trade]:
+        limit: int | None = None
+    ) -> list[Trade]:
         """Get all trades for a specific asset in a portfolio.
 
         Args:
@@ -179,11 +179,11 @@ class PortfolioDataAccess(ABC):
 
     @abstractmethod
     async def get_trades_in_date_range(
-        self, 
+        self,
         portfolio_id: UUID,
         start_date: datetime,
         end_date: datetime
-    ) -> List[Trade]:
+    ) -> list[Trade]:
         """Get trades within a specific date range.
 
         Args:
@@ -210,11 +210,11 @@ class PortfolioDataAccess(ABC):
 
     @abstractmethod
     async def get_trade_volume_stats(
-        self, 
+        self,
         portfolio_id: UUID,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None
-    ) -> Dict[str, Decimal]:
+        start_date: datetime | None = None,
+        end_date: datetime | None = None
+    ) -> dict[str, Decimal]:
         """Get trade volume statistics for a portfolio.
 
         Args:
@@ -242,10 +242,10 @@ class PortfolioDataAccess(ABC):
 
     @abstractmethod
     async def get_position(
-        self, 
-        portfolio_id: UUID, 
+        self,
+        portfolio_id: UUID,
         symbol: str
-    ) -> Optional[Position]:
+    ) -> Position | None:
         """Get a specific position.
 
         Args:
@@ -258,7 +258,7 @@ class PortfolioDataAccess(ABC):
         pass
 
     @abstractmethod
-    async def get_positions_for_portfolio(self, portfolio_id: UUID) -> List[Position]:
+    async def get_positions_for_portfolio(self, portfolio_id: UUID) -> list[Position]:
         """Get all positions for a portfolio.
 
         Args:
@@ -271,10 +271,10 @@ class PortfolioDataAccess(ABC):
 
     @abstractmethod
     async def get_positions_for_symbols(
-        self, 
+        self,
         portfolio_id: UUID,
-        symbols: List[str]
-    ) -> Dict[str, Optional[Position]]:
+        symbols: list[str]
+    ) -> dict[str, Position | None]:
         """Get positions for multiple symbols.
 
         Args:
@@ -326,10 +326,10 @@ class PortfolioDataAccess(ABC):
 
     @abstractmethod
     async def get_largest_positions(
-        self, 
+        self,
         portfolio_id: UUID,
         limit: int = 10
-    ) -> List[Position]:
+    ) -> list[Position]:
         """Get the largest positions by market value.
 
         Args:
@@ -344,10 +344,10 @@ class PortfolioDataAccess(ABC):
     # Portfolio Analytics
     @abstractmethod
     async def calculate_portfolio_value(
-        self, 
+        self,
         portfolio_id: UUID,
-        as_of_date: Optional[datetime] = None
-    ) -> Dict[str, Decimal]:
+        as_of_date: datetime | None = None
+    ) -> dict[str, Decimal]:
         """Calculate total portfolio value and breakdown.
 
         Args:
@@ -361,11 +361,11 @@ class PortfolioDataAccess(ABC):
 
     @abstractmethod
     async def calculate_portfolio_returns(
-        self, 
+        self,
         portfolio_id: UUID,
         start_date: datetime,
         end_date: datetime
-    ) -> Dict[str, Decimal]:
+    ) -> dict[str, Decimal]:
         """Calculate portfolio returns over a period.
 
         Args:
@@ -379,7 +379,7 @@ class PortfolioDataAccess(ABC):
         pass
 
     @abstractmethod
-    async def get_portfolio_allocation(self, portfolio_id: UUID) -> Dict[str, Decimal]:
+    async def get_portfolio_allocation(self, portfolio_id: UUID) -> dict[str, Decimal]:
         """Get asset allocation breakdown for a portfolio.
 
         Args:
@@ -392,11 +392,11 @@ class PortfolioDataAccess(ABC):
 
     @abstractmethod
     async def get_portfolio_performance_history(
-        self, 
+        self,
         portfolio_id: UUID,
         start_date: datetime,
         end_date: datetime
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get historical portfolio performance data.
 
         Args:
@@ -424,7 +424,7 @@ class PortfolioDataAccess(ABC):
 
     @abstractmethod
     async def archive_old_trades(
-        self, 
+        self,
         portfolio_id: UUID,
         before_date: datetime
     ) -> int:
@@ -440,7 +440,7 @@ class PortfolioDataAccess(ABC):
         pass
 
     @abstractmethod
-    async def validate_portfolio_integrity(self, portfolio_id: UUID) -> Dict[str, Any]:
+    async def validate_portfolio_integrity(self, portfolio_id: UUID) -> dict[str, Any]:
         """Validate data integrity for a portfolio.
 
         Args:

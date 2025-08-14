@@ -1,23 +1,22 @@
 """Standardized exception handling for application services."""
 
 import logging
-from typing import Any, Dict, Optional, Type, List, Callable, Union
+from collections.abc import Callable
 from enum import Enum
 from functools import wraps
+from typing import Any
 
 from portfolio_manager.domain.exceptions import (
-    DomainError,
-    DataIngestionError, 
-    StrategyCalculationError,
-    InvalidTradeError,
+    DataIngestionError,
+    DomainValidationError,
     InsufficientFundsError,
-    DomainValidationError
+    InvalidTradeError,
+    StrategyCalculationError,
 )
 from portfolio_manager.infrastructure.data_access.exceptions import (
     DataAccessError,
-    NotFoundError
+    NotFoundError,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +47,7 @@ class ServiceExceptionRegistry:
 
     def __init__(self):
         """Initialize the exception registry with default mappings."""
-        self._mappings: Dict[Type[Exception], Dict[str, Any]] = {}
+        self._mappings: dict[type[Exception], dict[str, Any]] = {}
         self._setup_default_mappings()
 
     def _setup_default_mappings(self) -> None:
@@ -139,12 +138,12 @@ class ServiceExceptionRegistry:
 
     def register(
         self,
-        exception_type: Type[Exception],
+        exception_type: type[Exception],
         category: ExceptionCategory,
         severity: ExceptionSeverity,
         retry_strategy: str = "no_retry",
         log_stack_trace: bool = True,
-        custom_handler: Optional[Callable] = None
+        custom_handler: Callable | None = None
     ) -> None:
         """
         Register an exception type with handling strategy.
@@ -165,7 +164,7 @@ class ServiceExceptionRegistry:
             "custom_handler": custom_handler
         }
 
-    def get_handling_strategy(self, exception: Exception) -> Dict[str, Any]:
+    def get_handling_strategy(self, exception: Exception) -> dict[str, Any]:
         """
         Get handling strategy for an exception.
 
@@ -198,7 +197,7 @@ class ServiceExceptionRegistry:
 class StandardExceptionHandler:
     """Standardized exception handler for application services."""
 
-    def __init__(self, service_name: str, logger: Optional[logging.Logger] = None):
+    def __init__(self, service_name: str, logger: logging.Logger | None = None):
         """
         Initialize the exception handler.
 
@@ -209,7 +208,7 @@ class StandardExceptionHandler:
         self.service_name = service_name
         self.logger = logger or logging.getLogger(f"{__name__}.{service_name}")
         self.registry = ServiceExceptionRegistry()
-        self._operation_context: Dict[str, Any] = {}
+        self._operation_context: dict[str, Any] = {}
 
     def set_operation_context(self, **context) -> None:
         """Set context information for current operation."""
@@ -223,7 +222,7 @@ class StandardExceptionHandler:
         self,
         exception: Exception,
         operation_name: str,
-        entity_context: Optional[str] = None,
+        entity_context: str | None = None,
         reraise: bool = True,
         return_default: Any = None
     ) -> Any:
@@ -275,8 +274,8 @@ class StandardExceptionHandler:
     def _log_exception(
         self,
         exception: Exception,
-        strategy: Dict[str, Any],
-        error_context: Dict[str, Any]
+        strategy: dict[str, Any],
+        error_context: dict[str, Any]
     ) -> None:
         """Log exception according to strategy."""
         severity = strategy["severity"]
@@ -311,8 +310,8 @@ class StandardExceptionHandler:
     def _transform_exception(
         self,
         exception: Exception,
-        strategy: Dict[str, Any],
-        error_context: Dict[str, Any]
+        strategy: dict[str, Any],
+        error_context: dict[str, Any]
     ) -> Exception:
         """Transform exception if needed before re-raising."""
         # For now, return the original exception
@@ -322,10 +321,10 @@ class StandardExceptionHandler:
 
 def service_exception_handler(
     operation_name: str,
-    entity_context: Optional[str] = None,
+    entity_context: str | None = None,
     reraise: bool = True,
     return_default: Any = None,
-    expected_exceptions: Optional[List[Type[Exception]]] = None
+    expected_exceptions: list[type[Exception]] | None = None
 ):
     """
     Decorator for standardized exception handling in service methods.

@@ -1,7 +1,7 @@
 """Centralized schema definitions for the Portfolio Manager database."""
 
 from dataclasses import dataclass
-from typing import Dict, List
+
 from portfolio_manager.infrastructure.data_access.schema_manager import TableDefinition
 
 
@@ -10,7 +10,7 @@ class IndexDefinition:
     """Represents a database index definition."""
     name: str
     table: str
-    columns: List[str]
+    columns: list[str]
     unique: bool = False
     where_clause: str = ""
 
@@ -33,7 +33,7 @@ class PortfolioManagerSchema:
     SCHEMA_VERSION = "1.0.0"
 
     @classmethod
-    def get_all_tables(cls) -> Dict[str, TableDefinition]:
+    def get_all_tables(cls) -> dict[str, TableDefinition]:
         """Get all table definitions for the application schema."""
         return {
             "assets": cls.get_assets_table(),
@@ -50,7 +50,7 @@ class PortfolioManagerSchema:
         }
 
     @classmethod
-    def get_all_indexes(cls) -> List[IndexDefinition]:
+    def get_all_indexes(cls) -> list[IndexDefinition]:
         """Get all index definitions for optimal query performance."""
         return [
             # Asset indexes
@@ -97,13 +97,13 @@ class PortfolioManagerSchema:
         ]
 
     @classmethod
-    def get_all_views(cls) -> List[ViewDefinition]:
+    def get_all_views(cls) -> list[ViewDefinition]:
         """Get all view definitions for common analytical queries."""
         return [
             ViewDefinition(
                 name="portfolio_summary",
                 sql="""
-                SELECT 
+                SELECT
                     p.portfolio_id,
                     p.name,
                     p.base_ccy,
@@ -134,7 +134,7 @@ class PortfolioManagerSchema:
             ViewDefinition(
                 name="daily_portfolio_performance",
                 sql="""
-                SELECT 
+                SELECT
                     portfolio_id,
                     DATE(timestamp) as date,
                     SUM(CASE WHEN side = 'BUY' THEN qty * price ELSE -qty * price END) as net_flow,
@@ -312,7 +312,7 @@ class PortfolioManagerSchema:
             name="strategy_scores",
             columns={
                 "strategy_name": "VARCHAR NOT NULL",
-                "symbol": "VARCHAR NOT NULL", 
+                "symbol": "VARCHAR NOT NULL",
                 "score": "DECIMAL(8,2) NOT NULL CHECK (score >= 0 AND score <= 100)",
                 "as_of_date": "TIMESTAMP NOT NULL",
                 "metadata": "JSON",

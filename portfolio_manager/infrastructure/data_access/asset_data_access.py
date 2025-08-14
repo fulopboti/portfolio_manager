@@ -1,9 +1,9 @@
 """Asset and market data access layer abstractions."""
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Set
 from datetime import datetime
 from decimal import Decimal
+from typing import Any
 
 from portfolio_manager.domain.entities import Asset, AssetSnapshot, AssetType
 
@@ -29,7 +29,7 @@ class AssetDataAccess(ABC):
         pass
 
     @abstractmethod
-    async def get_asset(self, symbol: str) -> Optional[Asset]:
+    async def get_asset(self, symbol: str) -> Asset | None:
         """Retrieve an asset by symbol.
 
         Args:
@@ -41,7 +41,7 @@ class AssetDataAccess(ABC):
         pass
 
     @abstractmethod
-    async def get_assets_by_type(self, asset_type: AssetType) -> List[Asset]:
+    async def get_assets_by_type(self, asset_type: AssetType) -> list[Asset]:
         """Retrieve all assets of a specific type.
 
         Args:
@@ -53,7 +53,7 @@ class AssetDataAccess(ABC):
         pass
 
     @abstractmethod
-    async def get_all_assets(self) -> List[Asset]:
+    async def get_all_assets(self) -> list[Asset]:
         """Retrieve all assets in the database.
 
         Returns:
@@ -99,7 +99,7 @@ class AssetDataAccess(ABC):
         pass
 
     @abstractmethod
-    async def get_asset_symbols(self) -> Set[str]:
+    async def get_asset_symbols(self) -> set[str]:
         """Get all asset symbols in the database.
 
         Returns:
@@ -121,7 +121,7 @@ class AssetDataAccess(ABC):
         pass
 
     @abstractmethod
-    async def get_latest_snapshot(self, symbol: str) -> Optional[AssetSnapshot]:
+    async def get_latest_snapshot(self, symbol: str) -> AssetSnapshot | None:
         """Get the most recent price snapshot for an asset.
 
         Args:
@@ -134,10 +134,10 @@ class AssetDataAccess(ABC):
 
     @abstractmethod
     async def get_snapshot_at_date(
-        self, 
-        symbol: str, 
+        self,
+        symbol: str,
         date: datetime
-    ) -> Optional[AssetSnapshot]:
+    ) -> AssetSnapshot | None:
         """Get price snapshot closest to a specific date.
 
         Args:
@@ -151,11 +151,11 @@ class AssetDataAccess(ABC):
 
     @abstractmethod
     async def get_historical_snapshots(
-        self, 
-        symbol: str, 
-        start_date: datetime, 
+        self,
+        symbol: str,
+        start_date: datetime,
         end_date: datetime
-    ) -> List[AssetSnapshot]:
+    ) -> list[AssetSnapshot]:
         """Get historical price snapshots for a date range.
 
         Args:
@@ -170,10 +170,10 @@ class AssetDataAccess(ABC):
 
     @abstractmethod
     async def get_snapshots_bulk(
-        self, 
-        symbols: List[str], 
+        self,
+        symbols: list[str],
         date: datetime
-    ) -> Dict[str, Optional[AssetSnapshot]]:
+    ) -> dict[str, AssetSnapshot | None]:
         """Get snapshots for multiple assets at a specific date.
 
         Args:
@@ -213,10 +213,10 @@ class AssetDataAccess(ABC):
     # Fundamental Data Management
     @abstractmethod
     async def save_fundamental_metrics(
-        self, 
-        symbol: str, 
-        metrics: Dict[str, Decimal],
-        as_of_date: Optional[datetime] = None
+        self,
+        symbol: str,
+        metrics: dict[str, Decimal],
+        as_of_date: datetime | None = None
     ) -> None:
         """Save fundamental metrics for an asset.
 
@@ -232,10 +232,10 @@ class AssetDataAccess(ABC):
 
     @abstractmethod
     async def get_fundamental_metrics(
-        self, 
+        self,
         symbol: str,
-        as_of_date: Optional[datetime] = None
-    ) -> Optional[Dict[str, Decimal]]:
+        as_of_date: datetime | None = None
+    ) -> dict[str, Decimal] | None:
         """Get fundamental metrics for an asset.
 
         Args:
@@ -249,10 +249,10 @@ class AssetDataAccess(ABC):
 
     @abstractmethod
     async def get_fundamental_metrics_bulk(
-        self, 
-        symbols: List[str],
-        as_of_date: Optional[datetime] = None
-    ) -> Dict[str, Optional[Dict[str, Decimal]]]:
+        self,
+        symbols: list[str],
+        as_of_date: datetime | None = None
+    ) -> dict[str, dict[str, Decimal] | None]:
         """Get fundamental metrics for multiple assets.
 
         Args:
@@ -266,12 +266,12 @@ class AssetDataAccess(ABC):
 
     @abstractmethod
     async def get_metric_history(
-        self, 
-        symbol: str, 
+        self,
+        symbol: str,
         metric_name: str,
         start_date: datetime,
         end_date: datetime
-    ) -> List[tuple[datetime, Decimal]]:
+    ) -> list[tuple[datetime, Decimal]]:
         """Get historical values for a specific fundamental metric.
 
         Args:
@@ -287,9 +287,9 @@ class AssetDataAccess(ABC):
 
     @abstractmethod
     async def delete_fundamental_metrics(
-        self, 
+        self,
         symbol: str,
-        before_date: Optional[datetime] = None
+        before_date: datetime | None = None
     ) -> int:
         """Delete fundamental metrics for an asset.
 
@@ -304,7 +304,7 @@ class AssetDataAccess(ABC):
 
     # Data Quality and Maintenance
     @abstractmethod
-    async def get_data_quality_report(self, symbol: str) -> Dict[str, Any]:
+    async def get_data_quality_report(self, symbol: str) -> dict[str, Any]:
         """Generate a data quality report for an asset.
 
         Args:
@@ -316,7 +316,7 @@ class AssetDataAccess(ABC):
         pass
 
     @abstractmethod
-    async def vacuum_asset_data(self, symbol: Optional[str] = None) -> None:
+    async def vacuum_asset_data(self, symbol: str | None = None) -> None:
         """Optimize storage and clean up fragmented data.
 
         Args:

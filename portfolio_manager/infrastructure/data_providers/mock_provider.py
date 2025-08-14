@@ -1,9 +1,8 @@
 """Mock data provider for testing and development."""
 
-from datetime import datetime, timezone
-from decimal import Decimal
-from typing import List
 import logging
+from datetime import datetime
+from decimal import Decimal
 
 from portfolio_manager.application.ports import DataProvider
 from portfolio_manager.domain.entities import AssetSnapshot
@@ -19,7 +18,7 @@ class MockDataProvider(DataProvider):
 
     async def get_ohlcv_data(
         self, symbol: str, start_date: datetime, end_date: datetime
-    ) -> List[AssetSnapshot]:
+    ) -> list[AssetSnapshot]:
         """Generate mock OHLCV data for the date range."""
         snapshots = []
 
@@ -48,7 +47,7 @@ class MockDataProvider(DataProvider):
             # Generate OHLCV
             open_price = current_price
             high_price = current_price * Decimal("1.02")  # 2% higher
-            low_price = current_price * Decimal("0.98")   # 2% lower  
+            low_price = current_price * Decimal("0.98")   # 2% lower
             close_price = current_price * Decimal("1.005") # 0.5% up from open
             volume = volume_base + (day_count * 50000)
 
@@ -86,7 +85,7 @@ class MockDataProvider(DataProvider):
         # Generate basic fundamental metrics
         return {
             "pe_ratio": Decimal("15.5"),
-            "pb_ratio": Decimal("2.3"), 
+            "pb_ratio": Decimal("2.3"),
             "dividend_yield": Decimal("0.025"),
             "market_cap": Decimal("50000000000"),
             "revenue": Decimal("10000000000"),

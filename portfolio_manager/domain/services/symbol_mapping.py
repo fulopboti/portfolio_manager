@@ -4,12 +4,11 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from decimal import Decimal
 from enum import Enum
-from typing import Dict, List, Optional, Set
 
 
 class CurrencyCode(Enum):
     """Supported currency codes."""
-    
+
     USD = "USD"
     EUR = "EUR"
     GBP = "GBP"
@@ -35,7 +34,7 @@ class CurrencyCode(Enum):
 @dataclass
 class ExchangeInfo:
     """Information about a stock exchange and symbol listing."""
-    
+
     symbol: str
     exchange: str
     country: str
@@ -45,10 +44,10 @@ class ExchangeInfo:
     tick_size: Decimal = field(default_factory=lambda: Decimal('0.01'))
 
 
-@dataclass 
+@dataclass
 class ProviderInfo:
     """Information about a data provider's symbol mapping."""
-    
+
     symbol: str
     provider: str
     supports_fundamentals: bool = True
@@ -58,60 +57,60 @@ class ProviderInfo:
 @dataclass
 class SymbolMapping:
     """Complete symbol mapping with currency-aware exchange and provider information."""
-    
+
     isin: str
     base_symbol: str
     base_exchange: str
     base_country: str
     base_currency: CurrencyCode
     company_name: str
-    sector: Optional[str] = None
-    market_cap_usd: Optional[Decimal] = None
-    exchanges: Dict[str, ExchangeInfo] = field(default_factory=dict)
-    providers: Dict[str, ProviderInfo] = field(default_factory=dict)
-    
+    sector: str | None = None
+    market_cap_usd: Decimal | None = None
+    exchanges: dict[str, ExchangeInfo] = field(default_factory=dict)
+    providers: dict[str, ProviderInfo] = field(default_factory=dict)
+
     def __post_init__(self):
         """Initialize collections if not provided."""
         if not isinstance(self.exchanges, dict):
             self.exchanges = {}
         if not isinstance(self.providers, dict):
             self.providers = {}
-    
-    def get_currency_for_exchange(self, exchange: str) -> Optional[CurrencyCode]:
+
+    def get_currency_for_exchange(self, exchange: str) -> CurrencyCode | None:
         """Get the currency used on a specific exchange."""
         if exchange == self.base_exchange:
             return self.base_currency
-        
+
         exchange_info = self.exchanges.get(exchange)
         if exchange_info:
             return exchange_info.currency
-        
+
         return None
-    
-    def get_all_currencies(self) -> Set[CurrencyCode]:
+
+    def get_all_currencies(self) -> set[CurrencyCode]:
         """Get all currencies this symbol is traded in."""
         currencies = {self.base_currency}
-        
+
         for exchange_info in self.exchanges.values():
             currencies.add(exchange_info.currency)
-        
+
         return currencies
 
 
 class SymbolMappingService(ABC):
     """Abstract service for symbol mapping operations."""
-    
+
     @abstractmethod
-    async def get_equivalent_symbols(self, symbol: str) -> List[SymbolMapping]:
+    async def get_equivalent_symbols(self, symbol: str) -> list[SymbolMapping]:
         """Get equivalent symbols across different exchanges and currencies."""
         pass
-    
+
     @abstractmethod
-    async def get_provider_symbol(self, symbol: str, provider: str) -> Optional[str]:
+    async def get_provider_symbol(self, symbol: str, provider: str) -> str | None:
         """Get the symbol used by a specific data provider."""
         pass
-    
+
     @abstractmethod
-    async def search_by_company(self, company_name: str) -> List[SymbolMapping]:
+    async def search_by_company(self, company_name: str) -> list[SymbolMapping]:
         """Search for symbols by company name."""
         pass

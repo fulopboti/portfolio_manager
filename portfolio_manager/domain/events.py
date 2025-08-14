@@ -10,19 +10,16 @@ from abc import ABC
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
-from typing import List
 from uuid import UUID
 
 from .entities import TradeSide
 from .exceptions import DomainValidationError
 from .validation import (
     validate_event_id,
-    validate_symbol,
-    validate_positive_decimal,
     validate_non_empty_string,
+    validate_positive_decimal,
     validate_severity_level,
-    validate_quantity,
-    validate
+    validate_symbol,
 )
 
 
@@ -130,13 +127,14 @@ class PortfolioRebalancedEvent(DomainEvent):
     """Event published when a portfolio is rebalanced."""
 
     portfolio_id: UUID
-    changes: List[PositionChange]
+    changes: list[PositionChange]
 
     def __post_init__(self):
         """Validate portfolio rebalanced event data."""
         super().__post_init__()
 
-        validate_non_empty_collection(self.changes, "Changes list")
+        if not self.changes:
+            raise ValueError("Changes list cannot be empty")
 
     def get_symbols_affected(self) -> set[str]:
         """Get the set of symbols affected by rebalancing."""

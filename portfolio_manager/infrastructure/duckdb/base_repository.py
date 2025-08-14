@@ -6,20 +6,19 @@ code duplication across DuckDB repository implementations.
 """
 
 import logging
-from abc import ABC
-from typing import Any, Dict, List, Optional, Union
 from contextlib import asynccontextmanager
+from typing import Any
 
 from portfolio_manager.infrastructure.data_access.exceptions import (
     DataAccessError,
-    NotFoundError,
 )
+
 from .connection import DuckDBConnection
-from .query_executor import DuckDBQueryExecutor
 from .query_builder import DuckDBQueryBuilder, QueryParameterBuilder
+from .query_executor import DuckDBQueryExecutor
 
 
-class BaseDuckDBRepository(ABC):
+class BaseDuckDBRepository:
     """
     Base class for all DuckDB repository implementations.
 
@@ -51,9 +50,9 @@ class BaseDuckDBRepository(ABC):
         self._log_prefix = f"[{self.__class__.__name__}]"
 
     async def _execute_query(
-        self, 
-        query: str, 
-        parameters: Optional[List[Any]] = None,
+        self,
+        query: str,
+        parameters: list[Any] | None = None,
         operation_name: str = "query"
     ) -> None:
         """
@@ -78,11 +77,11 @@ class BaseDuckDBRepository(ABC):
             raise DataAccessError(error_msg) from e
 
     async def _fetch_one(
-        self, 
-        query: str, 
-        parameters: Optional[List[Any]] = None,
+        self,
+        query: str,
+        parameters: list[Any] | None = None,
         operation_name: str = "fetch_one"
-    ) -> Optional[Any]:
+    ) -> Any | None:
         """
         Fetch a single result with standardized error handling.
 
@@ -109,11 +108,11 @@ class BaseDuckDBRepository(ABC):
             raise DataAccessError(error_msg) from e
 
     async def _fetch_all(
-        self, 
-        query: str, 
-        parameters: Optional[List[Any]] = None,
+        self,
+        query: str,
+        parameters: list[Any] | None = None,
         operation_name: str = "fetch_all"
-    ) -> List[Any]:
+    ) -> list[Any]:
         """
         Fetch all results with standardized error handling.
 
@@ -140,9 +139,9 @@ class BaseDuckDBRepository(ABC):
             raise DataAccessError(error_msg) from e
 
     async def _execute_with_result(
-        self, 
-        query: str, 
-        parameters: Optional[List[Any]] = None,
+        self,
+        query: str,
+        parameters: list[Any] | None = None,
         operation_name: str = "execute_with_result"
     ) -> Any:
         """
@@ -197,7 +196,7 @@ class BaseDuckDBRepository(ABC):
             self.logger.error(f"{self._log_prefix} {error_msg}")
             raise DataAccessError(error_msg) from e
 
-    def _build_error_context(self, operation: str, entity_info: str, error: Exception) -> Dict[str, Any]:
+    def _build_error_context(self, operation: str, entity_info: str, error: Exception) -> dict[str, Any]:
         """
         Build error context for structured logging.
 
@@ -241,7 +240,7 @@ class EntityMapperMixin:
     database rows and domain entities.
     """
 
-    def _safe_uuid_convert(self, value: Union[str, Any]) -> Any:
+    def _safe_uuid_convert(self, value: str | Any) -> Any:
         """
         Safely convert string to UUID if needed.
 
@@ -260,7 +259,7 @@ class EntityMapperMixin:
                 return value
         return value
 
-    def _safe_decimal_convert(self, value: Union[float, str, Any]) -> Any:
+    def _safe_decimal_convert(self, value: float | str | Any) -> Any:
         """
         Safely convert numeric value to Decimal if needed.
 
@@ -272,7 +271,7 @@ class EntityMapperMixin:
         """
         from decimal import Decimal
 
-        if isinstance(value, (int, float)):
+        if isinstance(value, int | float):
             return Decimal(str(value))
         elif isinstance(value, str):
             try:
@@ -309,9 +308,9 @@ class QueryBuilderMixin:
     """
 
     def _build_insert_query(
-        self, 
-        table: str, 
-        columns: List[str], 
+        self,
+        table: str,
+        columns: list[str],
         on_conflict_update: bool = True
     ) -> str:
         """
@@ -338,12 +337,12 @@ class QueryBuilderMixin:
         return base_query
 
     def _build_select_query(
-        self, 
-        table: str, 
-        columns: List[str], 
-        where_conditions: Optional[List[str]] = None,
-        order_by: Optional[List[str]] = None,
-        limit: Optional[int] = None
+        self,
+        table: str,
+        columns: list[str],
+        where_conditions: list[str] | None = None,
+        order_by: list[str] | None = None,
+        limit: int | None = None
     ) -> str:
         """
         Build a SELECT query with optional WHERE, ORDER BY, and LIMIT clauses.
@@ -372,9 +371,9 @@ class QueryBuilderMixin:
         return query
 
     def _build_delete_query(
-        self, 
-        table: str, 
-        where_conditions: List[str]
+        self,
+        table: str,
+        where_conditions: list[str]
     ) -> str:
         """
         Build a DELETE query with WHERE clause.
@@ -393,14 +392,14 @@ class QueryBuilderMixin:
 
     # Advanced query pattern methods using DuckDBQueryBuilder
 
-    async def _find_by_id_pattern(self, table: str, columns: List[str], 
-                                  id_value: Any, id_column: str = "id") -> Optional[List[Any]]:
+    async def _find_by_id_pattern(self, table: str, columns: list[str],
+                                  id_value: Any, id_column: str = "id") -> list[Any] | None:
         """
         Find single record by ID using common pattern.
 
         Args:
             table: Table name
-            columns: Columns to select  
+            columns: Columns to select
             id_value: ID value to search for
             id_column: ID column name
 
@@ -411,8 +410,8 @@ class QueryBuilderMixin:
         parameters = self.param_builder.build_parameters([id_value])
         return await self._fetch_one(query, parameters)
 
-    async def _find_all_pattern(self, table: str, columns: List[str], 
-                               order_by: Optional[str] = None) -> List[List[Any]]:
+    async def _find_all_pattern(self, table: str, columns: list[str],
+                               order_by: str | None = None) -> list[list[Any]]:
         """
         Find all records using common pattern.
 
@@ -427,10 +426,10 @@ class QueryBuilderMixin:
         query = self.query_builder.select_all(table, columns, order_by)
         return await self._fetch_all(query)
 
-    async def _find_by_criteria_pattern(self, table: str, columns: List[str], 
-                                       criteria: Dict[str, Any],
-                                       order_by: Optional[str] = None,
-                                       limit: Optional[int] = None) -> List[List[Any]]:
+    async def _find_by_criteria_pattern(self, table: str, columns: list[str],
+                                       criteria: dict[str, Any],
+                                       order_by: str | None = None,
+                                       limit: int | None = None) -> list[list[Any]]:
         """
         Find records by criteria using common pattern.
 
@@ -450,7 +449,7 @@ class QueryBuilderMixin:
         parameters = self.param_builder.build_parameters(raw_parameters)
         return await self._fetch_all(query, parameters)
 
-    async def _count_pattern(self, table: str, criteria: Optional[Dict[str, Any]] = None) -> int:
+    async def _count_pattern(self, table: str, criteria: dict[str, Any] | None = None) -> int:
         """
         Count records using common pattern.
 
@@ -466,7 +465,7 @@ class QueryBuilderMixin:
         result = await self._fetch_one(query, parameters)
         return result[0] if result else 0
 
-    async def _exists_pattern(self, table: str, criteria: Dict[str, Any]) -> bool:
+    async def _exists_pattern(self, table: str, criteria: dict[str, Any]) -> bool:
         """
         Check if record exists using common pattern.
 
@@ -482,8 +481,8 @@ class QueryBuilderMixin:
         result = await self._fetch_one(query, parameters)
         return result is not None
 
-    async def _upsert_pattern(self, table: str, columns: List[str], values: List[Any],
-                             conflict_column: str, update_columns: Optional[List[str]] = None) -> None:
+    async def _upsert_pattern(self, table: str, columns: list[str], values: list[Any],
+                             conflict_column: str, update_columns: list[str] | None = None) -> None:
         """
         Upsert record using common pattern.
 
@@ -499,20 +498,20 @@ class QueryBuilderMixin:
         await self._execute_query(query, parameters, f"upsert_{table}")
 
     async def _time_series_pattern(self, table: str, symbol_column: str, timestamp_column: str,
-                                  data_columns: List[str], symbol: str,
-                                  start_date=None, end_date=None, 
-                                  order_desc: bool = False, limit: Optional[int] = None) -> List[List[Any]]:
+                                  data_columns: list[str], symbol: str,
+                                  start_date=None, end_date=None,
+                                  order_desc: bool = False, limit: int | None = None) -> list[list[Any]]:
         """
         Get time series data using common pattern.
 
         Args:
             table: Table name
-            symbol_column: Column containing symbol/identifier  
+            symbol_column: Column containing symbol/identifier
             timestamp_column: Column containing timestamp
             data_columns: Data columns to select
             symbol: Symbol to filter by
             start_date: Optional start date filter
-            end_date: Optional end date filter  
+            end_date: Optional end date filter
             order_desc: Whether to order by timestamp DESC
             limit: Optional limit
 
@@ -527,7 +526,7 @@ class QueryBuilderMixin:
         return await self._fetch_all(query, parameters)
 
     async def _latest_record_pattern(self, table: str, partition_column: str, timestamp_column: str,
-                                    data_columns: List[str], partition_value: Optional[str] = None) -> Optional[List[Any]]:
+                                    data_columns: list[str], partition_value: str | None = None) -> list[Any] | None:
         """
         Get latest record per partition using common pattern.
 
@@ -552,7 +551,7 @@ class QueryBuilderMixin:
             results = await self._fetch_all(query, parameters)
             return results[0] if results else None
 
-    async def _delete_by_criteria_pattern(self, table: str, criteria: Dict[str, Any]) -> int:
+    async def _delete_by_criteria_pattern(self, table: str, criteria: dict[str, Any]) -> int:
         """
         Delete records by criteria using common pattern.
 

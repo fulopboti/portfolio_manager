@@ -5,12 +5,10 @@ This module contains handlers that process risk-related events and
 coordinate risk mitigation actions.
 """
 
-import logging
 from decimal import Decimal
 from typing import Any
 
 from ...domain.events import RiskThresholdBreachedEvent
-from ...domain.exceptions import DomainError
 from .base_handler import BaseEventHandler, ErrorHandlingStrategy
 
 

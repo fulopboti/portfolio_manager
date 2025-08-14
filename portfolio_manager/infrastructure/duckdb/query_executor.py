@@ -1,22 +1,24 @@
 """DuckDB query execution implementation."""
 
+import decimal
 import logging
 import re
 import time
-from functools import lru_cache
-from decimal import Decimal
-import decimal
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+from decimal import Decimal
+from functools import lru_cache
+from typing import Any
 
-import duckdb
-
-from portfolio_manager.infrastructure.data_access.query_executor import QueryExecutor, QueryResult
 from portfolio_manager.infrastructure.data_access.exceptions import (
-    QueryError,
     ParameterError,
+    QueryError,
     TransactionError,
 )
+from portfolio_manager.infrastructure.data_access.query_executor import (
+    QueryExecutor,
+    QueryResult,
+)
+
 from .connection import DuckDBConnection, DuckDBTransactionManager
 
 logger = logging.getLogger(__name__)
@@ -57,9 +59,9 @@ class DuckDBQueryExecutor(QueryExecutor):
         self.transaction_manager = DuckDBTransactionManager(connection)
 
     async def execute_query(
-        self, 
-        sql: str, 
-        parameters: Optional[Union[Dict[str, Any], List[Any]]] = None
+        self,
+        sql: str,
+        parameters: dict[str, Any] | list[Any] | None = None
     ) -> QueryResult:
         """Execute a SELECT query and return results."""
         if not await self.connection.is_connected():
@@ -111,9 +113,9 @@ class DuckDBQueryExecutor(QueryExecutor):
             raise QueryError(f"Failed to execute query: {str(e)}") from e
 
     async def execute_command(
-        self, 
-        sql: str, 
-        parameters: Optional[Union[Dict[str, Any], List[Any]]] = None
+        self,
+        sql: str,
+        parameters: dict[str, Any] | list[Any] | None = None
     ) -> int:
         """Execute a non-query command (INSERT, UPDATE, DELETE)."""
         if not await self.connection.is_connected():
@@ -152,10 +154,10 @@ class DuckDBQueryExecutor(QueryExecutor):
             raise QueryError(f"Failed to execute command: {str(e)}") from e
 
     async def execute_batch(
-        self, 
-        sql: str, 
-        parameters_list: List[Dict[str, Any]]
-    ) -> List[int]:
+        self,
+        sql: str,
+        parameters_list: list[dict[str, Any]]
+    ) -> list[int]:
         """Execute a command multiple times with different parameters."""
         if not await self.connection.is_connected():
             raise QueryError("Database connection is not active")
@@ -175,19 +177,19 @@ class DuckDBQueryExecutor(QueryExecutor):
         return results
 
     async def execute_scalar(
-        self, 
-        sql: str, 
-        parameters: Optional[Union[Dict[str, Any], List[Any]]] = None
+        self,
+        sql: str,
+        parameters: dict[str, Any] | list[Any] | None = None
     ) -> Any:
         """Execute a query and return a single scalar value."""
         result = await self.execute_query(sql, parameters)
         return result.scalar()
 
     async def fetch_one(
-        self, 
-        sql: str, 
-        parameters: Optional[Union[Dict[str, Any], List[Any]]] = None
-    ) -> Optional[tuple]:
+        self,
+        sql: str,
+        parameters: dict[str, Any] | list[Any] | None = None
+    ) -> tuple | None:
         """Execute a query and return the first row as a tuple, or None."""
         result = await self.execute_query(sql, parameters)
         if not result.rows:
@@ -197,10 +199,10 @@ class DuckDBQueryExecutor(QueryExecutor):
         return tuple(first_row.values()) if isinstance(first_row, dict) else first_row
 
     async def fetch_all(
-        self, 
-        sql: str, 
-        parameters: Optional[Union[Dict[str, Any], List[Any]]] = None
-    ) -> List[tuple]:
+        self,
+        sql: str,
+        parameters: dict[str, Any] | list[Any] | None = None
+    ) -> list[tuple]:
         """Execute a query and return all rows as tuples."""
         result = await self.execute_query(sql, parameters)
         if not result.rows:
@@ -211,9 +213,9 @@ class DuckDBQueryExecutor(QueryExecutor):
         return result.rows
 
     async def execute_transaction(
-        self, 
-        operations: List[tuple[str, Optional[Dict[str, Any]]]]
-    ) -> List[Any]:
+        self,
+        operations: list[tuple[str, dict[str, Any] | None]]
+    ) -> list[Any]:
         """Execute multiple operations within a single transaction."""
         if not operations:
             return []
@@ -238,7 +240,7 @@ class DuckDBQueryExecutor(QueryExecutor):
             logger.error(f"Transaction failed: {str(e)}")
             raise TransactionError(f"Transaction execution failed: {str(e)}") from e
 
-    def validate_parameters(self, parameters: Dict[str, Any]) -> bool:
+    def validate_parameters(self, parameters: dict[str, Any]) -> bool:
         """Validate query parameters for type safety."""
         try:
             self._prepare_parameters(parameters)
@@ -268,7 +270,7 @@ class DuckDBQueryExecutor(QueryExecutor):
             return f"'{escaped}'"
         elif isinstance(value, bool):
             return "TRUE" if value else "FALSE"
-        elif isinstance(value, (int, float, Decimal)):
+        elif isinstance(value, int | float | Decimal):
             return str(value)
         elif isinstance(value, datetime):
             # Format datetime in ISO format
@@ -278,7 +280,7 @@ class DuckDBQueryExecutor(QueryExecutor):
             escaped = str(value).replace("'", "''")
             return f"'{escaped}'"
 
-    def _prepare_parameters(self, parameters: Optional[Union[Dict[str, Any], List[Any]]]) -> Union[Dict[str, Any], List[Any], None]:
+    def _prepare_parameters(self, parameters: dict[str, Any] | list[Any] | None) -> dict[str, Any] | list[Any] | None:
         """Validate and prepare parameters for safe execution."""
         if parameters is None:
             return None
@@ -308,13 +310,13 @@ class DuckDBQueryExecutor(QueryExecutor):
         """Convert a parameter value to a DuckDB-compatible type."""
         if value is None:
             return None
-        elif isinstance(value, (str, int, float, bool)):
+        elif isinstance(value, str | int | float | bool):
             return value
         elif isinstance(value, Decimal):
             return str(value)  # Store Decimal as string to preserve precision
         elif isinstance(value, datetime):
             return value.isoformat()
-        elif isinstance(value, (list, tuple)):
+        elif isinstance(value, list | tuple):
             # Convert collections to list of converted values
             return [self._convert_parameter_value(item) for item in value]
         else:
@@ -335,16 +337,16 @@ class DuckDBQueryExecutor(QueryExecutor):
                     return datetime.fromisoformat(value.replace('Z', '+00:00'))
                 except ValueError:
                     pass
-            
+
             # Try to parse Decimal strings (financial values)
             if self._looks_like_decimal(value):
                 try:
                     return Decimal(value)
                 except (ValueError, decimal.InvalidOperation):
                     pass
-                    
+
             return value
-        elif isinstance(value, (int, bool)):
+        elif isinstance(value, int | bool):
             return value
         elif isinstance(value, float):
             # Convert to Decimal for financial precision
@@ -363,7 +365,7 @@ class DuckDBQueryExecutor(QueryExecutor):
 
     def _looks_like_decimal(self, value: str) -> bool:
         """Check if a string looks like a decimal number.
-        
+
         This is conservative - only converts values that are clearly financial decimals.
         We avoid converting IDs, version numbers, and other non-financial numeric strings.
         """

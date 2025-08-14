@@ -7,19 +7,22 @@ domain services and infrastructure components.
 """
 
 from .event_system import EventSystem
-from .trade_handlers import TradeExecutedEventHandler, PortfolioMetricsEventHandler
-from .price_handlers import AssetPriceUpdatedEventHandler, PortfolioRevaluationEventHandler
+from .market_data_handlers import (
+    MarketDataCachingEventHandler,
+    MarketDataQualityEventHandler,
+    MarketDataReceivedEventHandler,
+)
+from .price_handlers import (
+    AssetPriceUpdatedEventHandler,
+    PortfolioRevaluationEventHandler,
+)
 from .rebalancing_handlers import (
     PortfolioRebalancedEventHandler,
     RebalancingMetricsEventHandler,
     RebalancingNotificationEventHandler,
 )
-from .risk_handlers import RiskThresholdBreachedEventHandler, RiskMitigationEventHandler
-from .market_data_handlers import (
-    MarketDataReceivedEventHandler,
-    MarketDataQualityEventHandler,
-    MarketDataCachingEventHandler,
-)
+from .risk_handlers import RiskMitigationEventHandler, RiskThresholdBreachedEventHandler
+from .trade_handlers import PortfolioMetricsEventHandler, TradeExecutedEventHandler
 
 __all__ = [
     "EventSystem",
@@ -28,7 +31,7 @@ __all__ = [
     "PortfolioMetricsEventHandler",
     # Price handlers
     "AssetPriceUpdatedEventHandler",
-    "PortfolioRevaluationEventHandler", 
+    "PortfolioRevaluationEventHandler",
     # Rebalancing handlers
     "PortfolioRebalancedEventHandler",
     "RebalancingMetricsEventHandler",

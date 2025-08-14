@@ -6,14 +6,12 @@ code duplication across application service implementations.
 """
 
 import logging
-from abc import ABC
-from typing import Any, Dict, List, Optional, Type, TypeVar, Generic
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any, Generic, TypeVar
 
 from portfolio_manager.domain.exceptions import DomainError, DomainValidationError
-
 
 T = TypeVar('T')
 
@@ -36,27 +34,27 @@ class ServiceResult(Generic[T]):
     """
 
     success: bool
-    data: Optional[T] = None
-    error: Optional[Exception] = None
-    error_code: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
+    data: T | None = None
+    error: Exception | None = None
+    error_code: str | None = None
+    metadata: dict[str, Any] | None = None
 
     @classmethod
-    def success_result(cls, data: T, metadata: Optional[Dict[str, Any]] = None) -> 'ServiceResult[T]':
+    def success_result(cls, data: T, metadata: dict[str, Any] | None = None) -> 'ServiceResult[T]':
         """Create a successful result."""
         return cls(success=True, data=data, metadata=metadata)
 
     @classmethod
     def error_result(
-        cls, 
-        error: Exception, 
-        error_code: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        cls,
+        error: Exception,
+        error_code: str | None = None,
+        metadata: dict[str, Any] | None = None
     ) -> 'ServiceResult[T]':
         """Create an error result."""
         return cls(
-            success=False, 
-            error=error, 
+            success=False,
+            error=error,
             error_code=error_code or error.__class__.__name__,
             metadata=metadata
         )
@@ -79,7 +77,7 @@ class ServiceResult(Generic[T]):
             raise ValueError("Result has no data or error")
 
 
-class BaseApplicationService(ABC):
+class BaseApplicationService:
     """
     Base class for all application services.
 
@@ -92,9 +90,9 @@ class BaseApplicationService(ABC):
     """
 
     def __init__(
-        self, 
+        self,
         error_strategy: ServiceErrorStrategy = ServiceErrorStrategy.RAISE_EXCEPTIONS,
-        logger_name: Optional[str] = None
+        logger_name: str | None = None
     ):
         """
         Initialize base application service.
@@ -116,7 +114,7 @@ class BaseApplicationService(ABC):
         context_info = f" ({context})" if context else ""
         self._logger.debug(f"{self._log_prefix} Starting {operation}{context_info}")
 
-    def _log_operation_success(self, operation: str, context: str = "", metrics: Optional[Dict] = None) -> None:
+    def _log_operation_success(self, operation: str, context: str = "", metrics: dict | None = None) -> None:
         """Log the successful completion of a service operation."""
         context_info = f" ({context})" if context else ""
         metrics_info = f" - {metrics}" if metrics else ""
@@ -131,7 +129,7 @@ class BaseApplicationService(ABC):
             extra=error_context
         )
 
-    def _build_error_context(self, operation: str, error: Exception, context: str) -> Dict[str, Any]:
+    def _build_error_context(self, operation: str, error: Exception, context: str) -> dict[str, Any]:
         """
         Build error context for structured logging.
 
@@ -155,7 +153,7 @@ class BaseApplicationService(ABC):
         operation_name: str,
         operation_func: Any,  # Callable coroutine
         context: str = "",
-        expected_exceptions: Optional[List[Type[Exception]]] = None
+        expected_exceptions: list[type[Exception]] | None = None
     ) -> Any:
         """
         Execute a service operation with standardized logging and error handling.
@@ -193,12 +191,12 @@ class BaseApplicationService(ABC):
                 # This should be handled by the caller wrapping in ServiceResult
                 raise  # Let caller handle the ServiceResult wrapping
             else:  # MIXED strategy - decide based on exception type
-                if isinstance(e, (DomainValidationError, DomainError)):
+                if isinstance(e, DomainValidationError | DomainError):
                     raise  # Always raise domain/validation errors
                 # Other errors might be wrapped in results by caller
                 raise
 
-    def _validate_required_params(self, params: Dict[str, Any]) -> None:
+    def _validate_required_params(self, params: dict[str, Any]) -> None:
         """
         Validate that required parameters are present and not None.
 
@@ -212,7 +210,7 @@ class BaseApplicationService(ABC):
         if missing_params:
             raise DomainValidationError(f"Required parameters missing: {', '.join(missing_params)}")
 
-    def _validate_business_rules(self, rules: List[tuple[bool, str]]) -> None:
+    def _validate_business_rules(self, rules: list[tuple[bool, str]]) -> None:
         """
         Validate business rules and raise ValidationError on first failure.
 
@@ -256,7 +254,7 @@ class ResultBasedService(BaseApplicationService):
     and provides helper methods for creating consistent result objects.
     """
 
-    def __init__(self, logger_name: Optional[str] = None):
+    def __init__(self, logger_name: str | None = None):
         """Initialize result-based service."""
         super().__init__(
             error_strategy=ServiceErrorStrategy.RETURN_RESULTS,
@@ -268,7 +266,7 @@ class ResultBasedService(BaseApplicationService):
         operation_name: str,
         operation_func: Any,
         context: str = "",
-        expected_exceptions: Optional[List[Type[Exception]]] = None
+        expected_exceptions: list[type[Exception]] | None = None
     ) -> ServiceResult[Any]:
         """
         Execute an operation and wrap the result in a ServiceResult.
@@ -300,7 +298,7 @@ class ExceptionBasedService(BaseApplicationService):
     and provides standard exception handling patterns.
     """
 
-    def __init__(self, logger_name: Optional[str] = None):
+    def __init__(self, logger_name: str | None = None):
         """Initialize exception-based service."""
         super().__init__(
             error_strategy=ServiceErrorStrategy.RAISE_EXCEPTIONS,
@@ -318,14 +316,14 @@ class ServiceMetrics:
 
     def __init__(self):
         """Initialize metrics collector."""
-        self._metrics: Dict[str, Dict[str, Any]] = {}
+        self._metrics: dict[str, dict[str, Any]] = {}
 
     def record_operation(
-        self, 
-        operation: str, 
-        duration: float, 
+        self,
+        operation: str,
+        duration: float,
         success: bool,
-        context: Optional[str] = None
+        context: str | None = None
     ) -> None:
         """
         Record metrics for a service operation.
@@ -356,7 +354,7 @@ class ServiceMetrics:
         metrics['min_duration'] = min(metrics['min_duration'], duration)
         metrics['max_duration'] = max(metrics['max_duration'], duration)
 
-    def get_operation_metrics(self, operation: str) -> Optional[Dict[str, Any]]:
+    def get_operation_metrics(self, operation: str) -> dict[str, Any] | None:
         """Get metrics for a specific operation."""
         metrics = self._metrics.get(operation)
         if not metrics:
@@ -371,10 +369,10 @@ class ServiceMetrics:
             'success_rate': success_rate
         }
 
-    def get_all_metrics(self) -> Dict[str, Dict[str, Any]]:
+    def get_all_metrics(self) -> dict[str, dict[str, Any]]:
         """Get all collected metrics."""
         return {
-            operation: self.get_operation_metrics(operation) 
+            operation: self.get_operation_metrics(operation)
             for operation in self._metrics.keys()
         }
 
@@ -389,8 +387,8 @@ class DependencyContainer:
 
     def __init__(self):
         """Initialize empty dependency container."""
-        self._dependencies: Dict[str, Any] = {}
-        self._factories: Dict[str, Any] = {}
+        self._dependencies: dict[str, Any] = {}
+        self._factories: dict[str, Any] = {}
 
     def register(self, name: str, instance: Any) -> None:
         """Register a dependency instance."""

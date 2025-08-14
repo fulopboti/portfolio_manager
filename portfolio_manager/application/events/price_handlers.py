@@ -5,12 +5,10 @@ This module contains handlers that process price update events and
 coordinate portfolio revaluation and risk calculations.
 """
 
-import logging
 from decimal import Decimal
 from typing import Any
 
 from ...domain.events import AssetPriceUpdatedEvent
-from ...domain.exceptions import DomainError
 from .base_handler import BaseEventHandler, ErrorHandlingStrategy
 
 

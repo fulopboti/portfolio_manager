@@ -1,16 +1,16 @@
 """Audit logging and system tracking data access layer abstractions."""
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
 from datetime import datetime
 from enum import Enum
+from typing import Any
 from uuid import UUID
 
 
 class AuditEventType(Enum):
     """Types of audit events that can be logged."""
     USER_LOGIN = "user_login"
-    USER_LOGOUT = "user_logout" 
+    USER_LOGOUT = "user_logout"
     DATA_INGESTION = "data_ingestion"
     PORTFOLIO_CREATE = "portfolio_create"
     PORTFOLIO_UPDATE = "portfolio_update"
@@ -49,10 +49,10 @@ class AuditDataAccess(ABC):
         event_type: AuditEventType,
         severity: AuditSeverity,
         message: str,
-        entity_id: Optional[str] = None,
-        user_id: Optional[str] = None,
-        session_id: Optional[str] = None,
-        details: Optional[Dict[str, Any]] = None
+        entity_id: str | None = None,
+        user_id: str | None = None,
+        session_id: str | None = None,
+        details: dict[str, Any] | None = None
     ) -> UUID:
         """Log an audit event.
 
@@ -76,8 +76,8 @@ class AuditDataAccess(ABC):
     @abstractmethod
     async def log_events_batch(
         self,
-        events: List[Dict[str, Any]]
-    ) -> List[UUID]:
+        events: list[dict[str, Any]]
+    ) -> list[UUID]:
         """Log multiple audit events in a single batch.
 
         Args:
@@ -93,7 +93,7 @@ class AuditDataAccess(ABC):
 
     # Event Retrieval
     @abstractmethod
-    async def get_event(self, event_id: UUID) -> Optional[Dict[str, Any]]:
+    async def get_event(self, event_id: UUID) -> dict[str, Any] | None:
         """Retrieve a specific audit event by ID.
 
         Args:
@@ -107,15 +107,15 @@ class AuditDataAccess(ABC):
     @abstractmethod
     async def get_events(
         self,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
-        event_types: Optional[List[AuditEventType]] = None,
-        severity_levels: Optional[List[AuditSeverity]] = None,
-        entity_id: Optional[str] = None,
-        user_id: Optional[str] = None,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None
-    ) -> List[Dict[str, Any]]:
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+        event_types: list[AuditEventType] | None = None,
+        severity_levels: list[AuditSeverity] | None = None,
+        entity_id: str | None = None,
+        user_id: str | None = None,
+        limit: int | None = None,
+        offset: int | None = None
+    ) -> list[dict[str, Any]]:
         """Query audit events with various filters.
 
         Args:
@@ -137,9 +137,9 @@ class AuditDataAccess(ABC):
     async def get_events_for_entity(
         self,
         entity_id: str,
-        event_types: Optional[List[AuditEventType]] = None,
-        limit: Optional[int] = None
-    ) -> List[Dict[str, Any]]:
+        event_types: list[AuditEventType] | None = None,
+        limit: int | None = None
+    ) -> list[dict[str, Any]]:
         """Get all audit events for a specific entity.
 
         Args:
@@ -156,8 +156,8 @@ class AuditDataAccess(ABC):
     async def get_recent_events(
         self,
         hours: int = 24,
-        severity_levels: Optional[List[AuditSeverity]] = None
-    ) -> List[Dict[str, Any]]:
+        severity_levels: list[AuditSeverity] | None = None
+    ) -> list[dict[str, Any]]:
         """Get recent audit events within the specified time window.
 
         Args:
@@ -175,10 +175,10 @@ class AuditDataAccess(ABC):
         self,
         error_message: str,
         error_type: str,
-        stack_trace: Optional[str] = None,
-        entity_id: Optional[str] = None,
-        user_id: Optional[str] = None,
-        context: Optional[Dict[str, Any]] = None
+        stack_trace: str | None = None,
+        entity_id: str | None = None,
+        user_id: str | None = None,
+        context: dict[str, Any] | None = None
     ) -> UUID:
         """Log an error event with detailed information.
 
@@ -200,7 +200,7 @@ class AuditDataAccess(ABC):
         self,
         start_date: datetime,
         end_date: datetime
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get summary statistics for errors in a time period.
 
         Args:
@@ -216,7 +216,7 @@ class AuditDataAccess(ABC):
     async def get_error_patterns(
         self,
         days: int = 7
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Analyze error patterns to identify recurring issues.
 
         Args:
@@ -234,7 +234,7 @@ class AuditDataAccess(ABC):
         operation_name: str,
         duration_ms: float,
         success: bool,
-        details: Optional[Dict[str, Any]] = None
+        details: dict[str, Any] | None = None
     ) -> UUID:
         """Log a performance metric for an operation.
 
@@ -255,7 +255,7 @@ class AuditDataAccess(ABC):
         operation_name: str,
         start_date: datetime,
         end_date: datetime
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get performance statistics for an operation.
 
         Args:
@@ -273,7 +273,7 @@ class AuditDataAccess(ABC):
         self,
         threshold_ms: float,
         hours: int = 24
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get operations that exceeded performance thresholds.
 
         Args:
@@ -289,8 +289,8 @@ class AuditDataAccess(ABC):
     @abstractmethod
     async def start_session(
         self,
-        user_id: Optional[str] = None,
-        client_info: Optional[Dict[str, Any]] = None
+        user_id: str | None = None,
+        client_info: dict[str, Any] | None = None
     ) -> str:
         """Start a new user/system session.
 
@@ -313,7 +313,7 @@ class AuditDataAccess(ABC):
         pass
 
     @abstractmethod
-    async def get_active_sessions(self) -> List[Dict[str, Any]]:
+    async def get_active_sessions(self) -> list[dict[str, Any]]:
         """Get list of currently active sessions.
 
         Returns:
@@ -324,9 +324,9 @@ class AuditDataAccess(ABC):
     @abstractmethod
     async def get_session_history(
         self,
-        user_id: Optional[str] = None,
+        user_id: str | None = None,
         days: int = 30
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get session history for analysis.
 
         Args:
@@ -355,7 +355,7 @@ class AuditDataAccess(ABC):
     async def archive_events(
         self,
         before_date: datetime,
-        archive_path: Optional[str] = None
+        archive_path: str | None = None
     ) -> int:
         """Archive old events to external storage.
 
@@ -369,7 +369,7 @@ class AuditDataAccess(ABC):
         pass
 
     @abstractmethod
-    async def get_storage_stats(self) -> Dict[str, Any]:
+    async def get_storage_stats(self) -> dict[str, Any]:
         """Get statistics about audit log storage usage.
 
         Returns:
@@ -383,8 +383,8 @@ class AuditDataAccess(ABC):
         self,
         start_date: datetime,
         end_date: datetime,
-        user_id: Optional[str] = None
-    ) -> Dict[str, Any]:
+        user_id: str | None = None
+    ) -> dict[str, Any]:
         """Generate activity report for a time period.
 
         Args:
@@ -401,7 +401,7 @@ class AuditDataAccess(ABC):
     async def get_usage_patterns(
         self,
         days: int = 30
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Analyze usage patterns to identify trends.
 
         Args:
@@ -416,7 +416,7 @@ class AuditDataAccess(ABC):
     async def get_security_events(
         self,
         hours: int = 24
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get security-related events for monitoring.
 
         Args:

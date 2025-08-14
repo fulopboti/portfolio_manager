@@ -1,19 +1,25 @@
 """Repository factory for creating DuckDB repository instances."""
 
 import logging
-from typing import Optional
 
 from portfolio_manager.application.ports import AssetRepository, PortfolioRepository
-from portfolio_manager.infrastructure.data_access.asset_data_access import AssetDataAccess
-from portfolio_manager.infrastructure.data_access.portfolio_data_access import PortfolioDataAccess
-from portfolio_manager.infrastructure.data_access.exceptions import DataAccessError, ConnectionError
 from portfolio_manager.config.schema import DatabaseConfig
+from portfolio_manager.infrastructure.data_access.asset_data_access import (
+    AssetDataAccess,
+)
+from portfolio_manager.infrastructure.data_access.exceptions import (
+    ConnectionError,
+    DataAccessError,
+)
+from portfolio_manager.infrastructure.data_access.portfolio_data_access import (
+    PortfolioDataAccess,
+)
 
-from .connection import DuckDBConnection, DuckDBConfig
+from .asset_repository import DuckDBAssetRepository
+from .connection import DuckDBConfig, DuckDBConnection
+from .portfolio_repository import DuckDBPortfolioRepository
 from .query_executor import DuckDBQueryExecutor
 from .schema.schema_manager import DuckDBSchemaManager
-from .asset_repository import DuckDBAssetRepository
-from .portfolio_repository import DuckDBPortfolioRepository
 
 logger = logging.getLogger(__name__)
 
@@ -136,10 +142,10 @@ class DuckDBRepositoryFactory:
     """
 
     def __init__(
-        self, 
-        database_path: str, 
+        self,
+        database_path: str,
         auto_initialize: bool = True,
-        config: Optional[DatabaseConfig] = None
+        config: DatabaseConfig | None = None
     ):
         """Initialize the repository factory.
 
@@ -154,13 +160,13 @@ class DuckDBRepositoryFactory:
         self._logger = logging.getLogger(__name__)
 
         # Core infrastructure components
-        self._connection: Optional[DuckDBConnection] = None
-        self._query_executor: Optional[DuckDBQueryExecutor] = None
-        self._schema_manager: Optional[DuckDBSchemaManager] = None
+        self._connection: DuckDBConnection | None = None
+        self._query_executor: DuckDBQueryExecutor | None = None
+        self._schema_manager: DuckDBSchemaManager | None = None
 
         # Repository instances (cached)
-        self._asset_repository: Optional[AssetRepository] = None
-        self._portfolio_repository: Optional[PortfolioRepository] = None
+        self._asset_repository: AssetRepository | None = None
+        self._portfolio_repository: PortfolioRepository | None = None
 
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
@@ -334,7 +340,7 @@ class DuckDBRepositoryFactory:
 
         except Exception as e:
             return {
-                "status": "unhealthy", 
+                "status": "unhealthy",
                 "reason": f"Health check failed: {str(e)}"
             }
 

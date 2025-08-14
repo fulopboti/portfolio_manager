@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
 from enum import Enum
-from typing import List
 from uuid import UUID
 
 from portfolio_manager.domain.exceptions import (
@@ -316,7 +315,7 @@ class BrokerProfile:
     fee_flat: Decimal
     fee_pct: Decimal
     min_order_value: Decimal
-    supported_currencies: List[str]
+    supported_currencies: list[str]
     supports_fractional: bool
 
     def __post_init__(self):

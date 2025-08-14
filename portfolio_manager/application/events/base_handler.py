@@ -6,9 +6,9 @@ code duplication across event handlers and standardize error handling.
 """
 
 import logging
-from abc import ABC, abstractmethod
-from typing import Any, Optional
+from abc import abstractmethod
 from enum import Enum
+from typing import Any
 
 from ...infrastructure.events.handlers import EventHandler
 
@@ -33,9 +33,9 @@ class BaseEventHandler(EventHandler):
     """
 
     def __init__(
-        self, 
+        self,
         error_strategy: ErrorHandlingStrategy = ErrorHandlingStrategy.CRITICAL,
-        logger_name: Optional[str] = None
+        logger_name: str | None = None
     ):
         """
         Initialize base event handler.
@@ -213,7 +213,7 @@ class BaseEventHandler(EventHandler):
 class CriticalEventHandler(BaseEventHandler):
     """Event handler for critical operations that must not fail."""
 
-    def __init__(self, logger_name: Optional[str] = None):
+    def __init__(self, logger_name: str | None = None):
         super().__init__(
             error_strategy=ErrorHandlingStrategy.CRITICAL,
             logger_name=logger_name
@@ -223,7 +223,7 @@ class CriticalEventHandler(BaseEventHandler):
 class ResilientEventHandler(BaseEventHandler):
     """Event handler for operations that should continue despite errors."""
 
-    def __init__(self, logger_name: Optional[str] = None):
+    def __init__(self, logger_name: str | None = None):
         super().__init__(
             error_strategy=ErrorHandlingStrategy.RESILIENT,
             logger_name=logger_name
@@ -233,7 +233,7 @@ class ResilientEventHandler(BaseEventHandler):
 class SelectiveEventHandler(BaseEventHandler):
     """Event handler with custom critical error determination."""
 
-    def __init__(self, logger_name: Optional[str] = None):
+    def __init__(self, logger_name: str | None = None):
         super().__init__(
             error_strategy=ErrorHandlingStrategy.SELECTIVE,
             logger_name=logger_name

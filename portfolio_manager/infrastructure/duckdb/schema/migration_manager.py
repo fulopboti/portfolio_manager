@@ -1,9 +1,13 @@
 """Basic DuckDB migration manager implementation."""
 
 import logging
-from typing import List, Optional
-from portfolio_manager.infrastructure.data_access.schema_manager import MigrationManager, Migration
+
 from portfolio_manager.infrastructure.data_access.exceptions import MigrationError
+from portfolio_manager.infrastructure.data_access.schema_manager import (
+    Migration,
+    MigrationManager,
+)
+
 from ..query_executor import DuckDBQueryExecutor
 
 logger = logging.getLogger(__name__)
@@ -46,14 +50,14 @@ class DuckDBMigrationManager(MigrationManager):
             logger.error(f"Failed to initialize migration tracking: {str(e)}")
             raise MigrationError(f"Cannot initialize migration tracking: {str(e)}") from e
 
-    async def get_applied_migrations(self) -> List[str]:
+    async def get_applied_migrations(self) -> list[str]:
         """Get list of migration versions that have been applied."""
         try:
             await self.initialize_migration_tracking()
 
             result = await self.query_executor.execute_query("""
-                SELECT version 
-                FROM schema_migrations 
+                SELECT version
+                FROM schema_migrations
                 WHERE success = true
                 ORDER BY applied_at ASC
             """)
@@ -64,7 +68,7 @@ class DuckDBMigrationManager(MigrationManager):
             logger.error(f"Failed to get applied migrations: {str(e)}")
             raise MigrationError(f"Cannot get applied migrations: {str(e)}") from e
 
-    async def get_pending_migrations(self) -> List[Migration]:
+    async def get_pending_migrations(self) -> list[Migration]:
         """Get list of migrations that need to be applied."""
         # For the basic implementation, return empty list
         # Full implementation would load from filesystem and compare with applied
@@ -78,7 +82,7 @@ class DuckDBMigrationManager(MigrationManager):
 
             # Record the migration as applied
             await self.query_executor.execute_command("""
-                INSERT INTO schema_migrations 
+                INSERT INTO schema_migrations
                 (version, name, migration_type, applied_at, checksum, success)
                 VALUES ($version, $name, $migration_type, CURRENT_TIMESTAMP, $checksum, true)
             """, {
@@ -96,7 +100,7 @@ class DuckDBMigrationManager(MigrationManager):
             # Try to record the failure
             try:
                 await self.query_executor.execute_command("""
-                    INSERT INTO schema_migrations 
+                    INSERT INTO schema_migrations
                     (version, name, migration_type, applied_at, checksum, success)
                     VALUES ($version, $name, $migration_type, CURRENT_TIMESTAMP, $checksum, false)
                 """, {
@@ -118,7 +122,7 @@ class DuckDBMigrationManager(MigrationManager):
 
             # Remove the migration record
             await self.query_executor.execute_command("""
-                DELETE FROM schema_migrations 
+                DELETE FROM schema_migrations
                 WHERE version = $version
             """, {"version": migration.version})
 
@@ -128,7 +132,7 @@ class DuckDBMigrationManager(MigrationManager):
             logger.error(f"Failed to rollback migration {migration.get_migration_id()}: {str(e)}")
             raise MigrationError(f"Failed to rollback migration {migration.get_migration_id()}: {str(e)}") from e
 
-    async def migrate_to_version(self, target_version: Optional[str] = None) -> None:
+    async def migrate_to_version(self, target_version: str | None = None) -> None:
         """Migrate database to a specific version."""
         # Basic implementation - just log the intent
         if target_version:
@@ -144,7 +148,7 @@ class DuckDBMigrationManager(MigrationManager):
             # Basic check - ensure all recorded migrations have success=true
             result = await self.query_executor.execute_query("""
                 SELECT COUNT(*) as failed_count
-                FROM schema_migrations 
+                FROM schema_migrations
                 WHERE success = false
             """)
 
@@ -155,7 +159,7 @@ class DuckDBMigrationManager(MigrationManager):
             logger.error(f"Migration integrity validation failed: {str(e)}")
             return False
 
-    def load_migrations_from_directory(self, directory: str) -> List[Migration]:
+    def load_migrations_from_directory(self, directory: str) -> list[Migration]:
         """Load migration definitions from a filesystem directory."""
         # Basic implementation - return empty list
         # Full implementation would scan directory for .sql files

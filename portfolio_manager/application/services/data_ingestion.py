@@ -2,12 +2,15 @@
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, Optional
 
 from portfolio_manager.application.ports import AssetRepository, DataProvider
 from portfolio_manager.domain.entities import Asset, AssetType
-from portfolio_manager.domain.exceptions import DataIngestionError, DomainValidationError
+from portfolio_manager.domain.exceptions import (
+    DataIngestionError,
+    DomainValidationError,
+)
 from portfolio_manager.infrastructure.data_access.exceptions import DataAccessError
+
 from .base_service import ExceptionBasedService
 
 
@@ -18,7 +21,7 @@ class IngestionResult:
     symbol: str
     success: bool
     snapshots_count: int
-    error: Optional[str] = None
+    error: str | None = None
 
 
 class DataIngestionService(ExceptionBasedService):
@@ -28,8 +31,8 @@ class DataIngestionService(ExceptionBasedService):
         self,
         data_provider: DataProvider,
         asset_repository: AssetRepository,
-        batch_size: Optional[int] = None,
-        retry_attempts: Optional[int] = None,
+        batch_size: int | None = None,
+        retry_attempts: int | None = None,
     ):
         super().__init__(logger_name=f"{__name__}.{self.__class__.__name__}")
         self.data_provider = data_provider
@@ -40,7 +43,7 @@ class DataIngestionService(ExceptionBasedService):
         self.retry_attempts = retry_attempts if retry_attempts is not None else 3
 
         # Log configuration for observability
-        self._log_operation_start("initialize_service", 
+        self._log_operation_start("initialize_service",
             f"batch_size={self.batch_size}, retry_attempts={self.retry_attempts}")
         self._log_operation_success("initialize_service", "DataIngestionService configured")
 
@@ -50,8 +53,8 @@ class DataIngestionService(ExceptionBasedService):
         asset_type: AssetType,
         exchange: str,
         name: str,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
     ) -> IngestionResult:
         """Ingest data for a single symbol."""
         try:
@@ -140,12 +143,12 @@ class DataIngestionService(ExceptionBasedService):
 
     async def ingest_multiple_symbols(
         self,
-        symbols: List[str],
+        symbols: list[str],
         asset_type: AssetType,
         exchange: str,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
-    ) -> List[IngestionResult]:
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+    ) -> list[IngestionResult]:
         """Ingest data for multiple symbols."""
         results = []
 
@@ -164,7 +167,7 @@ class DataIngestionService(ExceptionBasedService):
 
         return results
 
-    async def refresh_all_assets(self) -> List[IngestionResult]:
+    async def refresh_all_assets(self) -> list[IngestionResult]:
         """Refresh data for all existing assets."""
         all_assets = await self.asset_repository.get_all_assets()
         results = []

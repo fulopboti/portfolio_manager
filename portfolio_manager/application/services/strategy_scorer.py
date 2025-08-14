@@ -3,12 +3,12 @@
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
-from typing import Dict, List, Optional
 
 from portfolio_manager.application.ports import AssetRepository, StrategyCalculator
-from portfolio_manager.domain.entities import Asset, Trade
+from portfolio_manager.domain.entities import Trade
 from portfolio_manager.domain.exceptions import StrategyCalculationError
 from portfolio_manager.infrastructure.data_access.exceptions import DataAccessError
+
 from .base_service import ExceptionBasedService
 
 
@@ -20,7 +20,7 @@ class StrategyScore:
     strategy_id: str
     score: Decimal
     timestamp: datetime
-    metadata: Optional[Dict] = None
+    metadata: dict | None = None
 
 
 @dataclass
@@ -33,8 +33,8 @@ class BacktestResult:
     initial_capital: Decimal
     final_value: Decimal
     total_return: Decimal
-    trades: List[Trade]
-    performance_metrics: Dict
+    trades: list[Trade]
+    performance_metrics: dict
 
 
 class StrategyScoreService(ExceptionBasedService):
@@ -42,7 +42,7 @@ class StrategyScoreService(ExceptionBasedService):
 
     def __init__(
         self,
-        strategy_calculators: Dict[str, StrategyCalculator],
+        strategy_calculators: dict[str, StrategyCalculator],
         asset_repository: AssetRepository,
     ):
         super().__init__(logger_name=f"{__name__}.{self.__class__.__name__}")
@@ -52,9 +52,9 @@ class StrategyScoreService(ExceptionBasedService):
     async def calculate_strategy_scores(
         self,
         strategy_id: str,
-        symbols: Optional[List[str]] = None,
-        as_of_date: Optional[datetime] = None,
-    ) -> List[StrategyScore]:
+        symbols: list[str] | None = None,
+        as_of_date: datetime | None = None,
+    ) -> list[StrategyScore]:
         """Calculate strategy scores for specified symbols or all assets."""
         if strategy_id not in self.strategy_calculators:
             raise StrategyCalculationError(f"Unknown strategy: {strategy_id}")
@@ -111,8 +111,8 @@ class StrategyScoreService(ExceptionBasedService):
         self,
         strategy_id: str,
         limit: int = 50,
-        as_of_date: Optional[datetime] = None,
-    ) -> List[StrategyScore]:
+        as_of_date: datetime | None = None,
+    ) -> list[StrategyScore]:
         """Get top-ranked assets for a strategy."""
         all_scores = await self.calculate_strategy_scores(
             strategy_id=strategy_id,
@@ -134,10 +134,10 @@ class StrategyScoreService(ExceptionBasedService):
         if strategy_id not in self.strategy_calculators:
             raise StrategyCalculationError(f"Unknown strategy: {strategy_id}")
 
-        calculator = self.strategy_calculators[strategy_id]
+        self.strategy_calculators[strategy_id]
 
         # Get all assets for backtesting
-        assets = await self.asset_repository.get_all_assets()
+        await self.asset_repository.get_all_assets()
 
         # For this implementation, create a simple backtest result
         # In a full implementation, this would simulate trades over time
@@ -166,7 +166,7 @@ class StrategyScoreService(ExceptionBasedService):
             performance_metrics=performance_metrics,
         )
 
-    def get_strategy_info(self, strategy_id: str) -> Dict:
+    def get_strategy_info(self, strategy_id: str) -> dict:
         """Get information about a strategy."""
         if strategy_id not in self.strategy_calculators:
             raise StrategyCalculationError(f"Unknown strategy: {strategy_id}")
@@ -180,7 +180,7 @@ class StrategyScoreService(ExceptionBasedService):
             "required_metrics": calculator.get_required_metrics(),
         }
 
-    def list_available_strategies(self) -> List[Dict]:
+    def list_available_strategies(self) -> list[dict]:
         """List all available strategies."""
         return [
             self.get_strategy_info(strategy_id)

@@ -419,17 +419,27 @@ class TestDataIngestionCLIErrorHandling:
         assert result.exit_code != 0
 
     @patch('portfolio_manager.cli.data_ingestion.ConfiguredServiceBuilder')
-    @patch('portfolio_manager.cli.data_ingestion.MockDataProvider')
-    def test_async_operation_exception(self, mock_provider_class, mock_builder_class):
+    @patch('portfolio_manager.cli.data_ingestion.create_data_provider_factory')
+    def test_async_operation_exception(self, mock_factory_creator, mock_builder_class):
         """Test handling of async operation exceptions."""
         # Setup mocks to raise exception in async operation
         mock_provider = Mock()
-        mock_provider_class.return_value = mock_provider
+        mock_provider.get_provider_name.return_value = "Test Provider"
+        
+        mock_provider_factory = Mock()
+        mock_provider_factory.get_primary_provider.return_value = mock_provider
+        mock_factory_creator.return_value = mock_provider_factory
 
         mock_asset_repo = Mock()
-        mock_stack = {'repositories': {'asset': mock_asset_repo}}
+        mock_stack = {
+            'repositories': {'asset': mock_asset_repo},
+            'services': {},
+            'factory': Mock(),
+            'config': Mock()
+        }
 
         mock_builder = Mock()
+        mock_builder.config = Mock()
         mock_builder.build_complete_service_stack.return_value = mock_stack
         mock_builder_class.return_value = mock_builder
 

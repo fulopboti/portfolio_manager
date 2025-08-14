@@ -23,7 +23,7 @@ class TradeExecutedEventHandler(EventHandler):
 
         Args:
             portfolio_repository: Repository for portfolio data access
-            position_repository: Repository for position data access  
+            position_repository: Repository for position data access
             audit_service: Service for audit logging
         """
         self.portfolio_repository = portfolio_repository

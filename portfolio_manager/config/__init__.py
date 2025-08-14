@@ -1,13 +1,13 @@
 """Configuration management for the portfolio manager application."""
 
-from .settings import ConfigManager, config
 from .factory import ConfiguredComponentFactory, ConfiguredServiceBuilder
 from .schema import PortfolioManagerConfig
+from .settings import ConfigManager, config
 
 __all__ = [
     "ConfigManager",
     "config",
-    "ConfiguredComponentFactory", 
+    "ConfiguredComponentFactory",
     "ConfiguredServiceBuilder",
     "PortfolioManagerConfig",
 ]

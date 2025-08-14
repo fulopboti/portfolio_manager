@@ -1,11 +1,11 @@
 """Metrics and analytics data access layer abstractions."""
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Set, Tuple
 from datetime import datetime
 from decimal import Decimal
-from uuid import UUID
 from enum import Enum
+from typing import Any
+from uuid import UUID
 
 
 class MetricType(Enum):
@@ -27,13 +27,13 @@ class MetricsDataAccess(ABC):
     # Metric Storage and Retrieval
     @abstractmethod
     async def save_metric(
-        self, 
+        self,
         entity_id: str,  # asset symbol or portfolio ID
         metric_name: str,
         metric_type: MetricType,
         value: Decimal,
         as_of_date: datetime,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: dict[str, Any] | None = None
     ) -> None:
         """Save a single metric value.
 
@@ -52,8 +52,8 @@ class MetricsDataAccess(ABC):
 
     @abstractmethod
     async def save_metrics_batch(
-        self, 
-        metrics: List[Tuple[str, str, MetricType, Decimal, datetime, Optional[Dict[str, Any]]]]
+        self,
+        metrics: list[tuple[str, str, MetricType, Decimal, datetime, dict[str, Any] | None]]
     ) -> None:
         """Save multiple metrics in a single batch operation.
 
@@ -67,11 +67,11 @@ class MetricsDataAccess(ABC):
 
     @abstractmethod
     async def get_metric(
-        self, 
+        self,
         entity_id: str,
         metric_name: str,
-        as_of_date: Optional[datetime] = None
-    ) -> Optional[Tuple[Decimal, datetime, Optional[Dict[str, Any]]]]:
+        as_of_date: datetime | None = None
+    ) -> tuple[Decimal, datetime, dict[str, Any] | None] | None:
         """Get a specific metric value.
 
         Args:
@@ -86,11 +86,11 @@ class MetricsDataAccess(ABC):
 
     @abstractmethod
     async def get_metrics_for_entity(
-        self, 
+        self,
         entity_id: str,
-        metric_type: Optional[MetricType] = None,
-        as_of_date: Optional[datetime] = None
-    ) -> Dict[str, Tuple[Decimal, datetime, Optional[Dict[str, Any]]]]:
+        metric_type: MetricType | None = None,
+        as_of_date: datetime | None = None
+    ) -> dict[str, tuple[Decimal, datetime, dict[str, Any] | None]]:
         """Get all metrics for an entity.
 
         Args:
@@ -105,11 +105,11 @@ class MetricsDataAccess(ABC):
 
     @abstractmethod
     async def get_metrics_bulk(
-        self, 
-        entity_ids: List[str],
-        metric_names: List[str],
-        as_of_date: Optional[datetime] = None
-    ) -> Dict[str, Dict[str, Optional[Tuple[Decimal, datetime, Optional[Dict[str, Any]]]]]]:
+        self,
+        entity_ids: list[str],
+        metric_names: list[str],
+        as_of_date: datetime | None = None
+    ) -> dict[str, dict[str, tuple[Decimal, datetime, dict[str, Any] | None] | None]]:
         """Get specific metrics for multiple entities.
 
         Args:
@@ -125,12 +125,12 @@ class MetricsDataAccess(ABC):
     # Historical Metrics
     @abstractmethod
     async def get_metric_history(
-        self, 
+        self,
         entity_id: str,
         metric_name: str,
         start_date: datetime,
         end_date: datetime
-    ) -> List[Tuple[datetime, Decimal, Optional[Dict[str, Any]]]]:
+    ) -> list[tuple[datetime, Decimal, dict[str, Any] | None]]:
         """Get historical values for a metric.
 
         Args:
@@ -146,12 +146,12 @@ class MetricsDataAccess(ABC):
 
     @abstractmethod
     async def get_metric_statistics(
-        self, 
+        self,
         entity_id: str,
         metric_name: str,
         start_date: datetime,
         end_date: datetime
-    ) -> Dict[str, Decimal]:
+    ) -> dict[str, Decimal]:
         """Get statistical summary for a metric over time.
 
         Args:
@@ -168,9 +168,9 @@ class MetricsDataAccess(ABC):
     # Strategy Scores
     @abstractmethod
     async def save_strategy_scores(
-        self, 
+        self,
         strategy_name: str,
-        scores: Dict[str, Decimal],  # asset_symbol -> score
+        scores: dict[str, Decimal],  # asset_symbol -> score
         as_of_date: datetime
     ) -> None:
         """Save strategy scores for multiple assets.
@@ -187,11 +187,11 @@ class MetricsDataAccess(ABC):
 
     @abstractmethod
     async def get_strategy_scores(
-        self, 
+        self,
         strategy_name: str,
-        as_of_date: Optional[datetime] = None,
-        limit: Optional[int] = None
-    ) -> List[Tuple[str, Decimal]]:
+        as_of_date: datetime | None = None,
+        limit: int | None = None
+    ) -> list[tuple[str, Decimal]]:
         """Get strategy scores for assets.
 
         Args:
@@ -206,12 +206,12 @@ class MetricsDataAccess(ABC):
 
     @abstractmethod
     async def get_strategy_score_history(
-        self, 
+        self,
         strategy_name: str,
         asset_symbol: str,
         start_date: datetime,
         end_date: datetime
-    ) -> List[Tuple[datetime, Decimal]]:
+    ) -> list[tuple[datetime, Decimal]]:
         """Get historical strategy scores for an asset.
 
         Args:
@@ -226,7 +226,7 @@ class MetricsDataAccess(ABC):
         pass
 
     @abstractmethod
-    async def get_available_strategies(self) -> List[str]:
+    async def get_available_strategies(self) -> list[str]:
         """Get list of all strategies that have scores stored.
 
         Returns:
@@ -237,9 +237,9 @@ class MetricsDataAccess(ABC):
     # Performance Metrics
     @abstractmethod
     async def save_portfolio_performance(
-        self, 
+        self,
         portfolio_id: UUID,
-        performance_data: Dict[str, Decimal],
+        performance_data: dict[str, Decimal],
         as_of_date: datetime
     ) -> None:
         """Save portfolio performance metrics.
@@ -256,10 +256,10 @@ class MetricsDataAccess(ABC):
 
     @abstractmethod
     async def get_portfolio_performance(
-        self, 
+        self,
         portfolio_id: UUID,
-        as_of_date: Optional[datetime] = None
-    ) -> Optional[Dict[str, Decimal]]:
+        as_of_date: datetime | None = None
+    ) -> dict[str, Decimal] | None:
         """Get portfolio performance metrics.
 
         Args:
@@ -273,11 +273,11 @@ class MetricsDataAccess(ABC):
 
     @abstractmethod
     async def get_portfolio_performance_history(
-        self, 
+        self,
         portfolio_id: UUID,
         start_date: datetime,
         end_date: datetime
-    ) -> List[Tuple[datetime, Dict[str, Decimal]]]:
+    ) -> list[tuple[datetime, dict[str, Decimal]]]:
         """Get historical portfolio performance data.
 
         Args:
@@ -293,9 +293,9 @@ class MetricsDataAccess(ABC):
     # Risk Metrics
     @abstractmethod
     async def save_risk_metrics(
-        self, 
+        self,
         entity_id: str,  # asset symbol or portfolio ID
-        risk_data: Dict[str, Decimal],
+        risk_data: dict[str, Decimal],
         as_of_date: datetime
     ) -> None:
         """Save risk metrics for an entity.
@@ -312,10 +312,10 @@ class MetricsDataAccess(ABC):
 
     @abstractmethod
     async def get_risk_metrics(
-        self, 
+        self,
         entity_id: str,
-        as_of_date: Optional[datetime] = None
-    ) -> Optional[Dict[str, Decimal]]:
+        as_of_date: datetime | None = None
+    ) -> dict[str, Decimal] | None:
         """Get risk metrics for an entity.
 
         Args:
@@ -330,10 +330,10 @@ class MetricsDataAccess(ABC):
     # Data Maintenance
     @abstractmethod
     async def delete_metrics_before_date(
-        self, 
+        self,
         entity_id: str,
         before_date: datetime,
-        metric_type: Optional[MetricType] = None
+        metric_type: MetricType | None = None
     ) -> int:
         """Delete old metrics before a specific date.
 
@@ -360,7 +360,7 @@ class MetricsDataAccess(ABC):
         pass
 
     @abstractmethod
-    async def get_metric_storage_stats(self) -> Dict[str, int]:
+    async def get_metric_storage_stats(self) -> dict[str, int]:
         """Get statistics about metric storage usage.
 
         Returns:
@@ -369,7 +369,7 @@ class MetricsDataAccess(ABC):
         pass
 
     @abstractmethod
-    async def validate_metric_integrity(self) -> List[str]:
+    async def validate_metric_integrity(self) -> list[str]:
         """Validate integrity of stored metrics.
 
         Returns:
@@ -380,11 +380,11 @@ class MetricsDataAccess(ABC):
     # Aggregation and Analysis
     @abstractmethod
     async def get_cross_sectional_metrics(
-        self, 
+        self,
         metric_name: str,
-        entity_ids: List[str],
-        as_of_date: Optional[datetime] = None
-    ) -> Dict[str, Optional[Decimal]]:
+        entity_ids: list[str],
+        as_of_date: datetime | None = None
+    ) -> dict[str, Decimal | None]:
         """Get a specific metric for multiple entities at a point in time.
 
         Args:
@@ -399,12 +399,12 @@ class MetricsDataAccess(ABC):
 
     @abstractmethod
     async def calculate_metric_correlation(
-        self, 
-        entity_ids: List[str],
+        self,
+        entity_ids: list[str],
         metric_name: str,
         start_date: datetime,
         end_date: datetime
-    ) -> Dict[Tuple[str, str], Decimal]:
+    ) -> dict[tuple[str, str], Decimal]:
         """Calculate correlation matrix for a metric across entities.
 
         Args:

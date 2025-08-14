@@ -5,11 +5,9 @@ This module contains handlers that process rebalancing events and
 coordinate portfolio optimization activities.
 """
 
-import logging
 from typing import Any
 
 from ...domain.events import PortfolioRebalancedEvent, PositionChange
-from ...domain.exceptions import DomainError
 from .base_handler import BaseEventHandler, ErrorHandlingStrategy
 
 
@@ -90,9 +88,9 @@ class PortfolioRebalancedEventHandler(BaseEventHandler):
             await self._process_single_position_change(event.portfolio_id, change, event.timestamp)
 
     async def _process_single_position_change(
-        self, 
-        portfolio_id: str, 
-        change: PositionChange, 
+        self,
+        portfolio_id: str,
+        change: PositionChange,
         timestamp
     ) -> None:
         """

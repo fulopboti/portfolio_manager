@@ -1,10 +1,9 @@
 """DuckDB database connection and transaction management implementations."""
 
-import asyncio
 import logging
-from contextlib import asynccontextmanager
+from contextlib import AbstractAsyncContextManager, asynccontextmanager
 from pathlib import Path
-from typing import Any, AsyncContextManager, Dict, Optional
+from typing import Any
 
 import duckdb
 from duckdb import DuckDBPyConnection
@@ -17,6 +16,7 @@ from portfolio_manager.infrastructure.data_access.exceptions import (
     ConnectionError,
     TransactionError,
 )
+
 from .config import DuckDBConfig
 
 logger = logging.getLogger(__name__)
@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 class DuckDBConnection(DatabaseConnection):
     """DuckDB implementation of database connection management."""
 
-    def __init__(self, database_path: str, config: Optional[DuckDBConfig] = None):
+    def __init__(self, database_path: str, config: DuckDBConfig | None = None):
         """Initialize DuckDB connection.
 
         Args:
@@ -34,7 +34,7 @@ class DuckDBConnection(DatabaseConnection):
         """
         self.database_path = database_path
         self.config = config or DuckDBConfig.from_environment()
-        self._connection: Optional[DuckDBPyConnection] = None
+        self._connection: DuckDBPyConnection | None = None
         self._is_connected = False
 
     async def connect(self) -> None:
@@ -89,7 +89,7 @@ class DuckDBConnection(DatabaseConnection):
             logger.warning(f"Database ping failed: {str(e)}")
             return False
 
-    async def get_connection_info(self) -> Dict[str, Any]:
+    async def get_connection_info(self) -> dict[str, Any]:
         """Get information about the current connection."""
         if not await self.is_connected():
             return {"status": "disconnected"}
@@ -136,7 +136,7 @@ class DuckDBConnection(DatabaseConnection):
             logger.warning(f"Failed to configure DuckDB connection: {str(e)}")
 
     @property
-    def raw_connection(self) -> Optional[DuckDBPyConnection]:
+    def raw_connection(self) -> DuckDBPyConnection | None:
         """Get the raw DuckDB connection for advanced usage."""
         return self._connection
 
@@ -155,7 +155,7 @@ class DuckDBTransactionManager(TransactionManager):
         self._savepoint_counter = 0
 
     @asynccontextmanager
-    async def transaction(self) -> AsyncContextManager[None]:
+    async def transaction(self) -> AbstractAsyncContextManager[None]:
         """Create a new database transaction context."""
         if not await self.connection.is_connected():
             raise TransactionError("Database connection is not active")
@@ -182,7 +182,7 @@ class DuckDBTransactionManager(TransactionManager):
                 raise
 
     @asynccontextmanager
-    async def savepoint(self, name: str) -> AsyncContextManager[None]:
+    async def savepoint(self, name: str) -> AbstractAsyncContextManager[None]:
         """Create a savepoint within an existing transaction."""
         if not await self.is_in_transaction():
             raise TransactionError("Cannot create savepoint outside of transaction")

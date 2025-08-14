@@ -7,11 +7,10 @@ architecture setup.
 """
 
 import logging
-from typing import Dict, List
 
 from ...domain.events import TradeExecutedEvent
 from ...infrastructure.events.event_bus import EventBus
-from .trade_handlers import TradeExecutedEventHandler, PortfolioMetricsEventHandler
+from .trade_handlers import PortfolioMetricsEventHandler, TradeExecutedEventHandler
 
 
 class EventSystem:
@@ -30,7 +29,7 @@ class EventSystem:
             event_bus: Optional event bus instance. If None, creates a new one.
         """
         self.event_bus = event_bus or EventBus()
-        self._subscription_ids: List[str] = []
+        self._subscription_ids: list[str] = []
         self._logger = logging.getLogger(__name__)
 
     async def setup_trade_processing(
@@ -97,7 +96,7 @@ class EventSystem:
         self._subscription_ids.clear()
         self._logger.info("Event system shutdown complete")
 
-    def get_subscription_stats(self) -> Dict[str, int]:
+    def get_subscription_stats(self) -> dict[str, int]:
         """
         Get statistics about current subscriptions.
 

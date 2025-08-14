@@ -2,7 +2,6 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Set
 from datetime import datetime
 from enum import Enum
 
@@ -48,11 +47,11 @@ class TableDefinition:
     """Represents a database table definition."""
 
     name: str
-    columns: Dict[str, str]  # column_name -> column_definition
-    primary_key: List[str]
-    foreign_keys: Dict[str, str]  # column -> referenced_table.column
-    indexes: List[str]
-    constraints: List[str]
+    columns: dict[str, str]  # column_name -> column_definition
+    primary_key: list[str]
+    foreign_keys: dict[str, str]  # column -> referenced_table.column
+    indexes: list[str]
+    constraints: list[str]
 
 
 class SchemaManager(ABC):
@@ -96,7 +95,7 @@ class SchemaManager(ABC):
         pass
 
     @abstractmethod
-    async def get_schema_version(self) -> Optional[str]:
+    async def get_schema_version(self) -> str | None:
         """Get the current schema version.
 
         Returns:
@@ -117,7 +116,7 @@ class SchemaManager(ABC):
         pass
 
     @abstractmethod
-    async def get_table_names(self) -> Set[str]:
+    async def get_table_names(self) -> set[str]:
         """Get names of all tables in the schema.
 
         Returns:
@@ -138,7 +137,7 @@ class SchemaManager(ABC):
         pass
 
     @abstractmethod
-    async def get_table_definition(self, table_name: str) -> Optional[TableDefinition]:
+    async def get_table_definition(self, table_name: str) -> TableDefinition | None:
         """Get the definition of a specific table.
 
         Args:
@@ -174,7 +173,7 @@ class SchemaManager(ABC):
         pass
 
     @abstractmethod
-    async def get_create_table_sql(self) -> Dict[str, str]:
+    async def get_create_table_sql(self) -> dict[str, str]:
         """Get SQL statements for creating all application tables.
 
         Returns:
@@ -203,7 +202,7 @@ class MigrationManager(ABC):
         pass
 
     @abstractmethod
-    async def get_applied_migrations(self) -> List[str]:
+    async def get_applied_migrations(self) -> list[str]:
         """Get list of migration versions that have been applied.
 
         Returns:
@@ -212,7 +211,7 @@ class MigrationManager(ABC):
         pass
 
     @abstractmethod
-    async def get_pending_migrations(self) -> List[Migration]:
+    async def get_pending_migrations(self) -> list[Migration]:
         """Get list of migrations that need to be applied.
 
         Returns:
@@ -245,7 +244,7 @@ class MigrationManager(ABC):
         pass
 
     @abstractmethod
-    async def migrate_to_version(self, target_version: Optional[str] = None) -> None:
+    async def migrate_to_version(self, target_version: str | None = None) -> None:
         """Migrate database to a specific version.
 
         Args:
@@ -266,7 +265,7 @@ class MigrationManager(ABC):
         pass
 
     @abstractmethod
-    def load_migrations_from_directory(self, directory: str) -> List[Migration]:
+    def load_migrations_from_directory(self, directory: str) -> list[Migration]:
         """Load migration definitions from a filesystem directory.
 
         Args:

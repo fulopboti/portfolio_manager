@@ -3,7 +3,6 @@
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
-from typing import List, Optional
 from uuid import UUID, uuid4
 
 from portfolio_manager.application.ports import AssetRepository, PortfolioRepository
@@ -21,7 +20,8 @@ from portfolio_manager.domain.exceptions import (
     InvalidTradeError,
 )
 from portfolio_manager.infrastructure.data_access.exceptions import DataAccessError
-from .base_service import ResultBasedService, ServiceResult
+
+from .base_service import ResultBasedService
 
 
 @dataclass
@@ -29,8 +29,8 @@ class TradeResult:
     """Result of a trade execution."""
 
     success: bool
-    trade: Optional[Trade] = None
-    error: Optional[Exception] = None
+    trade: Trade | None = None
+    error: Exception | None = None
 
 
 @dataclass
@@ -126,7 +126,7 @@ class PortfolioSimulatorService(ResultBasedService):
         # Execute with base service error handling and convert to TradeResult
         try:
             result = await self._execute_operation(
-                "execute_trade", _execute, context, 
+                "execute_trade", _execute, context,
                 expected_exceptions=[InvalidTradeError, InsufficientFundsError, InvalidPositionError]
             )
             # If the result is already a TradeResult, return it directly

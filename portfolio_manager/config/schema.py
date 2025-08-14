@@ -1,9 +1,8 @@
 """Configuration validation schemas using Pydantic."""
 
-from typing import Dict, List, Optional, Union
 from decimal import Decimal
+
 from pydantic import BaseModel, Field, field_validator
-from pathlib import Path
 
 
 class DatabaseConnectionConfig(BaseModel):
@@ -11,7 +10,7 @@ class DatabaseConnectionConfig(BaseModel):
     database_path: str = Field(..., description="Path to DuckDB database file")
     memory: bool = Field(False, description="Use in-memory database")
     read_only: bool = Field(False, description="Open database in read-only mode")
-    pragmas: Dict[str, Union[str, int]] = Field(default_factory=dict, description="DuckDB pragma settings")
+    pragmas: dict[str, str | int] = Field(default_factory=dict, description="DuckDB pragma settings")
 
     @field_validator('database_path')
     @classmethod
@@ -57,7 +56,7 @@ class EventSystemConfig(BaseModel):
 class APIConfig(BaseModel):
     """External API configuration."""
     base_url: str = Field(..., description="Base URL for API")
-    api_key: Optional[str] = Field(None, description="API key")
+    api_key: str | None = Field(None, description="API key")
     timeout: int = Field(10, ge=1, description="Request timeout in seconds")
 
     @field_validator('base_url')
@@ -79,9 +78,9 @@ class YFinanceConfig(BaseModel):
 class MarketDataConfig(BaseModel):
     """Market data provider configuration."""
     primary: str = Field(..., description="Primary data provider")
-    fallback: List[str] = Field(default_factory=list, description="Fallback providers")
+    fallback: list[str] = Field(default_factory=list, description="Fallback providers")
     cache_ttl: int = Field(300, ge=0, description="Cache TTL in seconds")
-    rate_limits: Dict[str, int] = Field(default_factory=dict, description="Rate limits per provider")
+    rate_limits: dict[str, int] = Field(default_factory=dict, description="Rate limits per provider")
     yfinance: YFinanceConfig = Field(default_factory=YFinanceConfig)
 
 
@@ -89,7 +88,7 @@ class DataProvidersConfig(BaseModel):
     """Data providers configuration."""
     batch_size: int = Field(100, ge=1, description="Default batch size for data ingestion")
     market_data: MarketDataConfig
-    apis: Dict[str, APIConfig]
+    apis: dict[str, APIConfig]
 
 
 class PortfolioSimulationConfig(BaseModel):
@@ -115,7 +114,7 @@ class PortfolioConfig(BaseModel):
 
 class ScoringConfig(BaseModel):
     """Strategy scoring configuration."""
-    enabled_strategies: List[str] = Field(default_factory=list, description="Enabled strategies")
+    enabled_strategies: list[str] = Field(default_factory=list, description="Enabled strategies")
     rebalance_frequency: str = Field("weekly", description="Rebalancing frequency")
     min_score_threshold: int = Field(60, ge=0, le=100, description="Minimum score threshold")
 
@@ -134,7 +133,7 @@ class StrategiesConfig(BaseModel):
 
 class TechnicalIndicatorsConfig(BaseModel):
     """Technical indicators configuration."""
-    default_periods: Dict[str, Union[int, List[int]]] = Field(default_factory=dict)
+    default_periods: dict[str, int | list[int]] = Field(default_factory=dict)
 
 
 class RiskMetricsConfig(BaseModel):
@@ -153,16 +152,16 @@ class AnalyticsConfig(BaseModel):
 class LogHandlerConfig(BaseModel):
     """Log handler configuration."""
     enabled: bool = Field(True, description="Enable handler")
-    path: Optional[str] = Field(None, description="Log file path")
-    max_size: Optional[str] = Field(None, description="Maximum log file size")
-    backup_count: Optional[int] = Field(None, description="Number of backup files")
+    path: str | None = Field(None, description="Log file path")
+    max_size: str | None = Field(None, description="Maximum log file size")
+    backup_count: int | None = Field(None, description="Number of backup files")
 
 
 class LoggingConfig(BaseModel):
     """Logging configuration."""
     level: str = Field("INFO", description="Log level")
     format: str = Field("%(asctime)s - %(name)s - %(levelname)s - %(message)s", description="Log format")
-    handlers: Dict[str, LogHandlerConfig]
+    handlers: dict[str, LogHandlerConfig]
 
     @field_validator('level')
     @classmethod
@@ -196,14 +195,14 @@ class MonitoringConfig(BaseModel):
 class APISecurityConfig(BaseModel):
     """API security configuration."""
     enable_auth: bool = Field(False, description="Enable authentication")
-    jwt_secret: Optional[str] = Field(None, description="JWT secret key")
+    jwt_secret: str | None = Field(None, description="JWT secret key")
     token_expiry: int = Field(3600, gt=0, description="Token expiry in seconds")
 
 
 class EncryptionConfig(BaseModel):
     """Encryption configuration."""
     algorithm: str = Field("AES256", description="Encryption algorithm")
-    key: Optional[str] = Field(None, description="Encryption key")
+    key: str | None = Field(None, description="Encryption key")
 
 
 class SecurityConfig(BaseModel):

@@ -1,8 +1,9 @@
 """DuckDB SQL generation for tables, indexes, and constraints."""
 
 import logging
-from typing import Dict, List
+
 from portfolio_manager.infrastructure.data_access.schema_manager import TableDefinition
+
 from .schema_definitions import IndexDefinition
 
 logger = logging.getLogger(__name__)
@@ -155,7 +156,7 @@ class DuckDBTableBuilder:
         """
         return f"DROP VIEW IF EXISTS {view_name};"
 
-    def get_table_creation_order(self, tables: Dict[str, TableDefinition]) -> List[str]:
+    def get_table_creation_order(self, tables: dict[str, TableDefinition]) -> list[str]:
         """Determine optimal table creation order based on foreign key dependencies.
 
         Args:
@@ -168,7 +169,7 @@ class DuckDBTableBuilder:
         dependencies = {}
         for table_name, table_def in tables.items():
             deps = set()
-            for column, reference in table_def.foreign_keys.items():
+            for _column, reference in table_def.foreign_keys.items():
                 if "." in reference:
                     referenced_table = reference.split(".")[0]
                     if referenced_table != table_name and referenced_table in tables:
@@ -200,7 +201,7 @@ class DuckDBTableBuilder:
 
         return ordered
 
-    def get_table_drop_order(self, tables: Dict[str, TableDefinition]) -> List[str]:
+    def get_table_drop_order(self, tables: dict[str, TableDefinition]) -> list[str]:
         """Determine optimal table drop order (reverse of creation order).
 
         Args:
@@ -212,7 +213,7 @@ class DuckDBTableBuilder:
         creation_order = self.get_table_creation_order(tables)
         return list(reversed(creation_order))
 
-    def build_complete_schema_sql(self, tables: Dict[str, TableDefinition], indexes: List[IndexDefinition]) -> str:
+    def build_complete_schema_sql(self, tables: dict[str, TableDefinition], indexes: list[IndexDefinition]) -> str:
         """Generate complete schema creation SQL.
 
         Args:
@@ -259,7 +260,7 @@ class DuckDBTableBuilder:
 
         return "\n".join(sql_parts)
 
-    def build_complete_drop_schema_sql(self, tables: Dict[str, TableDefinition], indexes: List[IndexDefinition]) -> str:
+    def build_complete_drop_schema_sql(self, tables: dict[str, TableDefinition], indexes: list[IndexDefinition]) -> str:
         """Generate complete schema drop SQL.
 
         Args:

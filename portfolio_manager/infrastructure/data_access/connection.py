@@ -1,8 +1,8 @@
 """Database connection and transaction management abstractions."""
 
 from abc import ABC, abstractmethod
-from contextlib import asynccontextmanager
-from typing import Any, AsyncContextManager, Dict, Optional
+from contextlib import AbstractAsyncContextManager, asynccontextmanager
+from typing import Any
 
 
 class DatabaseConnection(ABC):
@@ -49,7 +49,7 @@ class DatabaseConnection(ABC):
         pass
 
     @abstractmethod
-    async def get_connection_info(self) -> Dict[str, Any]:
+    async def get_connection_info(self) -> dict[str, Any]:
         """Get information about the current connection.
 
         Returns:
@@ -68,7 +68,7 @@ class TransactionManager(ABC):
 
     @abstractmethod
     @asynccontextmanager
-    async def transaction(self) -> AsyncContextManager[None]:
+    async def transaction(self) -> AbstractAsyncContextManager[None]:
         """Create a new database transaction context.
 
         Usage:
@@ -86,8 +86,8 @@ class TransactionManager(ABC):
         pass
 
     @abstractmethod
-    @asynccontextmanager  
-    async def savepoint(self, name: str) -> AsyncContextManager[None]:
+    @asynccontextmanager
+    async def savepoint(self, name: str) -> AbstractAsyncContextManager[None]:
         """Create a savepoint within an existing transaction.
 
         Args:

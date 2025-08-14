@@ -1,13 +1,18 @@
 """DuckDB schema manager implementation."""
 
 import logging
-from typing import Any, Dict, Optional, Set
-from portfolio_manager.infrastructure.data_access.schema_manager import SchemaManager, TableDefinition
+from typing import Any
+
 from portfolio_manager.infrastructure.data_access.exceptions import SchemaError
+from portfolio_manager.infrastructure.data_access.schema_manager import (
+    SchemaManager,
+    TableDefinition,
+)
+
 from ..query_executor import DuckDBQueryExecutor
 from .schema_definitions import PortfolioManagerSchema
-from .table_builder import DuckDBTableBuilder
 from .schema_inspector import DuckDBSchemaInspector
+from .table_builder import DuckDBTableBuilder
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +33,7 @@ class DuckDBSchemaManager(SchemaManager):
         self.query_executor = query_executor
         self.table_builder = DuckDBTableBuilder()
         self.inspector = DuckDBSchemaInspector(query_executor)
-        self._current_version: Optional[str] = None
+        self._current_version: str | None = None
 
     async def create_schema(self) -> None:
         """Create the complete database schema from scratch."""
@@ -148,7 +153,7 @@ class DuckDBSchemaManager(SchemaManager):
             logger.error(f"Failed to check schema existence: {str(e)}")
             return False
 
-    async def get_schema_info(self) -> Optional[Dict[str, Any]]:
+    async def get_schema_info(self) -> dict[str, Any] | None:
         """Get general schema information including version and table count."""
         try:
             tables = await self.get_table_names()
@@ -157,14 +162,14 @@ class DuckDBSchemaManager(SchemaManager):
             return {
                 "version": version,
                 "table_count": len(tables),
-                "tables": sorted(list(tables)),
+                "tables": sorted(tables),
                 "schema_exists": len(tables) > 0
             }
         except Exception as e:
             logger.error(f"Failed to get schema info: {str(e)}")
             return None
 
-    async def get_schema_version(self) -> Optional[str]:
+    async def get_schema_version(self) -> str | None:
         """Get the current schema version."""
         if self._current_version is not None:
             return self._current_version
@@ -176,10 +181,10 @@ class DuckDBSchemaManager(SchemaManager):
 
             # Get latest migration version
             result = await self.query_executor.execute_query("""
-                SELECT version 
-                FROM schema_migrations 
+                SELECT version
+                FROM schema_migrations
                 WHERE success = true
-                ORDER BY applied_at DESC 
+                ORDER BY applied_at DESC
                 LIMIT 1
             """)
 
@@ -217,7 +222,7 @@ class DuckDBSchemaManager(SchemaManager):
             else:
                 # Update existing record
                 await self.query_executor.execute_command("""
-                    UPDATE schema_migrations 
+                    UPDATE schema_migrations
                     SET applied_at = CURRENT_TIMESTAMP, success = true
                     WHERE version = $version
                 """, {"version": version})
@@ -229,7 +234,7 @@ class DuckDBSchemaManager(SchemaManager):
             logger.error(f"Failed to set schema version: {str(e)}")
             raise SchemaError(f"Cannot set schema version: {str(e)}") from e
 
-    async def get_table_names(self) -> Set[str]:
+    async def get_table_names(self) -> set[str]:
         """Get names of all tables in the schema."""
         return await self.inspector.get_existing_tables()
 
@@ -237,7 +242,7 @@ class DuckDBSchemaManager(SchemaManager):
         """Check if a specific table exists."""
         return await self.inspector.table_exists(table_name)
 
-    async def get_table_definition(self, table_name: str) -> Optional[TableDefinition]:
+    async def get_table_definition(self, table_name: str) -> TableDefinition | None:
         """Get the definition of a specific table."""
         try:
             # Check if table exists
@@ -295,7 +300,7 @@ class DuckDBSchemaManager(SchemaManager):
             logger.error(f"Failed to drop table {table_name}: {str(e)}")
             raise SchemaError(f"Cannot drop table {table_name}: {str(e)}") from e
 
-    async def get_create_table_sql(self) -> Dict[str, str]:
+    async def get_create_table_sql(self) -> dict[str, str]:
         """Get SQL statements for creating all application tables."""
         try:
             tables = PortfolioManagerSchema.get_all_tables()
@@ -310,7 +315,7 @@ class DuckDBSchemaManager(SchemaManager):
             logger.error(f"Failed to generate create table SQL: {str(e)}")
             raise SchemaError(f"Cannot generate create table SQL: {str(e)}") from e
 
-    async def validate_schema(self) -> Dict[str, any]:
+    async def validate_schema(self) -> dict[str, any]:
         """Validate current schema against expected definitions.
 
         Returns:
@@ -331,7 +336,7 @@ class DuckDBSchemaManager(SchemaManager):
             # Overall status
             has_issues = (
                 validation_results["missing_tables"] or
-                validation_results["extra_tables"] or 
+                validation_results["extra_tables"] or
                 validation_results["column_mismatches"] or
                 integrity_violations
             )
