@@ -1,5 +1,7 @@
 # Portfolio Manager
 
+> **⚠️ EXPERIMENTAL PROJECT**: This portfolio manager is an experimental implementation created primarily through AI-powered "vibe coding" with minimal human intervention. The codebase is an exploration of automated software development and should be treated as a proof-of-concept rather than production-ready software.
+
 > A comprehensive, privacy-focused investment research platform that empowers individual investors with institutional-grade analysis tools through local-first data processing and sophisticated strategy engines.
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
@@ -422,32 +424,28 @@ We welcome contributions from the community! Here's how to get involved:
 
 ## 🗺️ Roadmap
 
-### 📅 Version 1.1 (Q2 2025) - Enhanced Analytics
+### 🔮 Future Enhancements
 - [ ] **AI Integration**: Local LLM via Ollama for investment insights
 - [ ] **Custom Strategies**: User-defined YAML strategy configurations
 - [ ] **Advanced Charting**: Technical indicators and drawing tools
 - [ ] **Data Export**: Portfolio reports in PDF and Excel formats
 - [ ] **Commodity Trading**: Gold and silver with weight-based metrics
 - [ ] **Performance Tracking**: Time-series portfolio value visualization
-
-### 📅 Version 1.2 (Q3 2025) - Professional Features
 - [ ] **Backtesting Engine**: Historical strategy performance analysis
 - [ ] **Risk Analytics**: VaR, Expected Shortfall, and correlation analysis
 - [ ] **Multi-Currency**: Advanced FX hedging and currency exposure management
 - [ ] **Mobile Support**: Responsive design for tablets and smartphones
 - [ ] **API Integrations**: Third-party data providers and brokerage connections
-
-### 📅 Version 1.3 (Q4 2025) - Collaboration & Scale
 - [ ] **Multi-User Support**: Family and team portfolio management
 - [ ] **Real-Time Data**: Streaming market data with WebSocket updates
 - [ ] **Social Features**: Strategy sharing and community insights
 - [ ] **Cloud Deployment**: Optional cloud hosting with data synchronization
-
-### 📅 Version 2.0 (2026) - Enterprise Ready
 - [ ] **Machine Learning**: Predictive analytics and pattern recognition
 - [ ] **Professional APIs**: Institution-grade data feeds and execution
 - [ ] **Mobile Apps**: Native iOS and Android applications
 - [ ] **Advanced Security**: Multi-factor auth and audit logging
+
+> **Note**: Roadmap items are aspirational and subject to change based on project evolution and community feedback.
 
 ## 📄 License
 
@@ -466,11 +464,24 @@ Special thanks to the open-source projects that power this platform:
 - **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS framework
 - **[TypeScript](https://www.typescriptlang.org/)** - Typed JavaScript for better development
 
-## ⚠️ Important Disclaimer
+## ⚠️ Important Disclaimers
 
-**This software is for educational and research purposes only.**
+**This software is experimental and for educational purposes only.**
 
-- 📊 **Not Financial Advice**: This platform does not provide investment, financial, or trading advice
-- 🔬 **Research Tool**: Designed for analysis and learning, not live trading
-- 💼 **Consult Professionals**: Always consult qualified financial advisors before making investment decisions
-- ⚖️ **Use at Your Own Risk**: Users are responsible for their own investment decisions and outcomes 
+### 🤖 Experimental Nature
+- **AI-Generated Code**: This project was created primarily through AI-powered development with minimal human oversight
+- **Proof of Concept**: The codebase is an experiment in automated software development, not production-ready software
+- **No Warranties**: The code is provided "as-is" without any warranties, express or implied
+- **Use at Own Risk**: Users assume all responsibility for any use of this experimental software
+
+### 📊 Financial Information
+- **Not Financial Advice**: This platform does not provide investment, financial, or trading advice
+- **Research Tool Only**: Designed for educational analysis and learning, not live trading or investment decisions
+- **No Liability**: Developers assume no liability for financial losses or decisions made using this software
+- **Consult Professionals**: Always consult qualified financial advisors before making investment decisions
+
+### ⚖️ Legal
+- **No Investment Recommendations**: This software does not recommend specific investments or trading strategies
+- **User Responsibility**: Users are solely responsible for their investment decisions and outcomes
+- **Compliance**: Users must ensure compliance with applicable laws and regulations in their jurisdiction
+- **Third-Party Data**: Market data is provided by third parties and may be inaccurate or delayed 
