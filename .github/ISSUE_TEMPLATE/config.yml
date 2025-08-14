@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📚 Documentation
+    url: https://github.com/your-org/portfolio_manager/blob/master/README.md
+    about: Check the documentation for usage guides and API reference
+  - name: 💬 Discussions
+    url: https://github.com/your-org/portfolio_manager/discussions
+    about: Use GitHub Discussions for general questions and community chat
+  - name: 🔒 Security Issues
+    url: mailto:security@your-org.com
+    about: Report security vulnerabilities privately via email
