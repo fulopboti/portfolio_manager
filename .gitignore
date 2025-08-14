@@ -261,3 +261,4 @@ local/
 
 # Claude Code specific
 .claude/
+.claude/settings.local.json
