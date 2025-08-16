@@ -304,7 +304,8 @@ class ResultBasedService(BaseApplicationService):
             return ServiceResult.success_result(result)
 
         except Exception as e:
-            return ServiceResult.error_result(e, context=context)
+            metadata = {"context": context} if context else None
+            return ServiceResult.error_result(e, metadata=metadata)
 
 
 class ExceptionBasedService(BaseApplicationService):
@@ -381,8 +382,9 @@ class ServiceMetrics:
     def get_all_metrics(self) -> dict[str, dict[str, Any]]:
         """Get all collected metrics."""
         return {
-            operation: self.get_operation_metrics(operation)
+            operation: metrics
             for operation in self._metrics.keys()
+            if (metrics := self.get_operation_metrics(operation)) is not None
         }
 
 

@@ -70,7 +70,7 @@ class PortfolioSimulatorService(ResultBasedService):
         """Execute a trade within a portfolio."""
         context = f"{portfolio_id}:{symbol}:{side.value}:{quantity}"
 
-        async def _execute() -> str:
+        async def _execute() -> TradeResult:
             # Validate required parameters
             self._validate_required_params(
                 {

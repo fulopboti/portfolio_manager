@@ -112,3 +112,18 @@ class SymbolMappingService(ABC):
     async def search_by_company(self, company_name: str) -> list[SymbolMapping]:
         """Search for symbols by company name."""
         pass
+
+    @abstractmethod
+    async def add_mapping(self, mapping: SymbolMapping) -> SymbolMapping | None:
+        """Add a new symbol mapping."""
+        pass
+
+    @abstractmethod
+    async def update_mapping(self, mapping: SymbolMapping) -> SymbolMapping | None:
+        """Update an existing symbol mapping."""
+        pass
+
+    @abstractmethod
+    async def clear_cache(self) -> bool:
+        """Clear cached mappings."""
+        pass

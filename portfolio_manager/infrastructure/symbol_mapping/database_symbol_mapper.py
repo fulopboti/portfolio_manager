@@ -125,9 +125,6 @@ class DatabaseSymbolMapper(SymbolMappingService):
         self, currency: CurrencyCode
     ) -> list[SymbolMapping]:
         """Get all mappings that trade in a specific currency."""
-        if not currency:
-            return []
-
         try:
             result = await self._repository.find_by_currency(currency)
             return list(result) if result else []

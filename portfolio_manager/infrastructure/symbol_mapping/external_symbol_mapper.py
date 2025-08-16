@@ -237,3 +237,18 @@ class ExternalSymbolMapper(SymbolMappingService):
             return Decimal(str(value))
         except (ValueError, InvalidOperation):
             return None
+
+    async def add_mapping(self, mapping: SymbolMapping) -> SymbolMapping | None:
+        """Add mapping - not supported by external API service."""
+        # External API services typically don't support adding mappings
+        return None
+
+    async def update_mapping(self, mapping: SymbolMapping) -> SymbolMapping | None:
+        """Update mapping - not supported by external API service."""
+        # External API services typically don't support updating mappings
+        return None
+
+    async def clear_cache(self) -> bool:
+        """Clear cache - not applicable for external API service."""
+        # External API services don't have local cache to clear
+        return True
