@@ -34,7 +34,9 @@ class HybridSymbolMapper(SymbolMappingService):
 
         # Try database first
         try:
-            db_results: list[SymbolMapping] = await self._database_mapper.get_equivalent_symbols(symbol)
+            db_results: list[SymbolMapping] = (
+                await self._database_mapper.get_equivalent_symbols(symbol)
+            )
             if db_results:
                 return db_results
         except Exception:
@@ -43,8 +45,8 @@ class HybridSymbolMapper(SymbolMappingService):
         # If not in database and fallback is enabled, try external API
         if self._fallback_to_external:
             try:
-                external_results: list[SymbolMapping] = await self._external_mapper.get_equivalent_symbols(
-                    symbol
+                external_results: list[SymbolMapping] = (
+                    await self._external_mapper.get_equivalent_symbols(symbol)
                 )
                 if external_results:
                     # Cache the results for future use
@@ -78,8 +80,8 @@ class HybridSymbolMapper(SymbolMappingService):
         # If not in database and fallback is enabled, try external API
         if self._fallback_to_external:
             try:
-                external_result: str | None = await self._external_mapper.get_provider_symbol(
-                    symbol, provider
+                external_result: str | None = (
+                    await self._external_mapper.get_provider_symbol(symbol, provider)
                 )
                 if external_result:
                     # Try to cache the full mapping if we can get it
@@ -105,7 +107,9 @@ class HybridSymbolMapper(SymbolMappingService):
 
         # Try database first
         try:
-            db_results: list[SymbolMapping] = await self._database_mapper.search_by_company(company_name)
+            db_results: list[SymbolMapping] = (
+                await self._database_mapper.search_by_company(company_name)
+            )
             if db_results:
                 return db_results
         except Exception:
@@ -114,8 +118,8 @@ class HybridSymbolMapper(SymbolMappingService):
         # If not in database and fallback is enabled, try external API
         if self._fallback_to_external:
             try:
-                external_results: list[SymbolMapping] = await self._external_mapper.search_by_company(
-                    company_name
+                external_results: list[SymbolMapping] = (
+                    await self._external_mapper.search_by_company(company_name)
                 )
                 if external_results:
                     # Cache the results for future use

@@ -50,7 +50,9 @@ def ingest_symbol(
         stack = builder.build_complete_service_stack()
 
         # Create data provider factory
-        provider_factory = create_data_provider_factory(builder.factory.validated_config)
+        provider_factory = create_data_provider_factory(
+            builder.factory.validated_config
+        )
 
         # Get the specified provider or use default
         if provider:
@@ -117,7 +119,9 @@ def ingest_multiple(
         stack = builder.build_complete_service_stack()
 
         # Create data provider factory
-        provider_factory = create_data_provider_factory(builder.factory.validated_config)
+        provider_factory = create_data_provider_factory(
+            builder.factory.validated_config
+        )
 
         # Get the specified provider or use default
         if provider:
@@ -181,7 +185,9 @@ def refresh_all(provider: str | None) -> None:
         stack = builder.build_complete_service_stack()
 
         # Create data provider factory
-        provider_factory = create_data_provider_factory(builder.factory.validated_config)
+        provider_factory = create_data_provider_factory(
+            builder.factory.validated_config
+        )
 
         # Get the specified provider or use default
         if provider:

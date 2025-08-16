@@ -60,8 +60,10 @@ class CurrencyService:
 
         # Get from provider
         try:
-            provider_rate: Decimal | None = await self._exchange_rate_provider.get_exchange_rate(
-                from_currency, to_currency
+            provider_rate: Decimal | None = (
+                await self._exchange_rate_provider.get_exchange_rate(
+                    from_currency, to_currency
+                )
             )
             if provider_rate is not None:
                 # Cache the result
@@ -77,7 +79,9 @@ class CurrencyService:
             pass  # Continue to fallback
 
         # Try fallback rates
-        fallback_rate: Decimal | None = self._get_fallback_rate(from_currency, to_currency)
+        fallback_rate: Decimal | None = self._get_fallback_rate(
+            from_currency, to_currency
+        )
         if fallback_rate is not None:
             return fallback_rate
 

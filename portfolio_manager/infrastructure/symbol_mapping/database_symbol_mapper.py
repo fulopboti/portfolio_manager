@@ -22,7 +22,9 @@ class DatabaseSymbolMapper(SymbolMappingService):
             return []
 
         try:
-            result: list[SymbolMapping] | None = await self._repository.find_by_symbol(symbol)
+            result: list[SymbolMapping] | None = await self._repository.find_by_symbol(
+                symbol
+            )
             return result if result else []
         except Exception:
             return []
@@ -38,7 +40,9 @@ class DatabaseSymbolMapper(SymbolMappingService):
             return None
 
         try:
-            result: str | None = await self._repository.find_provider_symbol(symbol, provider)
+            result: str | None = await self._repository.find_provider_symbol(
+                symbol, provider
+            )
             return result
         except Exception:
             return None
@@ -50,7 +54,9 @@ class DatabaseSymbolMapper(SymbolMappingService):
 
         try:
             # Convert to lowercase for case-insensitive search
-            result: list[SymbolMapping] | None = await self._repository.find_by_company_name(company_name.lower())
+            result: list[SymbolMapping] | None = (
+                await self._repository.find_by_company_name(company_name.lower())
+            )
             return result if result else []
         except Exception:
             return []

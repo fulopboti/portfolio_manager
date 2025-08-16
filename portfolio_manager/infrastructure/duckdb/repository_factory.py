@@ -64,7 +64,9 @@ class AssetRepositoryAdapter(RepositoryAdapterBase, AssetRepository):
     async def get_latest_snapshot(self, symbol: str) -> Any:
         return await self.data_access.get_latest_snapshot(symbol)
 
-    async def get_historical_snapshots(self, symbol: str, start_date: Any, end_date: Any) -> Any:
+    async def get_historical_snapshots(
+        self, symbol: str, start_date: Any, end_date: Any
+    ) -> Any:
         return await self.data_access.get_historical_snapshots(
             symbol, start_date, end_date
         )
@@ -74,7 +76,9 @@ class AssetRepositoryAdapter(RepositoryAdapterBase, AssetRepository):
         # Convert Decimal values to dict for application layer
         return dict(metrics) if metrics else None
 
-    async def save_fundamental_metrics(self, symbol: str, metrics: dict[str, Any]) -> Any:
+    async def save_fundamental_metrics(
+        self, symbol: str, metrics: dict[str, Any]
+    ) -> Any:
         return await self.data_access.save_fundamental_metrics(symbol, metrics)
 
     async def delete_asset(self, symbol: str) -> Any:
@@ -118,7 +122,9 @@ class PortfolioRepositoryAdapter(RepositoryAdapterBase, PortfolioRepository):
     async def get_trade(self, trade_id: Any) -> Any:
         return await self.data_access.get_trade(trade_id)
 
-    async def get_trades_for_portfolio(self, portfolio_id: Any, limit: int | None = None) -> Any:
+    async def get_trades_for_portfolio(
+        self, portfolio_id: Any, limit: int | None = None
+    ) -> Any:
         return await self.data_access.get_trades_for_portfolio(portfolio_id, limit)
 
     async def save_position(self, position: Any) -> Any:

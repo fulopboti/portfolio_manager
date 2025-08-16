@@ -109,7 +109,9 @@ class ConfiguredComponentFactory:
             database_path=database_path, auto_initialize=True, config=db_config
         )
 
-    def create_data_ingestion_service(self, data_provider: Any, asset_repository: Any) -> Any:
+    def create_data_ingestion_service(
+        self, data_provider: Any, asset_repository: Any
+    ) -> Any:
         """
         Create data ingestion service with configuration.
 
@@ -170,7 +172,9 @@ class ConfiguredComponentFactory:
 
         return service
 
-    def create_strategy_score_service(self, strategy_calculators: Any, asset_repository: Any) -> Any:
+    def create_strategy_score_service(
+        self, strategy_calculators: Any, asset_repository: Any
+    ) -> Any:
         """
         Create strategy score service with configuration.
 
