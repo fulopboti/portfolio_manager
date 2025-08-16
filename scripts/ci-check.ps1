@@ -91,13 +91,21 @@ function Invoke-Check {
     try {
         if ($VerboseOutput) {
             Invoke-Expression $Command
+            $exitCode = $LASTEXITCODE
         } else {
             $output = Invoke-Expression $Command 2>&1
-            if ($LASTEXITCODE -ne 0 -and -not $IgnoreErrors) {
+            $exitCode = $LASTEXITCODE
+            if ($exitCode -ne 0 -and -not $IgnoreErrors) {
                 Write-Host $output -ForegroundColor Red
-                throw "Command failed with exit code $LASTEXITCODE"
+                throw "Command failed with exit code $exitCode"
             }
         }
+        
+        # Check exit code even in verbose mode
+        if ($exitCode -ne 0 -and -not $IgnoreErrors) {
+            throw "Command failed with exit code $exitCode"
+        }
+        
         Write-Success $Description
         return $true
     }

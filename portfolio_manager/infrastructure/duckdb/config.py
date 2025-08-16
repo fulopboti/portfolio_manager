@@ -3,6 +3,7 @@
 import json
 import os
 from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass
@@ -30,10 +31,10 @@ class DuckDBConfig:
     read_only: bool = False
 
     # Pragmas
-    pragmas: dict[str, str | int] = None
+    pragmas: dict[str, str | int] | None = None
 
     @classmethod
-    def from_environment(cls, **overrides) -> "DuckDBConfig":
+    def from_environment(cls, **overrides: Any) -> "DuckDBConfig":
         """Create configuration from environment variables with optional overrides.
 
         Environment variables:

@@ -13,7 +13,7 @@ from portfolio_manager.infrastructure.data_providers import (
 
 
 @click.group()
-def data():
+def data() -> None:
     """Data ingestion commands."""
     pass
 
@@ -41,16 +41,16 @@ def ingest_symbol(
     name: str | None,
     days: int,
     provider: str | None,
-):
+) -> None:
     """Ingest data for a single symbol."""
 
-    async def _ingest():
+    async def _ingest() -> None:
         # Build service stack
         builder = ConfiguredServiceBuilder()
         stack = builder.build_complete_service_stack()
 
         # Create data provider factory
-        provider_factory = create_data_provider_factory(builder.config)
+        provider_factory = create_data_provider_factory(builder.factory.validated_config)
 
         # Get the specified provider or use default
         if provider:
@@ -108,16 +108,16 @@ def ingest_symbol(
 )
 def ingest_multiple(
     symbols: tuple, asset_type: str, exchange: str, days: int, provider: str | None
-):
+) -> None:
     """Ingest data for multiple symbols."""
 
-    async def _ingest():
+    async def _ingest() -> None:
         # Build service stack
         builder = ConfiguredServiceBuilder()
         stack = builder.build_complete_service_stack()
 
         # Create data provider factory
-        provider_factory = create_data_provider_factory(builder.config)
+        provider_factory = create_data_provider_factory(builder.factory.validated_config)
 
         # Get the specified provider or use default
         if provider:
@@ -172,7 +172,7 @@ def ingest_multiple(
     default=None,
     help="Data provider to use (defaults to configured primary)",
 )
-def refresh_all(provider: str | None):
+def refresh_all(provider: str | None) -> None:
     """Refresh data for all existing assets."""
 
     async def _refresh():
@@ -181,7 +181,7 @@ def refresh_all(provider: str | None):
         stack = builder.build_complete_service_stack()
 
         # Create data provider factory
-        provider_factory = create_data_provider_factory(builder.config)
+        provider_factory = create_data_provider_factory(builder.factory.validated_config)
 
         # Get the specified provider or use default
         if provider:
@@ -223,7 +223,7 @@ def refresh_all(provider: str | None):
 
 
 @data.command()
-def list_assets():
+def list_assets() -> None:
     """List all assets in the database."""
 
     async def _list():
@@ -242,7 +242,7 @@ def list_assets():
         click.echo()
 
         # Group by asset type
-        by_type = {}
+        by_type: dict[AssetType, list] = {}
         for asset in assets:
             if asset.asset_type not in by_type:
                 by_type[asset.asset_type] = []

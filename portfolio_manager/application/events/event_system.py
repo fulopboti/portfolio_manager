@@ -7,6 +7,7 @@ architecture setup.
 """
 
 import logging
+from typing import Any
 
 from ...domain.events import TradeExecutedEvent
 from ...infrastructure.events.event_bus import EventBus
@@ -21,7 +22,7 @@ class EventSystem:
     providing a central point for event system configuration.
     """
 
-    def __init__(self, event_bus: EventBus = None):
+    def __init__(self, event_bus: EventBus | None = None):
         """
         Initialize the event system.
 
@@ -34,11 +35,11 @@ class EventSystem:
 
     async def setup_trade_processing(
         self,
-        portfolio_repository,
-        position_repository,
-        audit_service,
-        portfolio_metrics_service,
-        risk_service,
+        portfolio_repository: Any,
+        position_repository: Any,
+        audit_service: Any,
+        portfolio_metrics_service: Any,
+        risk_service: Any,
     ) -> None:
         """
         Set up trade processing event handlers.
@@ -74,7 +75,7 @@ class EventSystem:
 
         self._logger.info("Trade processing event handlers configured")
 
-    async def publish_event(self, event) -> None:
+    async def publish_event(self, event: Any) -> None:
         """
         Publish an event through the event bus.
 

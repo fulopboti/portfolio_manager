@@ -6,6 +6,7 @@ code duplication across application service implementations.
 """
 
 import logging
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from enum import Enum
@@ -239,7 +240,7 @@ class BaseApplicationService:
                 raise DomainValidationError(error_message)
 
     @asynccontextmanager
-    async def _performance_tracking(self, operation_name: str):
+    async def _performance_tracking(self, operation_name: str) -> AsyncIterator[None]:
         """
         Context manager for tracking operation performance.
 
@@ -330,7 +331,7 @@ class ServiceMetrics:
     and success rates across service methods.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize metrics collector."""
         self._metrics: dict[str, dict[str, Any]] = {}
 
@@ -393,7 +394,7 @@ class DependencyContainer:
     and ensure consistent initialization patterns.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize empty dependency container."""
         self._dependencies: dict[str, Any] = {}
         self._factories: dict[str, Any] = {}

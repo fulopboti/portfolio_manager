@@ -196,7 +196,7 @@ class YFinanceProvider(DataProvider):
                 return {}
 
             # Extract and normalize fundamental metrics
-            fundamental_data = {}
+            fundamental_data: dict[str, Any] = {}
 
             # Financial ratios
             if "trailingPE" in info and info["trailingPE"]:
@@ -275,6 +275,12 @@ class YFinanceProvider(DataProvider):
             # Validate that we have required data
             if None in [open_price, high_price, low_price, close_price]:
                 return None
+
+            # Type narrowing - after None check, these must be Decimal
+            assert open_price is not None
+            assert high_price is not None
+            assert low_price is not None
+            assert close_price is not None
 
             # Additional validation
             if any(

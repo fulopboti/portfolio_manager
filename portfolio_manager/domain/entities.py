@@ -39,7 +39,7 @@ class Asset:
     asset_type: AssetType
     name: str
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate asset data after initialization."""
         if not self.symbol or not self.symbol.strip():
             raise DomainValidationError("Symbol cannot be empty")
@@ -54,7 +54,7 @@ class Asset:
         object.__setattr__(self, "symbol", self.symbol.upper().strip())
         object.__setattr__(self, "exchange", self.exchange.upper().strip())
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: object) -> bool:
         """Assets are equal if they have the same symbol."""
         if not isinstance(other, Asset):
             return False
@@ -81,7 +81,7 @@ class AssetSnapshot:
     close: Decimal
     volume: int
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate snapshot data after initialization."""
         # Validate prices are positive
         if any(price <= 0 for price in [self.open, self.high, self.low, self.close]):
@@ -134,7 +134,7 @@ class Portfolio:
     cash_balance: Decimal
     created: datetime
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate portfolio data after initialization."""
         if not self.name or not self.name.strip():
             raise DomainValidationError("Portfolio name cannot be empty")
@@ -189,7 +189,7 @@ class Trade:
     price_ccy: str
     comment: str
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate trade data after initialization."""
         if self.qty <= 0:
             raise InvalidTradeError("Trade quantity must be positive")
@@ -252,7 +252,7 @@ class Position:
     price_ccy: str
     last_updated: datetime
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate position data after initialization."""
         if self.qty <= 0:
             raise InvalidPositionError("Position quantity must be positive")
@@ -320,7 +320,7 @@ class BrokerProfile:
     supported_currencies: list[str]
     supports_fractional: bool
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate broker profile data after initialization."""
         if not self.broker_id or not self.broker_id.strip():
             raise DomainValidationError("Broker ID cannot be empty")

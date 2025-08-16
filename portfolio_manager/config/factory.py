@@ -34,7 +34,7 @@ class ConfiguredComponentFactory:
     sections and handles configuration validation.
     """
 
-    def __init__(self, config_manager=None):
+    def __init__(self, config_manager=None) -> None:
         """
         Initialize the factory with configuration.
 
@@ -79,7 +79,7 @@ class ConfiguredComponentFactory:
         """Get data providers configuration section."""
         return self.validated_config.data_providers
 
-    def create_repository_factory(self):
+    def create_repository_factory(self) -> Any:
         """
         Create DuckDB repository factory with database configuration.
 
@@ -101,7 +101,7 @@ class ConfiguredComponentFactory:
             database_path=database_path, auto_initialize=True, config=db_config
         )
 
-    def create_data_ingestion_service(self, data_provider, asset_repository):
+    def create_data_ingestion_service(self, data_provider, asset_repository) -> Any:
         """
         Create data ingestion service with configuration.
 
@@ -162,7 +162,7 @@ class ConfiguredComponentFactory:
 
         return service
 
-    def create_strategy_score_service(self, strategy_calculators, asset_repository):
+    def create_strategy_score_service(self, strategy_calculators, asset_repository) -> Any:
         """
         Create strategy score service with configuration.
 
@@ -189,7 +189,7 @@ class ConfiguredComponentFactory:
 
         return service
 
-    def create_event_bus(self):
+    def create_event_bus(self) -> Any:
         """
         Create event bus with configuration.
 
@@ -279,12 +279,12 @@ class ConfiguredServiceBuilder:
     their required dependencies injected from configuration.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize service builder."""
         self.factory = ConfiguredComponentFactory()
         self._logger = logging.getLogger(__name__)
 
-    def build_complete_service_stack(self):
+    def build_complete_service_stack(self) -> dict[str, Any]:
         """
         Build complete service stack with all dependencies configured.
 

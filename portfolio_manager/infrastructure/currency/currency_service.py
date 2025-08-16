@@ -4,6 +4,7 @@ import json
 import os
 from datetime import datetime, timedelta
 from decimal import Decimal, InvalidOperation
+from typing import Any
 
 from portfolio_manager.domain.services.symbol_mapping import CurrencyCode
 
@@ -13,11 +14,11 @@ class CurrencyService:
 
     def __init__(
         self,
-        exchange_rate_provider,
-        cache_repository,
+        exchange_rate_provider: Any,
+        cache_repository: Any,
         cache_duration_minutes: int = 60,
         fallback_rates_file: str | None = None,
-    ):
+    ) -> None:
         """Initialize currency service with providers."""
         self._exchange_rate_provider = exchange_rate_provider
         self._cache_repository = cache_repository
@@ -25,19 +26,20 @@ class CurrencyService:
         self._fallback_rates_file = fallback_rates_file
 
     async def get_exchange_rate(
-        self, from_currency: CurrencyCode, to_currency: CurrencyCode
+        self, from_currency: CurrencyCode | None, to_currency: CurrencyCode | None
     ) -> Decimal | None:
         """Get exchange rate between two currencies."""
-        if not from_currency or not to_currency:
+        # Handle None currencies
+        if from_currency is None or to_currency is None:
             return None
-
+        
         # Same currency
         if from_currency == to_currency:
             return Decimal("1.0000")
 
         # Check cache first
         try:
-            cached_rate = await self._cache_repository.get_cached_rate(
+            cached_rate: Decimal | None = await self._cache_repository.get_cached_rate(
                 from_currency, to_currency
             )
             if cached_rate is not None:
@@ -47,7 +49,7 @@ class CurrencyService:
 
         # Check reverse rate in cache
         try:
-            reverse_rate = await self._cache_repository.get_cached_rate(
+            reverse_rate: Decimal | None = await self._cache_repository.get_cached_rate(
                 to_currency, from_currency
             )
             if reverse_rate is not None and reverse_rate != Decimal("0"):
@@ -58,7 +60,7 @@ class CurrencyService:
 
         # Get from provider
         try:
-            provider_rate = await self._exchange_rate_provider.get_exchange_rate(
+            provider_rate: Decimal | None = await self._exchange_rate_provider.get_exchange_rate(
                 from_currency, to_currency
             )
             if provider_rate is not None:
@@ -75,7 +77,7 @@ class CurrencyService:
             pass  # Continue to fallback
 
         # Try fallback rates
-        fallback_rate = self._get_fallback_rate(from_currency, to_currency)
+        fallback_rate: Decimal | None = self._get_fallback_rate(from_currency, to_currency)
         if fallback_rate is not None:
             return fallback_rate
 
@@ -105,11 +107,11 @@ class CurrencyService:
 
     async def get_historical_rates(
         self,
-        from_currency: CurrencyCode,
-        to_currency: CurrencyCode,
+        from_currency: CurrencyCode | None,
+        to_currency: CurrencyCode | None,
         start_date: datetime | None,
         end_date: datetime | None,
-    ) -> list[dict]:
+    ) -> list[dict[str, Any]]:
         """Get historical exchange rates."""
         if not from_currency or not to_currency or not start_date or not end_date:
             return []
@@ -196,21 +198,24 @@ class CurrencyService:
     async def clear_cache(self) -> bool:
         """Clear exchange rate cache."""
         try:
-            return await self._cache_repository.clear_cache()
+            result = await self._cache_repository.clear_cache()
+            return bool(result)
         except Exception:
             return False
 
     async def cleanup_expired_cache(self) -> int:
         """Remove expired cache entries and return count."""
         try:
-            return await self._cache_repository.clear_expired_cache()
+            result = await self._cache_repository.clear_expired_cache()
+            return int(result) if result is not None else 0
         except Exception:
             return 0
 
-    async def get_cache_stats(self) -> dict:
+    async def get_cache_stats(self) -> dict[str, Any]:
         """Get cache performance statistics."""
         try:
-            return await self._cache_repository.get_cache_stats()
+            result = await self._cache_repository.get_cache_stats()
+            return dict(result) if result else {}
         except Exception:
             return {"error": "Cache stats unavailable"}
 
@@ -223,14 +228,17 @@ class CurrencyService:
 
         try:
             with open(self._fallback_rates_file) as f:
-                return json.load(f)
+                rates: dict[str, str] = json.load(f)
+                return rates
         except (OSError, json.JSONDecodeError):
             return {}
 
     def _get_fallback_rate(
-        self, from_currency: CurrencyCode, to_currency: CurrencyCode
+        self, from_currency: CurrencyCode | None, to_currency: CurrencyCode | None
     ) -> Decimal | None:
         """Get fallback exchange rate."""
+        if from_currency is None or to_currency is None:
+            return None
         fallback_rates = self._load_fallback_rates()
 
         # Try direct rate

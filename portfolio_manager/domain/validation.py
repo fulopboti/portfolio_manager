@@ -5,6 +5,7 @@ This module provides reusable validation functions for common domain patterns,
 eliminating code duplication across entities and events.
 """
 
+from collections.abc import Callable
 from decimal import Decimal
 from typing import Any
 
@@ -219,7 +220,7 @@ class ValidationBuilder:
     def __init__(self, value: Any):
         """Initialize with the value to validate."""
         self.value = value
-        self._validations: list[callable] = []
+        self._validations: list[Callable] = []
 
     def not_empty(self, field_name: str) -> "ValidationBuilder":
         """Add not-empty validation."""

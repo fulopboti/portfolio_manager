@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
+from typing import Any
 
 from portfolio_manager.application.ports import AssetRepository, StrategyCalculator
 from portfolio_manager.domain.entities import Trade
@@ -48,6 +49,7 @@ class StrategyScoreService(ExceptionBasedService):
         super().__init__(logger_name=f"{__name__}.{self.__class__.__name__}")
         self.strategy_calculators = strategy_calculators
         self.asset_repository = asset_repository
+        self._config = None  # Will be set by factory
 
     async def calculate_strategy_scores(
         self,
@@ -149,7 +151,7 @@ class StrategyScoreService(ExceptionBasedService):
 
         # For this implementation, create a simple backtest result
         # In a full implementation, this would simulate trades over time
-        trades = []  # Placeholder for backtest trades
+        trades: list[Any] = []  # Placeholder for backtest trades
 
         # Calculate simple performance metrics
         final_value = initial_capital * Decimal("1.05")  # Placeholder 5% return

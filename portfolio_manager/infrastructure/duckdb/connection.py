@@ -1,7 +1,8 @@
 """DuckDB database connection and transaction management implementations."""
 
 import logging
-from contextlib import AbstractAsyncContextManager, asynccontextmanager
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 
@@ -80,6 +81,8 @@ class DuckDBConnection(DatabaseConnection):
         if not await self.is_connected():
             return False
 
+        if not self._connection:
+            return False
         try:
             # Execute a simple query to test connectivity
             result = self._connection.execute("SELECT 1").fetchone()
@@ -93,6 +96,8 @@ class DuckDBConnection(DatabaseConnection):
         if not await self.is_connected():
             return {"status": "disconnected"}
 
+        if not self._connection:
+            return {"status": "no_connection"}
         try:
             # Get DuckDB version
             version_result = self._connection.execute("SELECT version()").fetchone()
@@ -158,7 +163,7 @@ class DuckDBTransactionManager(TransactionManager):
         self._savepoint_counter = 0
 
     @asynccontextmanager
-    async def transaction(self) -> AbstractAsyncContextManager[None]:
+    async def transaction(self) -> AsyncIterator[None]:
         """Create a new database transaction context."""
         if not await self.connection.is_connected():
             raise TransactionError("Database connection is not active")
@@ -185,7 +190,7 @@ class DuckDBTransactionManager(TransactionManager):
                 raise
 
     @asynccontextmanager
-    async def savepoint(self, name: str) -> AbstractAsyncContextManager[None]:
+    async def savepoint(self, name: str) -> AsyncIterator[None]:
         """Create a savepoint within an existing transaction."""
         if not await self.is_in_transaction():
             raise TransactionError("Cannot create savepoint outside of transaction")

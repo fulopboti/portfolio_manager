@@ -56,6 +56,7 @@ class PortfolioSimulatorService(ResultBasedService):
         super().__init__(logger_name=f"{__name__}.{self.__class__.__name__}")
         self.portfolio_repository = portfolio_repository
         self.asset_repository = asset_repository
+        self._config = None  # Will be set by factory
 
     async def execute_trade(
         self,

@@ -1,5 +1,7 @@
 """Database-based symbol mapping implementation."""
 
+from typing import Any
+
 from portfolio_manager.domain.services.symbol_mapping import (
     CurrencyCode,
     SymbolMapping,
@@ -10,7 +12,7 @@ from portfolio_manager.domain.services.symbol_mapping import (
 class DatabaseSymbolMapper(SymbolMappingService):
     """Database-backed symbol mapping service."""
 
-    def __init__(self, repository):
+    def __init__(self, repository: Any) -> None:
         """Initialize with symbol mapping repository."""
         self._repository = repository
 
@@ -20,7 +22,8 @@ class DatabaseSymbolMapper(SymbolMappingService):
             return []
 
         try:
-            return await self._repository.find_by_symbol(symbol)
+            result: list[SymbolMapping] | None = await self._repository.find_by_symbol(symbol)
+            return result if result else []
         except Exception:
             return []
 
@@ -35,7 +38,8 @@ class DatabaseSymbolMapper(SymbolMappingService):
             return None
 
         try:
-            return await self._repository.find_provider_symbol(symbol, provider)
+            result: str | None = await self._repository.find_provider_symbol(symbol, provider)
+            return result
         except Exception:
             return None
 
@@ -46,7 +50,8 @@ class DatabaseSymbolMapper(SymbolMappingService):
 
         try:
             # Convert to lowercase for case-insensitive search
-            return await self._repository.find_by_company_name(company_name.lower())
+            result: list[SymbolMapping] | None = await self._repository.find_by_company_name(company_name.lower())
+            return result if result else []
         except Exception:
             return []
 
@@ -56,7 +61,8 @@ class DatabaseSymbolMapper(SymbolMappingService):
             return None
 
         try:
-            return await self._repository.find_by_isin(isin)
+            result: SymbolMapping | None = await self._repository.find_by_isin(isin)
+            return result
         except Exception:
             return None
 
@@ -66,7 +72,8 @@ class DatabaseSymbolMapper(SymbolMappingService):
             return None
 
         try:
-            return await self._repository.create(mapping)
+            result: SymbolMapping | None = await self._repository.create(mapping)
+            return result
         except Exception:
             return None
 
@@ -76,7 +83,8 @@ class DatabaseSymbolMapper(SymbolMappingService):
             return None
 
         try:
-            return await self._repository.update(mapping)
+            result: SymbolMapping | None = await self._repository.update(mapping)
+            return result
         except Exception:
             return None
 
@@ -86,21 +94,24 @@ class DatabaseSymbolMapper(SymbolMappingService):
             return False
 
         try:
-            return await self._repository.delete(isin)
+            result: bool = await self._repository.delete(isin)
+            return result
         except Exception:
             return False
 
     async def list_all_mappings(self) -> list[SymbolMapping]:
         """List all symbol mappings."""
         try:
-            return await self._repository.list_all()
+            result: list[SymbolMapping] | None = await self._repository.list_all()
+            return result if result else []
         except Exception:
             return []
 
     async def clear_cache(self) -> bool:
         """Clear cached mappings."""
         try:
-            return await self._repository.clear_cache()
+            result = await self._repository.clear_cache()
+            return bool(result)
         except Exception:
             return False
 
@@ -112,7 +123,8 @@ class DatabaseSymbolMapper(SymbolMappingService):
             return []
 
         try:
-            return await self._repository.find_by_currency(currency)
+            result = await self._repository.find_by_currency(currency)
+            return list(result) if result else []
         except Exception:
             return []
 
@@ -122,13 +134,15 @@ class DatabaseSymbolMapper(SymbolMappingService):
             return []
 
         try:
-            return await self._repository.find_by_exchange(exchange)
+            result = await self._repository.find_by_exchange(exchange)
+            return list(result) if result else []
         except Exception:
             return []
 
-    async def get_cache_stats(self) -> dict:
+    async def get_cache_stats(self) -> dict[str, Any]:
         """Get cache statistics from repository."""
         try:
-            return await self._repository.get_cache_stats()
+            result = await self._repository.get_cache_stats()
+            return dict(result) if result else {}
         except Exception:
             return {"error": "Cache stats unavailable"}
