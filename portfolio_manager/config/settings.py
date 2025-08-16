@@ -220,15 +220,15 @@ class ConfigManager:
         """Get a configuration value by dot-notation key."""
         config = self.load_config()
         keys = key.split(".")
-        value = config
+        value: Any = config
 
         try:
             for k in keys:
                 if isinstance(value, dict):
                     value = value.get(k)
+                    if value is None:
+                        return default
                 else:
-                    return default
-                if value is None:
                     return default
             return value
         except (KeyError, AttributeError):
@@ -238,7 +238,7 @@ class ConfigManager:
         """Get a configuration section."""
         config = self.load_config()
         keys = section.split(".")
-        value = config
+        value: Any = config
 
         try:
             for k in keys:
@@ -267,11 +267,13 @@ class ConfigManager:
 
     def get_environment(self) -> str:
         """Get the current environment."""
-        return self.get("application.environment", "development")
+        env = self.get("application.environment", "development")
+        return str(env)
 
     def is_debug(self) -> bool:
         """Check if debug mode is enabled."""
-        return self.get("application.debug", False)
+        debug = self.get("application.debug", False)
+        return bool(debug)
 
     def is_production(self) -> bool:
         """Check if running in production environment."""

@@ -830,7 +830,7 @@ class DuckDBPortfolioRepository(
             ]
 
             cursor = await self.query_executor.execute_query(query, parameters)
-            if cursor and cursor.rowcount == 0:
+            if cursor and cursor.row_count == 0:
                 raise NotFoundError(
                     f"Position {position.portfolio_id}.{position.symbol} not found"
                 )
@@ -1121,7 +1121,7 @@ class DuckDBPortfolioRepository(
         try:
             query = "DELETE FROM positions WHERE portfolio_id = ? AND qty <= 0"
             cursor = await self.query_executor.execute_query(query, [str(portfolio_id)])
-            deleted_count = cursor.rowcount if cursor else 0
+            deleted_count = cursor.row_count if cursor else 0
 
             self.logger.debug(
                 f"Cleaned up {deleted_count} zero positions for {portfolio_id}"

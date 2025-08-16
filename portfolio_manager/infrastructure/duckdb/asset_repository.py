@@ -489,7 +489,7 @@ class DuckDBAssetRepository(
             WHERE symbol = ? AND timestamp < ?
             """
             cursor = await self.query_executor.execute_query(query, [symbol, date])
-            deleted_count = cursor.rowcount if cursor else 0
+            deleted_count = cursor.row_count if cursor else 0
 
             self.logger.debug(
                 f"Deleted {deleted_count} snapshots for {symbol} before {date}"
@@ -730,7 +730,7 @@ class DuckDBAssetRepository(
                 """
                 cursor = await self.query_executor.execute_query(query, [symbol])
 
-            deleted_count = cursor.rowcount if cursor else 0
+            deleted_count = cursor.row_count if cursor else 0
             self.logger.debug(
                 f"Deleted {deleted_count} fundamental metrics for {symbol}"
             )

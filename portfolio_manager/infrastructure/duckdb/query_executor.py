@@ -138,8 +138,8 @@ class DuckDBQueryExecutor(QueryExecutor):
                 result = raw_conn.execute(sql)
 
             # Get affected row count - DuckDB may return -1 for some operations
-            if hasattr(result, "rowcount") and result.rowcount >= 0:
-                affected_rows = result.rowcount
+            if hasattr(result, "row_count") and result.row_count >= 0:
+                affected_rows = result.row_count
             else:
                 # For operations that don't return a meaningful rowcount, return 0
                 affected_rows = 0
@@ -210,7 +210,7 @@ class DuckDBQueryExecutor(QueryExecutor):
 
     async def execute_transaction(
         self, operations: list[tuple[str, dict[str, Any] | None]]
-    ) -> list[Any]:
+    ) -> list[QueryResult | int]:
         """Execute multiple operations within a single transaction."""
         if not operations:
             return []
