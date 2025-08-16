@@ -2,6 +2,7 @@
 
 import asyncio
 from decimal import Decimal, InvalidOperation
+from typing import Any
 
 from portfolio_manager.domain.services.symbol_mapping import (
     CurrencyCode,
@@ -19,10 +20,10 @@ class ExternalSymbolMapper(SymbolMappingService):
         self,
         api_base_url: str,
         api_key: str,
-        http_client,
+        http_client: Any,
         request_timeout: float = 10.0,
         max_retries: int = 2,
-    ):
+    ) -> None:
         """Initialize with API configuration."""
         self._api_base_url = api_base_url
         self._api_key = api_key
@@ -86,7 +87,8 @@ class ExternalSymbolMapper(SymbolMappingService):
 
                 if response.status_code == 200:
                     data = response.json()
-                    return data.get("provider_symbol")
+                    result = data.get("provider_symbol")
+                    return str(result) if result is not None else None
                 elif response.status_code == 404:
                     return None
                 else:
@@ -140,7 +142,7 @@ class ExternalSymbolMapper(SymbolMappingService):
         except Exception:
             return []
 
-    def _parse_symbol_mapping(self, data: dict) -> SymbolMapping | None:
+    def _parse_symbol_mapping(self, data: dict[str, Any]) -> SymbolMapping | None:
         """Parse symbol mapping from API response data."""
         try:
             # Required fields
@@ -178,7 +180,7 @@ class ExternalSymbolMapper(SymbolMappingService):
         except Exception:
             return None
 
-    def _parse_exchange_info(self, data: dict) -> ExchangeInfo | None:
+    def _parse_exchange_info(self, data: dict[str, Any]) -> ExchangeInfo | None:
         """Parse exchange information from API data."""
         try:
             required = ["symbol", "exchange", "country", "currency"]
@@ -199,7 +201,7 @@ class ExternalSymbolMapper(SymbolMappingService):
         except Exception:
             return None
 
-    def _parse_provider_info(self, data: dict) -> ProviderInfo | None:
+    def _parse_provider_info(self, data: dict[str, Any]) -> ProviderInfo | None:
         """Parse provider information from API data."""
         try:
             required = ["provider", "symbol"]
@@ -226,7 +228,7 @@ class ExternalSymbolMapper(SymbolMappingService):
         except ValueError:
             return CurrencyCode.USD
 
-    def _safe_decimal(self, value) -> Decimal | None:
+    def _safe_decimal(self, value: Any) -> Decimal | None:
         """Safely convert value to Decimal."""
         if not value:
             return None

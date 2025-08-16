@@ -65,18 +65,26 @@ class ConfiguredComponentFactory:
 
     def get_database_config(self) -> DatabaseConfig:
         """Get database configuration section."""
+        if self.validated_config is None:
+            raise ValueError("Configuration not properly initialized")
         return self.validated_config.database
 
     def get_event_system_config(self) -> EventSystemConfig:
         """Get event system configuration section."""
+        if self.validated_config is None:
+            raise ValueError("Configuration not properly initialized")
         return self.validated_config.event_system
 
     def get_portfolio_config(self) -> PortfolioConfig:
         """Get portfolio configuration section."""
+        if self.validated_config is None:
+            raise ValueError("Configuration not properly initialized")
         return self.validated_config.portfolio
 
     def get_data_providers_config(self) -> DataProvidersConfig:
         """Get data providers configuration section."""
+        if self.validated_config is None:
+            raise ValueError("Configuration not properly initialized")
         return self.validated_config.data_providers
 
     def create_repository_factory(self) -> Any:
@@ -101,7 +109,7 @@ class ConfiguredComponentFactory:
             database_path=database_path, auto_initialize=True, config=db_config
         )
 
-    def create_data_ingestion_service(self, data_provider, asset_repository) -> Any:
+    def create_data_ingestion_service(self, data_provider: Any, asset_repository: Any) -> Any:
         """
         Create data ingestion service with configuration.
 
@@ -134,8 +142,8 @@ class ConfiguredComponentFactory:
         )
 
     def create_portfolio_simulator_service(
-        self, portfolio_repository, asset_repository
-    ):
+        self, portfolio_repository: Any, asset_repository: Any
+    ) -> Any:
         """
         Create portfolio simulator service with configuration.
 
@@ -162,7 +170,7 @@ class ConfiguredComponentFactory:
 
         return service
 
-    def create_strategy_score_service(self, strategy_calculators, asset_repository) -> Any:
+    def create_strategy_score_service(self, strategy_calculators: Any, asset_repository: Any) -> Any:
         """
         Create strategy score service with configuration.
 
@@ -175,6 +183,8 @@ class ConfiguredComponentFactory:
         """
         from ..application.services import StrategyScoreService
 
+        if self.validated_config is None:
+            raise ValueError("Configuration not properly initialized")
         strategies_config = self.validated_config.strategies
         self._logger.info(
             f"Creating strategy score service with enabled strategies: {strategies_config.scoring.enabled_strategies}"
@@ -332,6 +342,7 @@ class ConfiguredServiceBuilder:
 
 
 # Global factory instance
+component_factory: ConfiguredComponentFactory | None = None
 try:
     component_factory = ConfiguredComponentFactory()
 except Exception as e:

@@ -32,7 +32,7 @@ class CurrencyService:
         # Handle None currencies
         if from_currency is None or to_currency is None:
             return None
-        
+
         # Same currency
         if from_currency == to_currency:
             return Decimal("1.0000")

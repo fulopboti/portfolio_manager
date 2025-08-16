@@ -189,7 +189,7 @@ class DuckDBTableBuilder:
         visited = set()
         visiting = set()
 
-        def visit(table: str):
+        def visit(table: str) -> None:
             if table in visiting:
                 # Circular dependency - log warning and continue
                 logger.warning(f"Circular dependency detected involving table: {table}")

@@ -30,7 +30,7 @@ class DomainEvent(ABC):
     event_id: str
     timestamp: datetime
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate event data after initialization."""
         validate_event_id(self.event_id)
 
@@ -46,7 +46,7 @@ class TradeExecutedEvent(DomainEvent):
     quantity: Decimal
     price: Decimal
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate trade event data."""
         super().__post_init__()
 
@@ -74,7 +74,7 @@ class AssetPriceUpdatedEvent(DomainEvent):
     old_price: Decimal
     new_price: Decimal
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate price update event data."""
         super().__post_init__()
 
@@ -110,7 +110,7 @@ class PositionChange:
     new_quantity: Decimal
     reason: str
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate position change data."""
         validate_symbol(self.symbol)
         validate_non_empty_string(self.reason, "Reason")
@@ -131,7 +131,7 @@ class PortfolioRebalancedEvent(DomainEvent):
     portfolio_id: UUID
     changes: list[PositionChange]
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate portfolio rebalanced event data."""
         super().__post_init__()
 
@@ -160,7 +160,7 @@ class RiskThresholdBreachedEvent(DomainEvent):
     current_value: Decimal
     severity: str
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate risk threshold event data."""
         super().__post_init__()
 
@@ -185,7 +185,7 @@ class MarketDataReceivedEvent(DomainEvent):
     volume: int
     market_cap: Decimal | None = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate market data event."""
         super().__post_init__()
 
@@ -208,7 +208,7 @@ class PortfolioCreatedEvent(DomainEvent):
     initial_cash: Decimal
     strategy: str
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate portfolio created event."""
         super().__post_init__()
 

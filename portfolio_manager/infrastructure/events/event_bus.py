@@ -45,7 +45,7 @@ class EventBus:
     and concurrent event processing capabilities.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the event bus."""
         self._subscriptions: dict[type, list[EventSubscription]] = defaultdict(list)
         self._handler_subscriptions: dict[str, EventSubscription] = {}

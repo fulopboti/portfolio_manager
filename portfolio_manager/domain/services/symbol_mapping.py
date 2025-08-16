@@ -69,12 +69,10 @@ class SymbolMapping:
     exchanges: dict[str, ExchangeInfo] = field(default_factory=dict)
     providers: dict[str, ProviderInfo] = field(default_factory=dict)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Initialize collections if not provided."""
-        if not isinstance(self.exchanges, dict):
-            self.exchanges = {}
-        if not isinstance(self.providers, dict):
-            self.providers = {}
+        # Fields already have default_factory=dict, so no initialization needed
+        pass
 
     def get_currency_for_exchange(self, exchange: str) -> CurrencyCode | None:
         """Get the currency used on a specific exchange."""

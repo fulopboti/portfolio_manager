@@ -335,7 +335,7 @@ class DuckDBSchemaManager(SchemaManager):
             logger.error(f"Failed to generate create table SQL: {str(e)}")
             raise SchemaError(f"Cannot generate create table SQL: {str(e)}") from e
 
-    async def validate_schema(self) -> dict[str, any]:
+    async def validate_schema(self) -> dict[str, Any]:
         """Validate current schema against expected definitions.
 
         Returns:

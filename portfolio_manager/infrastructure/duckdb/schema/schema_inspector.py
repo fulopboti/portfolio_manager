@@ -167,7 +167,7 @@ class DuckDBSchemaInspector:
             - "extra_tables": Tables that exist but shouldn't
             - "column_mismatches": Tables with column differences
         """
-        validation_results = {
+        validation_results: dict[str, list[str]] = {
             "missing_tables": [],
             "extra_tables": [],
             "column_mismatches": [],
@@ -259,7 +259,7 @@ class DuckDBSchemaInspector:
         Returns:
             List of integrity violation messages (empty if no violations)
         """
-        violations = []
+        violations: list[str] = []
 
         try:
             # Get existing tables first

@@ -45,7 +45,7 @@ class ExceptionCategory(Enum):
 class ServiceExceptionRegistry:
     """Registry for mapping exceptions to handling strategies."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the exception registry with default mappings."""
         self._mappings: dict[type[Exception], dict[str, Any]] = {}
         self._setup_default_mappings()
@@ -213,7 +213,7 @@ class StandardExceptionHandler:
         self.registry = ServiceExceptionRegistry()
         self._operation_context: dict[str, Any] = {}
 
-    def set_operation_context(self, **context) -> None:
+    def set_operation_context(self, **context: Any) -> None:
         """Set context information for current operation."""
         self._operation_context.update(context)
 
@@ -330,7 +330,7 @@ def service_exception_handler(
     reraise: bool = True,
     return_default: Any = None,
     expected_exceptions: list[type[Exception]] | None = None,
-):
+) -> Callable:
     """
     Decorator for standardized exception handling in service methods.
 
@@ -344,7 +344,7 @@ def service_exception_handler(
 
     def decorator(func: Callable) -> Callable:
         @wraps(func)
-        async def async_wrapper(self, *args, **kwargs):
+        async def async_wrapper(self, *args: Any, **kwargs: Any) -> Any:
             if not hasattr(self, "_exception_handler"):
                 handler_name = getattr(self, "__class__", {}).get(
                     "__name__", "UnknownService"
@@ -369,7 +369,7 @@ def service_exception_handler(
                     )
 
         @wraps(func)
-        def sync_wrapper(self, *args, **kwargs):
+        def sync_wrapper(self, *args: Any, **kwargs: Any) -> Any:
             if not hasattr(self, "_exception_handler"):
                 handler_name = getattr(self, "__class__", {}).get(
                     "__name__", "UnknownService"

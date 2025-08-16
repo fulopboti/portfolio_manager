@@ -2,6 +2,7 @@
 
 from datetime import UTC, datetime
 from decimal import Decimal
+from typing import Any
 
 from portfolio_manager.domain.entities import Asset, AssetSnapshot, AssetType
 from portfolio_manager.infrastructure.data_access.asset_data_access import (
@@ -742,7 +743,7 @@ class DuckDBAssetRepository(
 
     # Data Quality and Maintenance Methods
 
-    async def get_data_quality_report(self, symbol: str) -> dict[str, any]:
+    async def get_data_quality_report(self, symbol: str) -> dict[str, Any]:
         """Generate a data quality report for an asset.
 
         Args:

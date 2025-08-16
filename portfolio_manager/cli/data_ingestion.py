@@ -175,7 +175,7 @@ def ingest_multiple(
 def refresh_all(provider: str | None) -> None:
     """Refresh data for all existing assets."""
 
-    async def _refresh():
+    async def _refresh() -> None:
         # Build service stack
         builder = ConfiguredServiceBuilder()
         stack = builder.build_complete_service_stack()
@@ -226,7 +226,7 @@ def refresh_all(provider: str | None) -> None:
 def list_assets() -> None:
     """List all assets in the database."""
 
-    async def _list():
+    async def _list() -> None:
         # Build service stack
         builder = ConfiguredServiceBuilder()
         stack = builder.build_complete_service_stack()

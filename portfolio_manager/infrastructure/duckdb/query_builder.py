@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 class DuckDBQueryBuilder:
     """Advanced query builder that encapsulates common DuckDB query patterns."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the query builder."""
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
@@ -318,7 +318,7 @@ class DuckDBQueryBuilder:
         query = (
             f"SELECT {', '.join(all_columns)} FROM {table} WHERE {symbol_column} = ?"
         )
-        parameters = [symbol]
+        parameters: list[Any] = [symbol]
 
         if start_date:
             query += f" AND {timestamp_column} >= ?"
@@ -453,7 +453,7 @@ class QueryParameterBuilder:
         return value
 
     @staticmethod
-    def prepare_enum(value) -> str:
+    def prepare_enum(value: Any) -> str:
         """Convert enum to its string value."""
         return value.value if hasattr(value, "value") else str(value)
 
@@ -467,7 +467,7 @@ class QueryParameterBuilder:
         Returns:
             List of database-compatible parameter values
         """
-        parameters = []
+        parameters: list[Any] = []
         for value in values:
             if isinstance(value, UUID):
                 parameters.append(cls.prepare_uuid(value))

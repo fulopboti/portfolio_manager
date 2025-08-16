@@ -1,6 +1,7 @@
 """Repository factory for creating DuckDB repository instances."""
 
 import logging
+from typing import Any
 
 from portfolio_manager.application.ports import AssetRepository, PortfolioRepository
 from portfolio_manager.config.schema import DatabaseConfig
@@ -27,7 +28,7 @@ logger = logging.getLogger(__name__)
 class RepositoryAdapterBase:
     """Base class for repository adapters that bridge data access to application ports."""
 
-    def __init__(self, data_access):
+    def __init__(self, data_access: Any) -> None:
         """Initialize with data access implementation."""
         self.data_access = data_access
 
@@ -45,38 +46,38 @@ class AssetRepositoryAdapter(RepositoryAdapterBase, AssetRepository):
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     # Map AssetRepository methods to AssetDataAccess methods
-    async def save_asset(self, asset):
+    async def save_asset(self, asset: Any) -> Any:
         return await self.data_access.save_asset(asset)
 
-    async def get_asset(self, symbol: str):
+    async def get_asset(self, symbol: str) -> Any:
         return await self.data_access.get_asset(symbol)
 
-    async def get_all_assets(self, asset_type=None):
+    async def get_all_assets(self, asset_type: Any = None) -> Any:
         if asset_type is None:
             return await self.data_access.get_all_assets()
         else:
             return await self.data_access.get_assets_by_type(asset_type)
 
-    async def save_snapshot(self, snapshot):
+    async def save_snapshot(self, snapshot: Any) -> Any:
         return await self.data_access.save_snapshot(snapshot)
 
-    async def get_latest_snapshot(self, symbol: str):
+    async def get_latest_snapshot(self, symbol: str) -> Any:
         return await self.data_access.get_latest_snapshot(symbol)
 
-    async def get_historical_snapshots(self, symbol: str, start_date, end_date):
+    async def get_historical_snapshots(self, symbol: str, start_date: Any, end_date: Any) -> Any:
         return await self.data_access.get_historical_snapshots(
             symbol, start_date, end_date
         )
 
-    async def get_fundamental_metrics(self, symbol: str):
+    async def get_fundamental_metrics(self, symbol: str) -> Any:
         metrics = await self.data_access.get_fundamental_metrics(symbol)
         # Convert Decimal values to dict for application layer
         return dict(metrics) if metrics else None
 
-    async def save_fundamental_metrics(self, symbol: str, metrics: dict):
+    async def save_fundamental_metrics(self, symbol: str, metrics: dict[str, Any]) -> Any:
         return await self.data_access.save_fundamental_metrics(symbol, metrics)
 
-    async def delete_asset(self, symbol: str):
+    async def delete_asset(self, symbol: str) -> Any:
         return await self.data_access.delete_asset(symbol)
 
     async def asset_exists(self, symbol: str) -> bool:
@@ -99,40 +100,40 @@ class PortfolioRepositoryAdapter(RepositoryAdapterBase, PortfolioRepository):
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     # Map PortfolioRepository methods to PortfolioDataAccess methods
-    async def save_portfolio(self, portfolio):
+    async def save_portfolio(self, portfolio: Any) -> Any:
         return await self.data_access.save_portfolio(portfolio)
 
-    async def get_portfolio(self, portfolio_id):
+    async def get_portfolio(self, portfolio_id: Any) -> Any:
         return await self.data_access.get_portfolio(portfolio_id)
 
-    async def get_all_portfolios(self):
+    async def get_all_portfolios(self) -> Any:
         return await self.data_access.get_all_portfolios()
 
-    async def delete_portfolio(self, portfolio_id):
+    async def delete_portfolio(self, portfolio_id: Any) -> Any:
         return await self.data_access.delete_portfolio(portfolio_id)
 
-    async def save_trade(self, trade):
+    async def save_trade(self, trade: Any) -> Any:
         return await self.data_access.save_trade(trade)
 
-    async def get_trade(self, trade_id):
+    async def get_trade(self, trade_id: Any) -> Any:
         return await self.data_access.get_trade(trade_id)
 
-    async def get_trades_for_portfolio(self, portfolio_id, limit=None):
+    async def get_trades_for_portfolio(self, portfolio_id: Any, limit: int | None = None) -> Any:
         return await self.data_access.get_trades_for_portfolio(portfolio_id, limit)
 
-    async def save_position(self, position):
+    async def save_position(self, position: Any) -> Any:
         return await self.data_access.save_position(position)
 
-    async def get_position(self, portfolio_id, symbol: str):
+    async def get_position(self, portfolio_id: Any, symbol: str) -> Any:
         return await self.data_access.get_position(portfolio_id, symbol)
 
-    async def get_positions_for_portfolio(self, portfolio_id):
+    async def get_positions_for_portfolio(self, portfolio_id: Any) -> Any:
         return await self.data_access.get_positions_for_portfolio(portfolio_id)
 
-    async def delete_position(self, portfolio_id, symbol: str):
+    async def delete_position(self, portfolio_id: Any, symbol: str) -> Any:
         return await self.data_access.delete_position(portfolio_id, symbol)
 
-    async def portfolio_exists(self, portfolio_id) -> bool:
+    async def portfolio_exists(self, portfolio_id: Any) -> bool:
         return await self.data_access.portfolio_exists(portfolio_id)
 
 
@@ -148,7 +149,7 @@ class DuckDBRepositoryFactory:
         database_path: str,
         auto_initialize: bool = True,
         config: DatabaseConfig | None = None,
-    ):
+    ) -> None:
         """Initialize the repository factory.
 
         Args:
@@ -199,7 +200,7 @@ class DuckDBRepositoryFactory:
                     )
 
                 # Pass the full pragmas dictionary as well
-                config_overrides["pragmas"] = pragmas
+                config_overrides["pragmas"] = dict(pragmas)
 
                 duckdb_config = DuckDBConfig.from_environment(**config_overrides)
                 self._logger.info(
@@ -263,6 +264,8 @@ class DuckDBRepositoryFactory:
 
         if self._asset_repository is None:
             # Create concrete DuckDB implementation
+            if self._connection is None or self._query_executor is None:
+                raise ConnectionError("Connection or query executor not initialized")
             duckdb_repo = DuckDBAssetRepository(self._connection, self._query_executor)
 
             # Wrap with adapter to match application interface
@@ -282,6 +285,8 @@ class DuckDBRepositoryFactory:
 
         if self._portfolio_repository is None:
             # Create concrete DuckDB implementation
+            if self._connection is None or self._query_executor is None:
+                raise ConnectionError("Connection or query executor not initialized")
             duckdb_repo = DuckDBPortfolioRepository(
                 self._connection, self._query_executor
             )
@@ -300,6 +305,8 @@ class DuckDBRepositoryFactory:
             DuckDBConnection: The database connection instance
         """
         self._ensure_initialized()
+        if self._connection is None:
+            raise ConnectionError("Connection not initialized")
         return self._connection
 
     def get_query_executor(self) -> DuckDBQueryExecutor:
@@ -309,6 +316,8 @@ class DuckDBRepositoryFactory:
             DuckDBQueryExecutor: The query executor instance
         """
         self._ensure_initialized()
+        if self._query_executor is None:
+            raise ConnectionError("Query executor not initialized")
         return self._query_executor
 
     def get_schema_manager(self) -> DuckDBSchemaManager:
@@ -318,9 +327,11 @@ class DuckDBRepositoryFactory:
             DuckDBSchemaManager: The schema manager instance
         """
         self._ensure_initialized()
+        if self._schema_manager is None:
+            raise ConnectionError("Schema manager not initialized")
         return self._schema_manager
 
-    async def health_check(self) -> dict:
+    async def health_check(self) -> dict[str, Any]:
         """Perform a health check on the repository factory.
 
         Returns:
@@ -362,8 +373,11 @@ class DuckDBRepositoryFactory:
             self.logger.warning("Resetting database - all data will be lost!")
 
             # Drop and recreate schema
-            await self._schema_manager.drop_schema()
-            await self._schema_manager.create_schema()
+            if self._schema_manager is not None:
+                await self._schema_manager.drop_schema()
+                await self._schema_manager.create_schema()
+            else:
+                raise DataAccessError("Schema manager not initialized")
 
             self.logger.info("Database reset complete")
 
