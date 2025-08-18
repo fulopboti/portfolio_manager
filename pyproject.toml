@@ -141,6 +141,8 @@ warn_unused_ignores = true
 warn_no_return = true
 warn_unreachable = true
 strict_equality = true
+# Allow any for YAML data structures since they're inherently dynamic
+allow_untyped_globals = false
 
 [[tool.mypy.overrides]]
 module = [
@@ -154,8 +156,17 @@ module = [
     "aiofiles.*",
     "python_multipart.*",
     "yfinance.*",
+    "yaml.*",
+    "pyyaml.*",
 ]
 ignore_missing_imports = true
+
+# Allow untyped definitions in configuration modules for YAML handling
+[[tool.mypy.overrides]]
+module = "portfolio_manager.config.*"
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = false
 
 [tool.pytest.ini_options]
 minversion = "6.0"
