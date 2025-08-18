@@ -753,7 +753,7 @@ class DuckDBAssetRepository(
             Dictionary containing quality metrics and statistics
         """
         try:
-            report = {}
+            report: dict[str, Any] = {}
 
             # Basic asset info
             asset = await self.get_asset(symbol)

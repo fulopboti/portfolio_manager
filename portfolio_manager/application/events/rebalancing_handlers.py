@@ -7,14 +7,16 @@ coordinate portfolio optimization activities.
 
 from typing import Any
 
-from ...domain.events import PortfolioRebalancedEvent, PositionChange
+from ...domain.events import PortfolioRebalancedEvent
 from .base_handler import BaseEventHandler, ErrorHandlingStrategy
 
 
 class PortfolioRebalancedEventHandler(BaseEventHandler):
     """Handler for portfolio rebalancing events."""
 
-    def __init__(self, portfolio_repository, position_repository, audit_service):
+    def __init__(
+        self, portfolio_repository: Any, position_repository: Any, audit_service: Any
+    ) -> None:
         """
         Initialize the portfolio rebalancing event handler.
 
@@ -92,7 +94,7 @@ class PortfolioRebalancedEventHandler(BaseEventHandler):
             )
 
     async def _process_single_position_change(
-        self, portfolio_id: str, change: PositionChange, timestamp
+        self, portfolio_id: Any, change: Any, timestamp: Any
     ) -> None:
         """
         Process a single position change.
@@ -146,7 +148,9 @@ class PortfolioRebalancedEventHandler(BaseEventHandler):
 class RebalancingMetricsEventHandler(BaseEventHandler):
     """Handler for updating metrics after portfolio rebalancing."""
 
-    def __init__(self, portfolio_metrics_service, risk_service, analytics_service):
+    def __init__(
+        self, portfolio_metrics_service: Any, risk_service: Any, analytics_service: Any
+    ) -> None:
         """
         Initialize the rebalancing metrics handler.
 
@@ -243,7 +247,7 @@ class RebalancingMetricsEventHandler(BaseEventHandler):
 class RebalancingNotificationEventHandler(BaseEventHandler):
     """Handler for sending notifications after portfolio rebalancing."""
 
-    def __init__(self, notification_service, user_service):
+    def __init__(self, notification_service: Any, user_service: Any) -> None:
         """
         Initialize the rebalancing notification handler.
 

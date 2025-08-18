@@ -182,31 +182,31 @@ if ($missingPackages.Count -gt 0) {
 Write-Step "Code Quality Checks"
 
 # Ruff linting
-if (-not (Invoke-Check "ruff check portfolio_manager/" "Ruff linting")) {
+if (-not (Invoke-Check "python -m ruff check portfolio_manager/" "Ruff linting")) {
     $failedChecks += "Ruff linting"
 }
 
 # Black formatting check
-if (-not (Invoke-Check "black --check portfolio_manager/" "Black formatting")) {
+if (-not (Invoke-Check "python -m black --check portfolio_manager/" "Black formatting")) {
     $failedChecks += "Black formatting"
 }
 
 # Import sorting check  
-if (-not (Invoke-Check "isort --check-only portfolio_manager/" "Import sorting")) {
+if (-not (Invoke-Check "python -m isort --check-only portfolio_manager/" "Import sorting")) {
     $failedChecks += "Import sorting"
 }
 
 # Type checking
 Write-Step "Type Checking"
 
-if (-not (Invoke-Check "mypy portfolio_manager/" "MyPy type checking")) {
+if (-not (Invoke-Check "python -m mypy portfolio_manager/" "MyPy type checking")) {
     $failedChecks += "Type checking"
 }
 
 # Security scanning
 Write-Step "Security Scanning"
 
-if (-not (Invoke-Check "bandit -r portfolio_manager/" "Security scan" -IgnoreErrors)) {
+if (-not (Invoke-Check "python -m bandit -r portfolio_manager/" "Security scan" -IgnoreErrors)) {
     Write-Warning-Custom "Security scan found issues (warnings only)"
 }
 
@@ -216,14 +216,14 @@ if (-not $SkipTests) {
     
     if ($Coverage) {
         Write-Info "Running tests with coverage reporting..."
-        if (-not (Invoke-Check "pytest --cov=portfolio_manager --cov-report=term-missing --cov-report=html" "Tests with coverage")) {
+        if (-not (Invoke-Check "python -m pytest --cov=portfolio_manager --cov-report=term-missing --cov-report=html" "Tests with coverage")) {
             $failedChecks += "Tests with coverage"
         } else {
             Write-Success "Coverage report generated in htmlcov/"
         }
     } else {
         Write-Info "Running test suite..."
-        if (-not (Invoke-Check "pytest -v" "Unit and integration tests")) {
+        if (-not (Invoke-Check "python -m pytest -v" "Unit and integration tests")) {
             $failedChecks += "Tests"
         }
     }
@@ -262,9 +262,9 @@ if ($failedChecks.Count -eq 0) {
     
     Write-Host "`nFix the issues above before committing." -ForegroundColor Yellow
     Write-Host "You can also run individual tools to fix issues:" -ForegroundColor Yellow
-    Write-Host "  • black portfolio_manager/          # Auto-format code" -ForegroundColor Gray
-    Write-Host "  • isort portfolio_manager/          # Auto-sort imports" -ForegroundColor Gray
-    Write-Host "  • ruff check portfolio_manager/ --fix  # Auto-fix some linting issues" -ForegroundColor Gray
+    Write-Host "  • python -m black portfolio_manager/          # Auto-format code" -ForegroundColor Gray
+    Write-Host "  • python -m isort portfolio_manager/          # Auto-sort imports" -ForegroundColor Gray
+    Write-Host "  • python -m ruff check portfolio_manager/ --fix  # Auto-fix some linting issues" -ForegroundColor Gray
     
     exit 1
 }

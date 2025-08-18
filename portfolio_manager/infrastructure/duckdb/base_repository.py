@@ -6,6 +6,7 @@ code duplication across DuckDB repository implementations.
 """
 
 import logging
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from typing import Any
 
@@ -168,9 +169,7 @@ class BaseDuckDBRepository:
         """
         try:
             self.logger.debug(f"{self._log_prefix} Executing {operation_name}")
-            result = await self.query_executor.execute_with_result(
-                query, parameters or []
-            )
+            result = await self.query_executor.execute_query(query, parameters or [])
             self.logger.debug(
                 f"{self._log_prefix} Successfully completed {operation_name}"
             )
@@ -182,7 +181,9 @@ class BaseDuckDBRepository:
             raise DataAccessError(error_msg) from e
 
     @asynccontextmanager
-    async def _transaction(self, operation_name: str = "transaction"):
+    async def _transaction(
+        self, operation_name: str = "transaction"
+    ) -> AsyncGenerator[None, None]:
         """
         Context manager for database transactions with automatic rollback.
 
@@ -197,15 +198,14 @@ class BaseDuckDBRepository:
         self.logger.debug(f"{self._log_prefix} Starting {operation_name}")
 
         try:
-            await self.connection.begin_transaction()
-            yield
-            await self.connection.commit_transaction()
-            self.logger.debug(
-                f"{self._log_prefix} Successfully committed {operation_name}"
-            )
+            # Use query executor's transaction functionality
+            async with self.query_executor.transaction_manager.transaction():
+                yield
+                self.logger.debug(
+                    f"{self._log_prefix} Successfully committed {operation_name}"
+                )
 
         except Exception as e:
-            await self.connection.rollback_transaction()
             error_msg = f"Transaction failed for {operation_name}: {str(e)}"
             self.logger.error(f"{self._log_prefix} {error_msg}")
             raise DataAccessError(error_msg) from e
@@ -426,9 +426,9 @@ class QueryBuilderMixin:
         Returns:
             Row data if found, None otherwise
         """
-        query = self.query_builder.select_by_id(table, columns, id_column)
-        parameters = self.param_builder.build_parameters([id_value])
-        return await self._fetch_one(query, parameters)
+        query = self.query_builder.select_by_id(table, columns, id_column)  # type: ignore[attr-defined]
+        parameters = self.param_builder.build_parameters([id_value])  # type: ignore[attr-defined]
+        return await self._fetch_one(query, parameters)  # type: ignore[attr-defined,no-any-return]
 
     async def _find_all_pattern(
         self, table: str, columns: list[str], order_by: str | None = None
@@ -444,8 +444,8 @@ class QueryBuilderMixin:
         Returns:
             List of row data
         """
-        query = self.query_builder.select_all(table, columns, order_by)
-        return await self._fetch_all(query)
+        query = self.query_builder.select_all(table, columns, order_by)  # type: ignore[attr-defined]
+        return await self._fetch_all(query)  # type: ignore[attr-defined,no-any-return]
 
     async def _find_by_criteria_pattern(
         self,
@@ -468,11 +468,11 @@ class QueryBuilderMixin:
         Returns:
             List of row data
         """
-        query, raw_parameters = self.query_builder.select_by_criteria(
+        query, raw_parameters = self.query_builder.select_by_criteria(  # type: ignore[attr-defined]
             table, columns, criteria, order_by, limit
         )
-        parameters = self.param_builder.build_parameters(raw_parameters)
-        return await self._fetch_all(query, parameters)
+        parameters = self.param_builder.build_parameters(raw_parameters)  # type: ignore[attr-defined]
+        return await self._fetch_all(query, parameters)  # type: ignore[attr-defined,no-any-return]
 
     async def _count_pattern(
         self, table: str, criteria: dict[str, Any] | None = None
@@ -487,9 +487,9 @@ class QueryBuilderMixin:
         Returns:
             Record count
         """
-        query, raw_parameters = self.query_builder.count_records(table, criteria)
-        parameters = self.param_builder.build_parameters(raw_parameters)
-        result = await self._fetch_one(query, parameters)
+        query, raw_parameters = self.query_builder.count_records(table, criteria)  # type: ignore[attr-defined]
+        parameters = self.param_builder.build_parameters(raw_parameters)  # type: ignore[attr-defined]
+        result = await self._fetch_one(query, parameters)  # type: ignore[attr-defined]
         return result[0] if result else 0
 
     async def _exists_pattern(self, table: str, criteria: dict[str, Any]) -> bool:
@@ -503,9 +503,9 @@ class QueryBuilderMixin:
         Returns:
             True if record exists, False otherwise
         """
-        query, raw_parameters = self.query_builder.exists_check(table, criteria)
-        parameters = self.param_builder.build_parameters(raw_parameters)
-        result = await self._fetch_one(query, parameters)
+        query, raw_parameters = self.query_builder.exists_check(table, criteria)  # type: ignore[attr-defined]
+        parameters = self.param_builder.build_parameters(raw_parameters)  # type: ignore[attr-defined]
+        result = await self._fetch_one(query, parameters)  # type: ignore[attr-defined]
         return result is not None
 
     async def _upsert_pattern(
@@ -526,11 +526,11 @@ class QueryBuilderMixin:
             conflict_column: Column that triggers conflict resolution
             update_columns: Columns to update on conflict
         """
-        query = self.query_builder.upsert(
+        query = self.query_builder.upsert(  # type: ignore[attr-defined]
             table, columns, conflict_column, update_columns
         )
-        parameters = self.param_builder.build_parameters(values)
-        await self._execute_query(query, parameters, f"upsert_{table}")
+        parameters = self.param_builder.build_parameters(values)  # type: ignore[attr-defined]
+        await self._execute_query(query, parameters, f"upsert_{table}")  # type: ignore[attr-defined]
 
     async def _time_series_pattern(
         self,
@@ -539,8 +539,8 @@ class QueryBuilderMixin:
         timestamp_column: str,
         data_columns: list[str],
         symbol: str,
-        start_date=None,
-        end_date=None,
+        start_date: Any = None,
+        end_date: Any = None,
         order_desc: bool = False,
         limit: int | None = None,
     ) -> list[list[Any]]:
@@ -561,7 +561,7 @@ class QueryBuilderMixin:
         Returns:
             List of time series row data
         """
-        query, raw_parameters = self.query_builder.time_series_query(
+        query, raw_parameters = self.query_builder.time_series_query(  # type: ignore[attr-defined]
             table,
             symbol_column,
             timestamp_column,
@@ -572,8 +572,8 @@ class QueryBuilderMixin:
             order_desc,
             limit,
         )
-        parameters = self.param_builder.build_parameters(raw_parameters)
-        return await self._fetch_all(query, parameters)
+        parameters = self.param_builder.build_parameters(raw_parameters)  # type: ignore[attr-defined]
+        return await self._fetch_all(query, parameters)  # type: ignore[attr-defined,no-any-return]
 
     async def _latest_record_pattern(
         self,
@@ -596,15 +596,15 @@ class QueryBuilderMixin:
         Returns:
             Latest record data if found, None otherwise
         """
-        query, raw_parameters = self.query_builder.latest_record_query(
+        query, raw_parameters = self.query_builder.latest_record_query(  # type: ignore[attr-defined]
             table, partition_column, timestamp_column, data_columns, partition_value
         )
-        parameters = self.param_builder.build_parameters(raw_parameters)
+        parameters = self.param_builder.build_parameters(raw_parameters)  # type: ignore[attr-defined]
 
         if partition_value:
-            return await self._fetch_one(query, parameters)
+            return await self._fetch_one(query, parameters)  # type: ignore[attr-defined,no-any-return]
         else:
-            results = await self._fetch_all(query, parameters)
+            results = await self._fetch_all(query, parameters)  # type: ignore[attr-defined]
             return results[0] if results else None
 
     async def _delete_by_criteria_pattern(
@@ -620,10 +620,10 @@ class QueryBuilderMixin:
         Returns:
             Number of records deleted
         """
-        query, raw_parameters = self.query_builder.delete_by_criteria(table, criteria)
-        parameters = self.param_builder.build_parameters(raw_parameters)
+        query, raw_parameters = self.query_builder.delete_by_criteria(table, criteria)  # type: ignore[attr-defined]
+        parameters = self.param_builder.build_parameters(raw_parameters)  # type: ignore[attr-defined]
 
         # Execute and return affected rows count
-        await self._execute_query(query, parameters, f"delete_from_{table}")
+        await self._execute_query(query, parameters, f"delete_from_{table}")  # type: ignore[attr-defined]
         # Note: DuckDB doesn't return affected rows count directly, so we return 1 if successful
         return 1

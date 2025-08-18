@@ -15,7 +15,12 @@ from .base_handler import BaseEventHandler, ErrorHandlingStrategy
 class AssetPriceUpdatedEventHandler(BaseEventHandler):
     """Handler for asset price update events."""
 
-    def __init__(self, portfolio_repository, position_repository, market_data_service):
+    def __init__(
+        self,
+        portfolio_repository: Any,
+        position_repository: Any,
+        market_data_service: Any,
+    ) -> None:
         """
         Initialize the price update event handler.
 
@@ -118,16 +123,24 @@ class AssetPriceUpdatedEventHandler(BaseEventHandler):
 class PortfolioRevaluationEventHandler(BaseEventHandler):
     """Handler for portfolio revaluation after price updates."""
 
-    def __init__(self, risk_service, notification_service, alert_service):
+    def __init__(
+        self,
+        portfolio_repository: Any,
+        risk_service: Any,
+        notification_service: Any,
+        alert_service: Any,
+    ) -> None:
         """
         Initialize the portfolio revaluation handler.
 
         Args:
+            portfolio_repository: Repository for portfolio data access
             risk_service: Service for risk calculations
             notification_service: Service for sending notifications
             alert_service: Service for threshold alerts
         """
         super().__init__(error_strategy=ErrorHandlingStrategy.RESILIENT)
+        self.portfolio_repository = portfolio_repository
         self.risk_service = risk_service
         self.notification_service = notification_service
         self.alert_service = alert_service

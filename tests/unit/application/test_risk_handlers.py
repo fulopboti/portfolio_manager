@@ -320,7 +320,7 @@ class TestRiskMitigationEventHandler:
         # Verify position reduction action
         position_service.reduce_largest_positions.assert_called_once()
         args = position_service.reduce_largest_positions.call_args[0]
-        assert args[0] == event.portfolio_id
+        assert args[0] == str(event.portfolio_id)
 
         # Verify notification sent
         notification_service.send_risk_mitigation_notification.assert_called_once()
@@ -350,7 +350,7 @@ class TestRiskMitigationEventHandler:
         # Verify hedging action
         trading_service.create_hedge_positions.assert_called_once()
         args = trading_service.create_hedge_positions.call_args[0]
-        assert args[0] == event.portfolio_id
+        assert args[0] == str(event.portfolio_id)
 
         # Verify notification sent
         notification_service.send_risk_mitigation_notification.assert_called_once()
@@ -380,7 +380,7 @@ class TestRiskMitigationEventHandler:
         # Verify stop loss activation
         trading_service.activate_stop_losses.assert_called_once()
         args = trading_service.activate_stop_losses.call_args[0]
-        assert args[0] == event.portfolio_id
+        assert args[0] == str(event.portfolio_id)
 
         # Verify notification sent
         notification_service.send_risk_mitigation_notification.assert_called_once()

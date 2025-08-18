@@ -189,7 +189,9 @@ class DuckDBRepositoryFactory:
             duckdb_config = None
             if self.config:
                 # Map configuration pragmas to DuckDBConfig fields
-                config_overrides: dict[str, Any] = {"read_only": self.config.connection.read_only}
+                config_overrides: dict[str, Any] = {
+                    "read_only": self.config.connection.read_only
+                }
 
                 # Map common pragma settings to DuckDBConfig fields
                 pragmas = self.config.connection.pragmas or {}

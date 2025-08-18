@@ -588,13 +588,13 @@ class DuckDBPortfolioRepository(
 
             if start_date and end_date:
                 base_query += " AND timestamp >= ? AND timestamp <= ?"
-                parameters.extend([start_date, end_date])
+                parameters.extend([str(start_date), str(end_date)])
             elif start_date:
                 base_query += " AND timestamp >= ?"
-                parameters.append(start_date)
+                parameters.append(str(start_date))
             elif end_date:
                 base_query += " AND timestamp <= ?"
-                parameters.append(end_date)
+                parameters.append(str(end_date))
 
             result = await self.query_executor.fetch_one(base_query, parameters)
 
@@ -999,10 +999,16 @@ class DuckDBPortfolioRepository(
             )
 
             total_invested = sum(
-                trade.net_amount() for trade in trades if trade.side == TradeSide.BUY
+                (trade.net_amount() for trade in trades if trade.side == TradeSide.BUY),
+                Decimal("0"),
             )
             total_divested = sum(
-                trade.net_amount() for trade in trades if trade.side == TradeSide.SELL
+                (
+                    trade.net_amount()
+                    for trade in trades
+                    if trade.side == TradeSide.SELL
+                ),
+                Decimal("0"),
             )
 
             net_cash_flow = total_invested - total_divested
@@ -1011,7 +1017,7 @@ class DuckDBPortfolioRepository(
                 "total_invested": total_invested,
                 "total_divested": total_divested,
                 "net_cash_flow": net_cash_flow,
-                "trade_count": Decimal(str(len(trades))),
+                "trade_count": Decimal(len(trades)),
             }
 
         except Exception as e:

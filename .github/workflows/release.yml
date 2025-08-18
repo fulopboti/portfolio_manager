@@ -28,13 +28,13 @@ jobs:
     - name: Run comprehensive tests
       run: |
         # Code quality checks
-        ruff check portfolio_manager/
-        black --check portfolio_manager/
-        isort --check-only portfolio_manager/
-        mypy portfolio_manager/
+        python -m ruff check portfolio_manager/
+        python -m black --check portfolio_manager/
+        python -m isort --check-only portfolio_manager/
+        python -m mypy portfolio_manager/
         
         # Security scan
-        bandit -r portfolio_manager/
+        python -m bandit -r portfolio_manager/
         
         # Test suite with coverage
         python tests/run_tests.py coverage

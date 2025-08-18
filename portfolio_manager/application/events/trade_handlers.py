@@ -17,7 +17,9 @@ from ...infrastructure.events.handlers import EventHandler
 class TradeExecutedEventHandler(EventHandler):
     """Handler for trade execution events."""
 
-    def __init__(self, portfolio_repository: Any, position_repository: Any, audit_service: Any) -> None:
+    def __init__(
+        self, portfolio_repository: Any, position_repository: Any, audit_service: Any
+    ) -> None:
         """
         Initialize the trade event handler.
 

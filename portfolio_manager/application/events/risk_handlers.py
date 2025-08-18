@@ -15,7 +15,9 @@ from .base_handler import BaseEventHandler, ErrorHandlingStrategy
 class RiskThresholdBreachedEventHandler(BaseEventHandler):
     """Handler for risk threshold breach events."""
 
-    def __init__(self, portfolio_repository, risk_service, alert_service):
+    def __init__(
+        self, portfolio_repository: Any, risk_service: Any, alert_service: Any
+    ) -> None:
         """
         Initialize the risk threshold breach handler.
 
@@ -64,7 +66,7 @@ class RiskThresholdBreachedEventHandler(BaseEventHandler):
         await self._send_risk_alerts(event)
 
     async def _handle_critical_breach(
-        self, event: RiskThresholdBreachedEvent, portfolio
+        self, event: RiskThresholdBreachedEvent, portfolio: Any
     ) -> None:
         """
         Handle critical risk threshold breaches.
@@ -93,7 +95,7 @@ class RiskThresholdBreachedEventHandler(BaseEventHandler):
         await self.portfolio_repository.save_portfolio(portfolio)
 
     async def _handle_standard_breach(
-        self, event: RiskThresholdBreachedEvent, portfolio
+        self, event: RiskThresholdBreachedEvent, portfolio: Any
     ) -> None:
         """
         Handle standard risk threshold breaches.
@@ -117,7 +119,7 @@ class RiskThresholdBreachedEventHandler(BaseEventHandler):
             await self.portfolio_repository.save_portfolio(portfolio)
 
     async def _update_portfolio_risk_status(
-        self, event: RiskThresholdBreachedEvent, portfolio
+        self, event: RiskThresholdBreachedEvent, portfolio: Any
     ) -> None:
         """
         Update the portfolio's risk tracking information.
@@ -169,7 +171,9 @@ class RiskThresholdBreachedEventHandler(BaseEventHandler):
 class RiskMitigationEventHandler(BaseEventHandler):
     """Handler for coordinating risk mitigation actions."""
 
-    def __init__(self, trading_service, position_service, notification_service):
+    def __init__(
+        self, trading_service: Any, position_service: Any, notification_service: Any
+    ) -> None:
         """
         Initialize the risk mitigation handler.
 
@@ -202,7 +206,7 @@ class RiskMitigationEventHandler(BaseEventHandler):
 
         # Execute mitigation actions
         for action in mitigation_actions:
-            await self._execute_mitigation_action(event.portfolio_id, action)
+            await self._execute_mitigation_action(str(event.portfolio_id), action)
 
         # Notify stakeholders
         await self._notify_mitigation_actions(event, mitigation_actions)

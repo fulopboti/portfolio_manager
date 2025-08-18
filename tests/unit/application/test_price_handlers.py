@@ -194,12 +194,13 @@ class TestPortfolioRevaluationEventHandler:
     """Test PortfolioRevaluationEventHandler."""
 
     @pytest.mark.asyncio
-    async def test_can_handle_asset_price_updated_event(self, mock_services):
+    async def test_can_handle_asset_price_updated_event(self, mock_repositories, mock_services):
         """Test handler can handle AssetPriceUpdatedEvent."""
+        portfolio_repository = mock_repositories[0]
         risk_service, notification_service, alert_service = mock_services[1:4]
 
         handler = PortfolioRevaluationEventHandler(
-            risk_service, notification_service, alert_service
+            portfolio_repository, risk_service, notification_service, alert_service
         )
 
         event = AssetPriceUpdatedEvent(
@@ -213,8 +214,9 @@ class TestPortfolioRevaluationEventHandler:
         assert await handler.can_handle(event) is True
 
     @pytest.mark.asyncio
-    async def test_handle_significant_price_change(self, mock_services):
+    async def test_handle_significant_price_change(self, mock_repositories, mock_services):
         """Test handling of significant price changes."""
+        portfolio_repository = mock_repositories[0]
         risk_service, notification_service, alert_service = mock_services[1:4]
 
         # Create event with significant price change (>5%)
@@ -227,7 +229,7 @@ class TestPortfolioRevaluationEventHandler:
         )
 
         handler = PortfolioRevaluationEventHandler(
-            risk_service, notification_service, alert_service
+            portfolio_repository, risk_service, notification_service, alert_service
         )
 
         # Mock portfolio repository for risk metrics update
@@ -253,8 +255,9 @@ class TestPortfolioRevaluationEventHandler:
         notification_service.send_price_alert.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_handle_minor_price_change(self, mock_services):
+    async def test_handle_minor_price_change(self, mock_repositories, mock_services):
         """Test handling of minor price changes (no action needed)."""
+        portfolio_repository = mock_repositories[0]
         risk_service, notification_service, alert_service = mock_services[1:4]
 
         # Create event with minor price change (<5%)
@@ -267,7 +270,7 @@ class TestPortfolioRevaluationEventHandler:
         )
 
         handler = PortfolioRevaluationEventHandler(
-            risk_service, notification_service, alert_service
+            portfolio_repository, risk_service, notification_service, alert_service
         )
 
         await handler.handle(event)
@@ -278,8 +281,9 @@ class TestPortfolioRevaluationEventHandler:
         notification_service.send_price_alert.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_handle_error_handling_does_not_raise(self, mock_services):
+    async def test_handle_error_handling_does_not_raise(self, mock_repositories, mock_services):
         """Test that errors in revaluation don't break the handler."""
+        portfolio_repository = mock_repositories[0]
         risk_service, notification_service, alert_service = mock_services[1:4]
 
         # Create event with significant price change
@@ -295,7 +299,7 @@ class TestPortfolioRevaluationEventHandler:
         risk_service.update_portfolio_risk.side_effect = Exception("Risk calculation error")
 
         handler = PortfolioRevaluationEventHandler(
-            risk_service, notification_service, alert_service
+            portfolio_repository, risk_service, notification_service, alert_service
         )
 
         # Mock portfolio repository
@@ -306,8 +310,9 @@ class TestPortfolioRevaluationEventHandler:
         await handler.handle(event)
 
     @pytest.mark.asyncio
-    async def test_handle_price_decrease_significant(self, mock_services):
+    async def test_handle_price_decrease_significant(self, mock_repositories, mock_services):
         """Test handling of significant price decreases."""
+        portfolio_repository = mock_repositories[0]
         risk_service, notification_service, alert_service = mock_services[1:4]
 
         # Create event with significant price decrease
@@ -320,7 +325,7 @@ class TestPortfolioRevaluationEventHandler:
         )
 
         handler = PortfolioRevaluationEventHandler(
-            risk_service, notification_service, alert_service
+            portfolio_repository, risk_service, notification_service, alert_service
         )
 
         # Mock portfolio repository

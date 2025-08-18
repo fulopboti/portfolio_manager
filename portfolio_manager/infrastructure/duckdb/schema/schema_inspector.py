@@ -251,7 +251,7 @@ class DuckDBSchemaInspector:
 
         except Exception as e:
             logger.error(f"Failed to get database statistics: {str(e)}")
-            return {"error": str(e)}
+            return {}
 
     async def check_referential_integrity(self) -> list[str]:
         """Check referential integrity of foreign key constraints.

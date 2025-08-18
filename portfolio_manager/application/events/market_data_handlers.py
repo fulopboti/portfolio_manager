@@ -14,7 +14,9 @@ from .base_handler import BaseEventHandler, ErrorHandlingStrategy
 class MarketDataReceivedEventHandler(BaseEventHandler):
     """Handler for processing incoming market data."""
 
-    def __init__(self, market_data_service, asset_service, event_bus):
+    def __init__(
+        self, market_data_service: Any, asset_service: Any, event_bus: Any
+    ) -> None:
         """
         Initialize the market data received handler.
 
@@ -155,7 +157,7 @@ class MarketDataReceivedEventHandler(BaseEventHandler):
 class MarketDataQualityEventHandler(BaseEventHandler):
     """Handler for monitoring market data quality and anomalies."""
 
-    def __init__(self, data_quality_service, alert_service):
+    def __init__(self, data_quality_service: Any, alert_service: Any) -> None:
         """
         Initialize the market data quality handler.
 
@@ -279,7 +281,7 @@ class MarketDataQualityEventHandler(BaseEventHandler):
 class MarketDataCachingEventHandler(BaseEventHandler):
     """Handler for caching and distributing market data."""
 
-    def __init__(self, cache_service, distribution_service):
+    def __init__(self, cache_service: Any, distribution_service: Any) -> None:
         """
         Initialize the market data caching handler.
 

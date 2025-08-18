@@ -168,7 +168,7 @@ class ConfiguredComponentFactory:
         )
 
         # Inject configuration into service for use in business logic
-        service._config = portfolio_config
+        service._config = portfolio_config  # type: ignore[assignment]
 
         return service
 
@@ -199,7 +199,7 @@ class ConfiguredComponentFactory:
         )
 
         # Inject configuration
-        service._config = strategies_config
+        service._config = strategies_config  # type: ignore[assignment]
 
         return service
 

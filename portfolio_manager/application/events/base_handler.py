@@ -157,7 +157,7 @@ class BaseEventHandler(EventHandler):
         Returns:
             Human-readable event description
         """
-        event_type = event.__class__.__name__
+        event_type: str = event.__class__.__name__
 
         # Try to get meaningful identifiers from common event attributes
         identifiers = []

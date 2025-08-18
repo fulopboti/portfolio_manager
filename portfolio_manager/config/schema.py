@@ -102,7 +102,11 @@ class MarketDataConfig(BaseModel):
     rate_limits: dict[str, int] = Field(
         default_factory=dict, description="Rate limits per provider"
     )
-    yfinance: YFinanceConfig = Field(default_factory=lambda: YFinanceConfig())
+    yfinance: YFinanceConfig = Field(
+        default_factory=lambda: YFinanceConfig(
+            enabled=True, request_delay=0.1, max_retries=3, timeout=30
+        )
+    )
 
 
 class DataProvidersConfig(BaseModel):

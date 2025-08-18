@@ -138,6 +138,7 @@ class DuckDBQueryExecutor(QueryExecutor):
                 result = raw_conn.execute(sql)
 
             # Get affected row count - DuckDB may return -1 for some operations
+            affected_rows: int
             if hasattr(result, "row_count") and result.row_count >= 0:
                 affected_rows = int(result.row_count)
             else:
@@ -206,7 +207,9 @@ class DuckDBQueryExecutor(QueryExecutor):
         # Convert row dicts to tuples of values
         if isinstance(result.rows[0], dict):
             return [tuple(row.values()) for row in result.rows]
-        return [tuple(row) if isinstance(row, list | tuple) else (row,) for row in result.rows]
+
+        # Handle non-dict rows (lists, tuples, or single values)
+        return [tuple(row) if isinstance(row, list | tuple) else (row,) for row in result.rows]  # type: ignore[unreachable]
 
     async def execute_transaction(
         self, operations: list[tuple[str, dict[str, Any] | None]]

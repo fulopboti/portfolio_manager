@@ -349,7 +349,7 @@ class DuckDBSchemaManager(SchemaManager):
 
             # Add statistics
             stats = await self.inspector.get_database_statistics()
-            validation_results["statistics"] = stats
+            validation_results["statistics"] = stats  # type: ignore[assignment]
 
             # Check referential integrity
             integrity_violations = await self.inspector.check_referential_integrity()
@@ -363,8 +363,8 @@ class DuckDBSchemaManager(SchemaManager):
                 or integrity_violations
             )
 
-            validation_results["status"] = "INVALID" if has_issues else "VALID"
-            validation_results["schema_version"] = await self.get_schema_version()
+            validation_results["status"] = "INVALID" if has_issues else "VALID"  # type: ignore[assignment]
+            validation_results["schema_version"] = await self.get_schema_version()  # type: ignore[assignment]
 
             return validation_results
 

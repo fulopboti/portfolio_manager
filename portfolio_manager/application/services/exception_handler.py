@@ -200,7 +200,7 @@ class ServiceExceptionRegistry:
 class StandardExceptionHandler:
     """Standardized exception handler for application services."""
 
-    def __init__(self, service_name: str, logger: logging.Logger | None = None):
+    def __init__(self, service_name: str, logger: logging.Logger | None = None) -> None:
         """
         Initialize the exception handler.
 
@@ -342,7 +342,7 @@ def service_exception_handler(
         expected_exceptions: List of expected exception types
     """
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(func)
         async def async_wrapper(self: Any, *args: Any, **kwargs: Any) -> Any:
             if not hasattr(self, "_exception_handler"):
