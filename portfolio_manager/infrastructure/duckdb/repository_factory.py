@@ -85,10 +85,12 @@ class AssetRepositoryAdapter(RepositoryAdapterBase, AssetRepository):
         return await self.data_access.delete_asset(symbol)
 
     async def asset_exists(self, symbol: str) -> bool:
-        return await self.data_access.asset_exists(symbol)
+        result = await self.data_access.asset_exists(symbol)
+        return bool(result)
 
     async def get_snapshot_count(self, symbol: str) -> int:
-        return await self.data_access.get_snapshot_count(symbol)
+        result = await self.data_access.get_snapshot_count(symbol)
+        return int(result)
 
 
 class PortfolioRepositoryAdapter(RepositoryAdapterBase, PortfolioRepository):
@@ -140,7 +142,8 @@ class PortfolioRepositoryAdapter(RepositoryAdapterBase, PortfolioRepository):
         return await self.data_access.delete_position(portfolio_id, symbol)
 
     async def portfolio_exists(self, portfolio_id: Any) -> bool:
-        return await self.data_access.portfolio_exists(portfolio_id)
+        result = await self.data_access.portfolio_exists(portfolio_id)
+        return bool(result)
 
 
 class DuckDBRepositoryFactory:
@@ -186,7 +189,7 @@ class DuckDBRepositoryFactory:
             duckdb_config = None
             if self.config:
                 # Map configuration pragmas to DuckDBConfig fields
-                config_overrides = {"read_only": self.config.connection.read_only}
+                config_overrides: dict[str, Any] = {"read_only": self.config.connection.read_only}
 
                 # Map common pragma settings to DuckDBConfig fields
                 pragmas = self.config.connection.pragmas or {}
@@ -205,8 +208,9 @@ class DuckDBRepositoryFactory:
                         pragmas["enable_profiling"]
                     )
 
-                # Pass the full pragmas dictionary as well
-                config_overrides["pragmas"] = dict(pragmas)
+                # Include the pragmas dict
+                if self.config.connection.pragmas:
+                    config_overrides["pragmas"] = self.config.connection.pragmas
 
                 duckdb_config = DuckDBConfig.from_environment(**config_overrides)
                 self._logger.info(

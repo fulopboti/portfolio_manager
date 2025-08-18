@@ -344,7 +344,7 @@ def service_exception_handler(
 
     def decorator(func: Callable) -> Callable:
         @wraps(func)
-        async def async_wrapper(self, *args: Any, **kwargs: Any) -> Any:
+        async def async_wrapper(self: Any, *args: Any, **kwargs: Any) -> Any:
             if not hasattr(self, "_exception_handler"):
                 handler_name = getattr(self, "__class__", {}).get(
                     "__name__", "UnknownService"
@@ -369,7 +369,7 @@ def service_exception_handler(
                     )
 
         @wraps(func)
-        def sync_wrapper(self, *args: Any, **kwargs: Any) -> Any:
+        def sync_wrapper(self: Any, *args: Any, **kwargs: Any) -> Any:
             if not hasattr(self, "_exception_handler"):
                 handler_name = getattr(self, "__class__", {}).get(
                     "__name__", "UnknownService"

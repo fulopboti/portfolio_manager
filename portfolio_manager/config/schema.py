@@ -17,7 +17,7 @@ class DatabaseConnectionConfig(BaseModel):
 
     @field_validator("database_path")
     @classmethod
-    def validate_database_path(cls, v):
+    def validate_database_path(cls, v: str) -> str:
         if v != ":memory:" and not v:
             raise ValueError("database_path cannot be empty")
         return v
@@ -76,7 +76,7 @@ class APIConfig(BaseModel):
 
     @field_validator("base_url")
     @classmethod
-    def validate_base_url(cls, v):
+    def validate_base_url(cls, v: str) -> str:
         if not v.startswith(("http://", "https://")):
             raise ValueError("base_url must start with http:// or https://")
         return v
@@ -102,7 +102,7 @@ class MarketDataConfig(BaseModel):
     rate_limits: dict[str, int] = Field(
         default_factory=dict, description="Rate limits per provider"
     )
-    yfinance: YFinanceConfig = Field(default_factory=YFinanceConfig)
+    yfinance: YFinanceConfig = Field(default_factory=lambda: YFinanceConfig())
 
 
 class DataProvidersConfig(BaseModel):
@@ -216,7 +216,7 @@ class LoggingConfig(BaseModel):
 
     @field_validator("level")
     @classmethod
-    def validate_log_level(cls, v):
+    def validate_log_level(cls, v: str) -> str:
         valid_levels = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
         if v.upper() not in valid_levels:
             raise ValueError(f"log level must be one of {valid_levels}")

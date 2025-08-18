@@ -165,7 +165,7 @@ class BaseEventHandler(EventHandler):
         for attr in ["event_id", "portfolio_id", "symbol", "trade_id"]:
             if hasattr(event, attr):
                 value = getattr(event, attr)
-                identifiers.append(f"{attr}={value}")
+                identifiers.append(f"{attr}={str(value)}")
 
         if identifiers:
             return f"{event_type}({', '.join(identifiers)})"

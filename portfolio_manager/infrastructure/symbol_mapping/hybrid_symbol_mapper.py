@@ -157,6 +157,22 @@ class HybridSymbolMapper(SymbolMappingService):
             results[symbol] = await self.refresh_cache(symbol)
         return results
 
+    async def add_mapping(self, mapping: SymbolMapping) -> SymbolMapping | None:
+        """Add a new symbol mapping to the database cache."""
+        try:
+            result: SymbolMapping | None = await self._database_mapper.add_mapping(mapping)
+            return result
+        except Exception:
+            return None
+
+    async def update_mapping(self, mapping: SymbolMapping) -> SymbolMapping | None:
+        """Update an existing symbol mapping in the database cache."""
+        try:
+            result: SymbolMapping | None = await self._database_mapper.update_mapping(mapping)
+            return result
+        except Exception:
+            return None
+
     async def clear_cache(self) -> bool:
         """Clear the database cache."""
         try:

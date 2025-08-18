@@ -358,7 +358,10 @@ class TestSymbolMappingServiceInterface:
         expected_methods = {
             'get_equivalent_symbols',
             'get_provider_symbol', 
-            'search_by_company'
+            'search_by_company',
+            'add_mapping',
+            'update_mapping',
+            'clear_cache'
         }
         
         assert abstract_methods == expected_methods
@@ -380,6 +383,32 @@ class MockSymbolMappingService(SymbolMappingService):
 
     async def search_by_company(self, company_name: str):
         return self.company_mappings.get(company_name.lower(), [])
+
+    async def add_mapping(self, mapping: SymbolMapping) -> SymbolMapping | None:
+        """Add a new symbol mapping."""
+        symbol = mapping.base_symbol
+        if symbol not in self.mappings:
+            self.mappings[symbol] = []
+        self.mappings[symbol].append(mapping)
+        return mapping
+
+    async def update_mapping(self, mapping: SymbolMapping) -> SymbolMapping | None:
+        """Update an existing symbol mapping."""
+        symbol = mapping.base_symbol
+        if symbol in self.mappings:
+            # Replace the first matching mapping by ISIN
+            for i, existing in enumerate(self.mappings[symbol]):
+                if existing.isin == mapping.isin:
+                    self.mappings[symbol][i] = mapping
+                    return mapping
+        return None
+
+    async def clear_cache(self) -> bool:
+        """Clear cached mappings."""
+        self.mappings.clear()
+        self.provider_symbols.clear()
+        self.company_mappings.clear()
+        return True
 
 
 class TestMockSymbolMappingService:

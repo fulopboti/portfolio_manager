@@ -34,7 +34,7 @@ class ConfiguredComponentFactory:
     sections and handles configuration validation.
     """
 
-    def __init__(self, config_manager=None) -> None:
+    def __init__(self, config_manager: Any = None) -> None:
         """
         Initialize the factory with configuration.
 
